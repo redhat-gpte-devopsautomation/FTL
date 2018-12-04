@@ -8,7 +8,7 @@
   tasks:
     - name: stats *_vars.yml and (legacy) env_secret_vars.yml
       stat:
-        path: courses/{{ course_name }}/{{ item }}
+        path: ../courses/{{ course_name }}/{{ item }}
       loop:
         - lab_vars.yml
       register: rstat_varfiles
@@ -20,3 +20,7 @@
       loop: "{{ rstat_varfiles.results }}"
       loop_control:
         label: "{{ item._ansible_item_label | default(item) }}"
+    - name: debug instances
+      debug:
+        var: item
+      with_items: instances

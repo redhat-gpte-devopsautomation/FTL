@@ -1,4 +1,4 @@
-- import_playbook: setup_runtime.yml
+- import_playbook: ./playbooks/setup_runtime.yml
   tags:
     - step000
 
@@ -8,14 +8,14 @@
 ################################################################################
 ################################################################################
 
-- import_role: "infra-create-inventory"
-  tags:
-    - step001
-
-- import_playbook: "./courses/{{ course }}/grade.yml"
-  tags:
-    - step001
-
-- import_playbook: "./reports/write_result_into_file.yml"
-
-- import_playbook: "./reports/report_to_lms.yml"
+- import_playbook: "./playbooks/create_inventory.yml"
+#   tags:
+#     - step001
+#
+# - import_playbook: "./courses/{{ course }}/grade.yml"
+#   tags:
+#     - step001
+#
+# - import_playbook: "./reports/write_result_into_file.yml"
+#
+# - import_playbook: "./reports/report_to_lms.yml"

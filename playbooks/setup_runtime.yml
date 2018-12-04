@@ -12,7 +12,6 @@
           ANSIBLE_REPO_PATH + '/workdir' if ANSIBLE_REPO_PATH is defined
           else '/tmp/output_dir'
           }}
-
       when: output_dir is not defined
 
     - name: Stat output_dir
