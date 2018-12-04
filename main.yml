@@ -9,13 +9,13 @@
 ################################################################################
 
 - import_playbook: "./playbooks/create_inventory.yml"
-#   tags:
-#     - step001
-#
-# - import_playbook: "./courses/{{ course }}/grade.yml"
-#   tags:
-#     - step001
-#
-# - import_playbook: "./reports/write_result_into_file.yml"
-#
-# - import_playbook: "./reports/report_to_lms.yml"
+   tags:
+     - step001
+
+ - import_playbook: "./courses/{{ course_name }}/{{lab_number}}/grade.yml"
+   tags:
+     - step001
+
+ - import_playbook: "./reports/write_result_into_file.yml"
+
+ - import_playbook: "./reports/report_to_lms.yml"
