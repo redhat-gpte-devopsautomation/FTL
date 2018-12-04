@@ -1,0 +1,63 @@
+---
+- hosts:
+    - localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: running section1
+      debug:
+        msg: "Running Section1"
+    - set_fact:
+        grade_temp: "PASS"
+        grade_reason: ""
+
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+- name: Verify Section1
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Verify devops user is created
+      shell: "grep devops /etc/passwd | cut -d: -f1"
+      register: user_created
+    - debug:
+        msg: "Success: devops user present"
+      when: user_created.stdout == "devops"
+    - debug:
+        msg: "Fail: devops user present"
+      when: user_created.stdout != "devops"
+    - name: set grade to fail
+      set_fact:
+        grade_temp: FAIL
+        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}}, devops user not present"
+      delegate_to: localhost
+      delegate_facts: true
+      when: user_created.stdout != "devops"
+
+    - name: Verify /etc/motd has content
+      shell: "cat /etc/motd"
+      register: motd
+    - debug:
+        msg: "Success: /etc/motd has required content"
+      when: motd.stdout == "Managed by Ansible"
+    - debug:
+        msg: "Fail: /etc/motd has required content"
+      when: motd.stdout != "Managed by Ansible"
+
+    - name: set grade to fail
+      set_fact:
+        grade_temp: FAIL
+        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} /etc/motd missing content"
+      delegate_to: localhost
+      delegate_facts: true
+      when: motd.stdout != "Managed by Ansible"

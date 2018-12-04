@@ -1,0 +1,18 @@
+- import_playbook: section1.yml
+- import_playbook: section2.yml
+
+- import_tasks: print
+
+
+
+#
+# grade:
+#   lab1:
+#     section1: pass
+#     section2: fail
+#   lab2:
+#     section1: pass
+#     section2: fail
+#   lab3:
+#     section1: pass
+#     section2: fail

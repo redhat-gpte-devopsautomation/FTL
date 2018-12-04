@@ -11,14 +11,16 @@
     - name: debug instancesAAAA
       debug:
         var: item
-      loop: instances
+      loop: "{{instances}}"
 
 
     - add_host:
         name: "{{item.name}}"
-        # ansible_host: "{{item.tags.ansible_host}}"
-        # ansible_user: "{{item.tags.ansible_user}}"
-        # groups: "{{item.tags.groups}}"
+        ansible_host: "{{item.ansible_hostname}}"
+        ansible_ssh_user: "{{item.ansible_ssh_user}}"
+        ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
+        ansible_ssh_private_key_file: "{{ansible_ssh_private_key_file}}"
+
       loop: "{{instances}}"
       tags:
         - create_inventory

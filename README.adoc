@@ -1,0 +1,13 @@
+= FTL
+
+== Usage
+
+. Check lab
+----
+ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=false"
+----
+
+. Solve and check lab
+----
+ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=true"
+----

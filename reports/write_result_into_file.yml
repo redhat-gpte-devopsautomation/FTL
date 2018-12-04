@@ -3,4 +3,12 @@
 - name: write lab results into file:
   template:
     src: ./reports/results.yml.j2
-    dest: "{{output_dir}}/{{student}}_{{course}}_lab.yml"
+    dest: "{{output_dir}}/{{student}}_{{course}}_grades.yml"
+
+
+### This template will create a file called
+### shacharb-redhat.com_ansible_implementation_part1_grades.yml
+# grade:
+#   {{lab}}:
+#     section1: pass
+#     section2: fail
