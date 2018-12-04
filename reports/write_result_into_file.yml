@@ -1,0 +1,6 @@
+---
+
+- name: write lab results into file:
+  template:
+    src: ./reports/results.yml.j2
+    dest: "{{output_dir}}/{{student}}_{{course}}_lab.yml"

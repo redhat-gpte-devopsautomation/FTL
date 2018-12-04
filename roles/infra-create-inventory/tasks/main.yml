@@ -1,0 +1,19 @@
+- name: debug instances
+  debug:
+    var: instances
+    verbosity: 2
+
+- add_host:
+    name: "{{item.name}}"
+    ansible_host: "{{item.tags.ansible_host}}"
+    ansible_user: "{{item.tags.ansible_user}}"
+    groups: "{{item.tags.groups}}"
+  with_items: instances
+  tags:
+    - create_inventory
+    - must
+
+- name: debug groups
+  debug:
+    var: groups
+    verbosity: 2
