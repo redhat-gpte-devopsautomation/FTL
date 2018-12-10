@@ -14,7 +14,7 @@
 
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
-    - all:!windows:!bastions
+    - all:!windows
   become: true
   gather_facts: no
   roles:
@@ -24,7 +24,7 @@
   when: solve == "true"
 
 - name: Verify Section1
-  hosts: all
+  hosts: all:!bastions
   gather_facts: no
   tasks:
     - name: Verify devops user is created
