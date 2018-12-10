@@ -14,7 +14,7 @@
 
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
-    - all:!windows
+    - all:!windows:!bastions
   become: true
   gather_facts: no
   roles:
