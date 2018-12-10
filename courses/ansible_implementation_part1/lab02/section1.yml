@@ -31,6 +31,7 @@
      url: http://{{ inventory_hostname }}
      return_content: yes
     register: webpage
+  - debug: var=webpage
   - name: set grade to fail
     set_fact:
         grade_temp: FAIL
