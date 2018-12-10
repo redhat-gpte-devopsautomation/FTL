@@ -23,7 +23,7 @@
   when: solve == "true"
 
 - name: Verify Section1
-  hosts: all
+  hosts: apps
   gather_facts: no
   tasks:
   - name: Run a Curl Test against Frontend
