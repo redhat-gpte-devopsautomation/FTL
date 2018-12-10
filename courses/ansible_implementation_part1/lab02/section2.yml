@@ -1,0 +1,61 @@
+- hosts:
+    - localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: running section1
+      debug:
+        msg: "Running Section2"
+    - set_fact:
+        grade_temp: "PASS"
+        grade_reason: ""
+
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section2.yml
+  when: solve == "true"
+
+- name: Verify Section2
+  hosts: apps
+  gather_facts: no
+  tasks:
+  - name: Gather Facts
+    setup:
+      filter: ansible_local
+    register: custom_facts
+  - name: Fail if custom facts are incorrect
+    set_fact:
+        grade_temp: FAIL
+        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
+    when: 
+      - custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd"
+      - custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd"
+      - custom_facts.ansible_facts.ansible_local.custom.general.state != "started"
+  - name: Success if custom facts setup correctly
+    debug:
+      msg: "Success: custom facts setup correctly."
+    when: 
+      - custom_facts.ansible_facts.ansible_local.custom.general.package == "httpd"
+      - custom_facts.ansible_facts.ansible_local.custom.general.service == "httpd"
+      - custom_facts.ansible_facts.ansible_local.custom.general.state == "started"
+     
+  - name: Check httpd service status
+    shell: systemctl status httpd
+    register: status
+    ignore_errors: yes
+  - name: Fail if httpd service is not started
+    set_fact:
+        grade_temp: FAIL
+        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
+    when: "'Active: active (running)' not in status.stdout_lines[2]" 
+  - name: Success if httpd is started
+    debug: 
+      msg: "Success: httpd service is started."
+    when: "'Active: active (running)' in status.stdout_lines[2]"
