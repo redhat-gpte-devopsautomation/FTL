@@ -17,8 +17,8 @@
 
 - name: wait for linux host to be available (retry)
   wait_for_connection:
-    delay: 60
-    timeout: 200
+    delay: 10
+    timeout: 60
   when: rwait is failed
 
 - ping:
