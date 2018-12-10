@@ -1,9 +1,18 @@
 - import_playbook: section1.yml
 - import_playbook: section2.yml
 
-- import_tasks: print
+- hosts:
+    - localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Grade status
+      debug:
+        msg: "Section 1 grade is: {{grade_temp}}"
 
-
+    - name: Grade reason
+      debug:
+        msg: "{{grade_reason}}"
 
 #
 # grade:

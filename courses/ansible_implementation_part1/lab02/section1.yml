@@ -1,0 +1,45 @@
+- hosts:
+    - localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: running section1
+      debug:
+        msg: "Running Section1"
+    - set_fact:
+        grade_temp: "PASS"
+        grade_reason: ""
+
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+- name: Verify Section1
+  hosts: frontends
+  gather_facts: no
+  tasks:
+  - name: Run a Curl Test against Frontend
+    uri:
+     url: http://{{ inventory_hostname }}
+     return_content: yes
+    register: webpage
+  - name: set grade to fail
+    set_fact:
+        grade_temp: FAIL
+        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
+    when: "'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.results[0].content"
+  - name: Success if 'Hoorraaayyy!!! My first playbook ran successfully' is in the page content
+    debug: 
+      msg: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+    when: "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.results[0].content"
+
+
+
