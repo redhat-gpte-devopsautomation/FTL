@@ -46,6 +46,7 @@
       - custom_facts.ansible_facts.ansible_local.custom.general.package == "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.service == "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.state == "started"
+    ignore_errors: yes
      
   - name: Check httpd service status
     shell: systemctl status httpd
@@ -61,3 +62,4 @@
     debug: 
       msg: "Success: httpd service is started."
     when: "'Active: active (running)' in status.stdout_lines[2]"
+    ignore_errors: yes
