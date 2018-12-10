@@ -36,11 +36,11 @@
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
-    when: "'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.results[0].content"
+    when: "'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content"
   - name: Success if 'Hoorraaayyy!!! My first playbook ran successfully' is in the page content
     debug: 
       msg: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
-    when: "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.results[0].content"
+    when: "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
 
 
 
