@@ -24,7 +24,7 @@
   when: solve == "true"
 
 - name: Verify Section1
-  hosts: all:!bastions
+  hosts: all:!bastion
   gather_facts: no
   tasks:
     - name: Verify devops user is created
