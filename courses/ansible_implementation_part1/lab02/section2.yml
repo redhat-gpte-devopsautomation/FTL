@@ -38,6 +38,7 @@
       - custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.state != "started"
+    ignore_errors: yes
   - name: Success if custom facts setup correctly
     debug:
       msg: "Success: custom facts setup correctly."
@@ -54,7 +55,8 @@
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
-    when: "'Active: active (running)' not in status.stdout_lines[2]" 
+    when: "'Active: active (running)' not in status.stdout_lines[2]"
+    ignore_errors: yes 
   - name: Success if httpd is started
     debug: 
       msg: "Success: httpd service is started."
