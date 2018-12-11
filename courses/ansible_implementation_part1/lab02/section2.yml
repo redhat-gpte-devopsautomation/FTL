@@ -35,8 +35,8 @@
               package: none
               service: none 
               state: none
-   - debug: var=custom_facts
-   
+  - debug: var=custom_facts
+
   - name: Gather Facts
     setup:
       filter: ansible_local
