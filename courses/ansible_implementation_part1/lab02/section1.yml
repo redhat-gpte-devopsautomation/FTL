@@ -23,7 +23,7 @@
   when: solve == "true"
 
 - name: Verify Section1
-  hosts: apps
+  hosts: apps:localhost
   gather_facts: no
   tasks:
   - name: Run a Curl Test against Frontend
@@ -31,6 +31,7 @@
      url: http://{{ inventory_hostname }}
      return_content: yes
     register: webpage
+    when: inventory_hostname in groups['apps']
     ignore_errors: yes
   - debug: var=webpage
   - name: set grade to fail
