@@ -39,9 +39,8 @@
 
   - name: Gather Facts
     setup:
-      filter: ansible_local
-    #register: custom_facts
-
+      #filter: ansible_local
+    
   - debug: var=ansible_facts
   
   - name: Fail if custom facts are incorrect
@@ -53,10 +52,10 @@
           ( ansible_facts.ansible_local.custom.general.state != "started" ) 
     #( ansible_facts.ansible_local == "" ) or ( ansible_facts.ansible_local.custom.general.package not defined ) or 
     
-
     delegate_to: localhost
     delegate_facts: true
     ignore_errors: yes
+
   - name: Success if custom facts setup correctly
     debug:
       msg: "Success: custom facts setup correctly."
