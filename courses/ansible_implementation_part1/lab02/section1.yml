@@ -31,7 +31,7 @@
         uri:
           url: http://{{ inventory_hostname }}
           return_content: yes
-          register: webpage
+        register: webpage
         ignore_errors: yes
       - debug: var=webpage
       - name: set grade to fail
@@ -41,6 +41,7 @@
         when: ("'Status code was -1' in webpage.msg") or ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
         delegate_to: localhost
         ignore_errors: yes
+
       - name: Success if 'Hoorraaayyy!!! My first playbook ran successfully' is in the page content
         debug: 
           msg: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
