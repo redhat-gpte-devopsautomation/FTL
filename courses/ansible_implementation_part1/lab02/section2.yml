@@ -9,7 +9,8 @@
     - set_fact:
         grade_temp_section2_1: "PASS"
         grade_temp_section2_2: "PASS"
-        #grade_reason: ""
+        grade_reason_section2_1: ""
+        grade_reason_section2_2: ""
 
 
 - name: infra-ec2-wait_for_linux_hosts
