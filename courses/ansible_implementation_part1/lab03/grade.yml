@@ -12,7 +12,7 @@
       loop:
         - "{{ grade_temp_section1_1 }}"
         - "{{ grade_temp_section2_1 }}"
-        - "{{ grade_temp_section2_2 }}"
+#        - "{{ grade_temp_section2_2 }}"
         
 
     - name: Grade reason
@@ -21,7 +21,7 @@
       loop:
         - "{{ grade_reason_section1_1 }}"
         - "{{ grade_reason_section2_1 }}"
-        - "{{ grade_reason_section2_2 }}"
+#        - "{{ grade_reason_section2_2 }}"
 
 #
 # grade:
