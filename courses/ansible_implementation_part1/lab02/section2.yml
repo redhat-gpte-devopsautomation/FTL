@@ -57,7 +57,7 @@
     shell: systemctl status httpd
     register: status
     ignore_errors: yes
-  - debug: var=status
+
 
   - name: Fail if httpd service is not started
     set_fact:
