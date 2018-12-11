@@ -7,7 +7,7 @@
       debug:
         msg: "Running Section1"
     - set_fact:
-        grade_temp: "PASS"
+        grade_temp_section1: "PASS"
         grade_reason: ""
 
 
@@ -36,8 +36,8 @@
   
   - name: set grade to fail
     set_fact:
-        grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
+        grade_temp_section1_1: FAIL
+        grade_reason_section1_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
     when:  ( webpage.status == -1 )  or ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True
