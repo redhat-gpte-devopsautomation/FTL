@@ -9,12 +9,16 @@
     - name: Grade status
       debug:
         msg: "section grade is: {{item.section1}}"
-      loop: "{{ grade_temp }}"
+      loop: 
+        - "{{ grade_temp }}"
+        
 
     - name: Grade reason
       debug:
         msg: "{{item.section1}}"
-      loop: "{{ grade_reason }}"    
+      loop: 
+        - "{{ grade_reason }}" 
+           
 
 #
 # grade:
