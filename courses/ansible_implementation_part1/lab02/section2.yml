@@ -47,14 +47,14 @@
           delegate_facts: true
           ignore_errors: yes
       when: ansible_facts.ansible_local.custom is defined
-    always: 
-      - name: Setting up grade reason
-        set_fact:
-          grade_reason: "custom variable is not set properly"
-        when: ansible_facts.ansible_local.custom is not defined
-        ignore_errors: yes 
-        delegate_to: localhost
-        delegate_facts: true
+ #    always: 
+ #     - name: Setting up grade reason
+ #       set_fact:
+ #         grade_reason: "custom variable is not set properly"
+ #       when: ansible_facts.ansible_local.custom is not defined
+ #       ignore_errors: yes 
+ #       delegate_to: localhost
+ #       delegate_facts: true
 
     
     
