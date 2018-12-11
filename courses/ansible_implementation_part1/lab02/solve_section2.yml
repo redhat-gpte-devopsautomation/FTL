@@ -22,5 +22,5 @@
       path: "{{ remote_dir }}"
   - name: Install the new facts
     copy:
-      src: "{{ facts_file }}"
+      remote_src: "{{ facts_file }}"
       dest: "{{ remote_dir }}"
