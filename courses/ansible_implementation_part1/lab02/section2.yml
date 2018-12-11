@@ -8,7 +8,7 @@
         msg: "Running Section2"
     - set_fact:
         grade_temp: "PASS"
-        grade_reason: ""
+        #grade_reason: ""
 
 
 - name: infra-ec2-wait_for_linux_hosts
@@ -31,11 +31,8 @@
   - name: Gather Facts
     setup:
       filter: ansible_local
-    
+   
   - debug: var=ansible_facts
-
-
-  
   - block:
     - block:
         - name: Fail if custom facts are incorrect
