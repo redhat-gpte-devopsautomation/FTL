@@ -6,6 +6,9 @@
   connection: local
   gather_facts: no
   tasks:
+
+    - debug: var=grade_temp
+    - debug: var=grade_reason
     - name: Grade status
       debug:
         msg: "section grade is: {{item.section1}}"
