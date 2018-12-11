@@ -35,10 +35,13 @@
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['apps']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
-    when: 
+    when:
+      - custom_facts.ansible_facts.ansible_local.custom.general.package not defined  
       - custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.state != "started"
+    delegate_to: localhost
+    delegate_facts: true
     ignore_errors: yes
   - name: Success if custom facts setup correctly
     debug:
@@ -48,20 +51,25 @@
       - custom_facts.ansible_facts.ansible_local.custom.general.service == "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.state == "started"
     ignore_errors: yes
+    
      
   - name: Check httpd service status
     shell: systemctl status httpd
     register: status
     ignore_errors: yes
   - debug: var=status
+
   - name: Fail if httpd service is not started
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
-    when: (status.failed) or ("'active (running)' not in status.stdout_lines[2]")
+    when: (status.failed) or ('active (running)' not in status.stdout_lines[2])
     ignore_errors: yes 
+    delegate_to: localhost
+    delegate_facts: true
+
   - name: Success if httpd is started
     debug: 
       msg: "Success: httpd service is started."
-    when: "'Active: active (running)' in status.stdout_lines[2]"
+    when: 'Active: active (running)' in status.stdout_lines[2]
     ignore_errors: yes
