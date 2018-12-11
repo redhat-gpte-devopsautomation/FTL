@@ -23,7 +23,7 @@
   when: solve == "true"
 
 - name: Verify Section2
-  hosts: apps:localhost
+  hosts: apps
   gather_facts: yes
   tasks:
   - name: Gather Facts
