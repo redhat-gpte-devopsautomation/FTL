@@ -34,7 +34,7 @@
     
   - debug: var=ansible_facts
 
-  - assert: 
+
   
   - block:
     - block:
