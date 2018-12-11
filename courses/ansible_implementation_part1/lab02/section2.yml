@@ -8,8 +8,9 @@
         msg: "Running Section2"
     - name: test dict
       set_fact:
+        section2: section2
         
-        grade_temp: "{{ grade_temp |combine(  'section2': 'PASS'  ) }}"
+        grade_temp: "{{ grade_temp | combine(  section2  ) }}"
           
         grade_reason: 
           section2: ""
