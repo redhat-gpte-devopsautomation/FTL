@@ -37,7 +37,7 @@
   - name: set grade to fail
     set_fact:
         grade_temp_section2_1: FAIL
-        grade_reason_section2_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
+        grade_reason_section2_1: "{{hostvars['localhost']['grade_reason_section2_1']}},{{inventory_hostname}} Webpage is not having correct content"     
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True
