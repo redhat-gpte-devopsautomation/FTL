@@ -33,20 +33,32 @@
       filter: ansible_local
     
   - debug: var=ansible_facts
+
+  - assert: 
   
   - block:
-      - name: Fail if custom facts are incorrect
+    - block:
+        - name: Fail if custom facts are incorrect
+          set_fact:
+              grade_temp: FAIL
+              grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
+          when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+                ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
+                ( ansible_facts.ansible_local.custom.general.state != "started" ) 
+          #( ansible_facts.ansible_local == "" ) or ( ansible_facts.ansible_local.custom.general.package not defined ) or 
+          delegate_to: localhost
+          delegate_facts: true
+          ignore_errors: yes
+      when: ansible_facts.ansible_local.custom is defined
+    always: 
+      - name: Setting up grade reason
         set_fact:
-            grade_temp: FAIL
-            grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
-        when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
-              ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
-              ( ansible_facts.ansible_local.custom.general.state != "started" ) 
-        #( ansible_facts.ansible_local == "" ) or ( ansible_facts.ansible_local.custom.general.package not defined ) or 
+          grade_reason: "custom variable is not set properly"
+        when: ansible_facts.ansible_local.custom is not defined
+        ignore_errors: yes 
         delegate_to: localhost
         delegate_facts: true
-        ignore_errors: yes
-    when: ansible_facts.ansible_local.custom is defined
+    
     
 
   - name: Success if custom facts setup correctly
