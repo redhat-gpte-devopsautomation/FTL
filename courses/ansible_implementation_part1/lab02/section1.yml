@@ -33,10 +33,6 @@
     register: webpage
     ignore_errors: yes
   - debug: var=webpage
-- name: Set localhost facts
-  hosts: localhost
-  gather_facts: no
-  tasks:
   - name: set grade to fail
     set_fact:
         grade_temp: FAIL
