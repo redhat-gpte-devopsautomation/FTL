@@ -34,8 +34,6 @@
     
   - debug: var=ansible_facts
 
-  - assert: 
-  
   - block:
     - block:
         - name: Fail if custom facts are incorrect
