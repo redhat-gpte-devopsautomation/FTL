@@ -35,7 +35,7 @@
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['apps']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
-    when: ( custom_facts.ansible_facts.ansible_local == "" )
+    when: ( custom_facts.ansible_facts.ansible_local == {} )
           #( custom_facts.ansible_facts.ansible_local.custom.general.package not defined ) or
           #( custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd" ) or
           #( custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd" ) or
