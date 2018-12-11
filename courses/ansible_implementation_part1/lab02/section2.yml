@@ -11,7 +11,7 @@
         new_grade_temp: 
           section2: "PASS"
         
-        grade_temp: "{{ grade_temp | combine(  new_grade_temp  ) }}"
+        grade_temp: "{{ grade_temp | combine( { new_grade_temp } ) }}"
           
         grade_reason: 
           section2: ""
