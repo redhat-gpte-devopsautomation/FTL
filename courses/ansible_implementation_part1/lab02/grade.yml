@@ -1,13 +1,13 @@
-#- import_playbook: section1.yml
-#- import_playbook: section2.yml
+- import_playbook: section1.yml
+- import_playbook: section2.yml
 
 - hosts:
     - localhost
   connection: local
   gather_facts: no
   tasks:
-    - import_tasks: section1.yml
-    - import_tasks: section2.yml
+ #   - import_tasks: section1.yml
+ #   - import_tasks: section2.yml
     - debug: var=grade_temp
     - debug: var=grade_reason
     - name: Grade status
