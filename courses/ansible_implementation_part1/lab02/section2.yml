@@ -8,7 +8,7 @@
         msg: "Running Section2"
     - set_fact:
         
-        grade_temp: "{{ grade_temp |combine( section2: "PASS" )}}"
+        grade_temp: "{{ grade_temp |combine( { section2: PASS } ) }}"
           
         grade_reason: 
           section2: ""
