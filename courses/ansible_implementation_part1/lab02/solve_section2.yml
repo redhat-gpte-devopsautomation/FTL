@@ -1,4 +1,5 @@
 - hosts: apps
+  become: yes
   gather_facts: false
   vars:
     remote_dir: /etc/ansible/facts.d
