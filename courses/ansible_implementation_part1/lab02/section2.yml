@@ -71,5 +71,5 @@
   - name: Success if httpd is started
     debug: 
       msg: "Success: httpd service is started."
-    when: 'Active: active (running)' in status.stdout_lines[2]
+    #when: 'Active: active (running)' in status.stdout_lines[2]
     ignore_errors: yes
