@@ -28,30 +28,29 @@
   tasks:
   - name: Set default value for custom facts
     set_fact:
-      custom_facts:
         ansible_facts:
           ansible_local:
             custom.general:
               package: none
               service: none 
               state: none
-  - debug: var=custom_facts
+  - debug: var=ansible_facts
 
   - name: Gather Facts
     setup:
       filter: ansible_local
-    register: custom_facts
+    #register: custom_facts
 
-  - debug: var=custom_facts
+  - debug: var=ansible_facts
   
   - name: Fail if custom facts are incorrect
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
-    when: ( custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
-          ( custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
-          ( custom_facts.ansible_facts.ansible_local.custom.general.state != "started" ) 
-    #( custom_facts.ansible_facts.ansible_local == "" ) or ( custom_facts.ansible_facts.ansible_local.custom.general.package not defined ) or 
+    when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+          ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
+          ( ansible_facts.ansible_local.custom.general.state != "started" ) 
+    #( ansible_facts.ansible_local == "" ) or ( ansible_facts.ansible_local.custom.general.package not defined ) or 
     
 
     delegate_to: localhost
@@ -61,9 +60,9 @@
     debug:
       msg: "Success: custom facts setup correctly."
     when: 
-      - custom_facts.ansible_facts.ansible_local.custom.general.package == "httpd"
-      - custom_facts.ansible_facts.ansible_local.custom.general.service == "httpd"
-      - custom_facts.ansible_facts.ansible_local.custom.general.state == "started"
+      - ansible_facts.ansible_local.custom.general.package == "httpd"
+      - ansible_facts.ansible_local.custom.general.service == "httpd"
+      - ansible_facts.ansible_local.custom.general.state == "started"
     ignore_errors: yes
     
      
