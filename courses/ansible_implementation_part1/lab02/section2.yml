@@ -30,10 +30,11 @@
     set_fact:
         ansible_facts:
           ansible_local:
-            custom.general:
-              package: none
-              service: none 
-              state: none
+            custom:
+              general:
+                package: none
+                service: none 
+                state: none
   - debug: var=ansible_facts
 
   - name: Gather Facts
