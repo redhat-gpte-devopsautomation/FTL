@@ -58,7 +58,7 @@
     set_fact:
         grade_temp: FAIL
         grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
-    when: ("'true' in status.failed") or ("'Active: active (running)' not in status.stdout_lines[2]")
+    when: (status.failed) or ("'active (running)' not in status.stdout_lines[2]")
     ignore_errors: yes 
   - name: Success if httpd is started
     debug: 
