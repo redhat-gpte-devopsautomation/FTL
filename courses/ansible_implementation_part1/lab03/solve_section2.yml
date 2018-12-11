@@ -1,0 +1,27 @@
+- hosts: apps
+  become: yes
+  gather_facts: false
+  vars:
+    remote_dir: /etc/ansible/facts.d
+    facts_file: /tmp/custom.fact
+  tasks:
+  - name: Create custom fact file
+    blockinfile:
+      path: "{{ facts_file }}"
+      block: |
+        [general]
+        package = httpd
+        service = httpd
+        state = started
+      state: present
+      create: yes
+  - name: Create the remote directory
+    file:
+      state: directory
+      recurse: yes
+      path: "{{ remote_dir }}"
+  - name: Install the new facts
+    copy:
+      src: "{{ facts_file }}"
+      dest: "{{ remote_dir }}"
+      remote_src: yes

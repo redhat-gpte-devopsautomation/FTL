@@ -1,0 +1,50 @@
+- hosts:
+    - localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: running section1
+      debug:
+        msg: "Running Section1"
+    - set_fact:
+        grade_temp_section1_1: "PASS"
+        grade_reason_section1_1: ""
+
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+- name: Verify Section1
+  hosts: apps
+  gather_facts: no
+  tasks:
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://{{ inventory_hostname }}
+      return_content: yes
+    register: webpage
+    ignore_errors: yes
+  - debug: var=webpage
+  
+  - name: set grade to fail
+    set_fact:
+        grade_temp_section1_1: FAIL
+        grade_reason_section1_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
+    when:  ( webpage.status == -1 )  or ("'Example web content' not in webpage.content")
+    delegate_to: localhost
+    delegate_facts: True
+    ignore_errors: yes
+
+  - name: Success if 'Example web content' is in the page content
+    debug: 
+      msg: "Success: Example web content' is in the page content"
+    when: "'Example web content' in webpage.content"
+    ignore_errors: yes
