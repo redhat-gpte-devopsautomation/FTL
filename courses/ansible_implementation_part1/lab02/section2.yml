@@ -34,7 +34,7 @@
   - name: Fail if custom facts are incorrect
     set_fact:
         grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
+        grade_reason: "{{hostvars['apps']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
     when: 
       - custom_facts.ansible_facts.ansible_local.custom.general.package != "httpd"
       - custom_facts.ansible_facts.ansible_local.custom.general.service != "httpd"
@@ -57,7 +57,7 @@
   - name: Fail if httpd service is not started
     set_fact:
         grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
+        grade_reason: "{{hostvars['apps']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
     when: (status.failed) or ("'active (running)' not in status.stdout_lines[2]")
     ignore_errors: yes 
   - name: Success if httpd is started
