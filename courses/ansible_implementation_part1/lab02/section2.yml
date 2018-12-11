@@ -30,6 +30,7 @@
     setup:
       filter: ansible_local
     register: custom_facts
+  - debug: var=custom_facts
   - name: Fail if custom facts are incorrect
     set_fact:
         grade_temp: FAIL
@@ -52,6 +53,7 @@
     shell: systemctl status httpd
     register: status
     ignore_errors: yes
+  - debug: var=status
   - name: Fail if httpd service is not started
     set_fact:
         grade_temp: FAIL
