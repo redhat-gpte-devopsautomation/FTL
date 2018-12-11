@@ -23,7 +23,7 @@
   when: solve == "true"
 
 - name: Verify Section1
-  hosts: apps:localhost
+  hosts: apps
   gather_facts: no
   tasks:
   -  block:
@@ -46,7 +46,7 @@
           msg: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
         when: "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
         ignore_errors: yes
-     when: inventory_hostname in groups['apps']
+     #when: inventory_hostname in groups['apps']
 
 
 
