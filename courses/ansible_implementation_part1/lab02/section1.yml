@@ -7,7 +7,7 @@
       debug:
         msg: "Running Section1"
     - set_fact:
-        grade_temp_section1: "PASS"
+        grade_temp_section1_1: "PASS"
         grade_reason_section1_1: ""
 
 
