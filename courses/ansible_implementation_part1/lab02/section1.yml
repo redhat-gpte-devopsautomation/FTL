@@ -7,8 +7,10 @@
       debug:
         msg: "Running Section1"
     - set_fact:
-        grade_temp: "PASS"
-        grade_reason: ""
+        grade_temp: 
+          section1: "PASS"
+        grade_reason: 
+          section1: ""
 
 
 - name: infra-ec2-wait_for_linux_hosts
@@ -36,8 +38,10 @@
   
   - name: set grade to fail
     set_fact:
-        grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
+        grade_temp: 
+          section1: FAIL
+        grade_reason: 
+          section1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
     when:  ( webpage.status == -1 )  or ('Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content)
     delegate_to: localhost
     delegate_facts: True

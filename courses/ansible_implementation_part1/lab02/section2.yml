@@ -7,8 +7,10 @@
       debug:
         msg: "Running Section2"
     - set_fact:
-        grade_temp: "PASS"
-        grade_reason: ""
+        grade_temp: 
+          section2: "PASS"
+        grade_reason: 
+          section2: ""
 
 
 - name: infra-ec2-wait_for_linux_hosts
@@ -38,8 +40,10 @@
     - block:
         - name: Fail if custom facts are incorrect
           set_fact:
-              grade_temp: FAIL
-              grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
+              grade_temp: 
+                section2: FAIL
+              grade_reason:
+                section2:  "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
           when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
                 ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
                 ( ansible_facts.ansible_local.custom.general.state != "started" ) 
@@ -51,7 +55,8 @@
     always: 
       - name: Setting up grade reason
         set_fact:
-          grade_reason: "custom variable is not set properly"
+          grade_reason:
+            section2:  "custom variable is not set properly"
         when: ansible_facts.ansible_local.custom is not defined
         ignore_errors: yes 
         delegate_to: localhost
@@ -77,8 +82,10 @@
 
   - name: Fail if httpd service is not started
     set_fact:
-        grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
+        grade_temp: 
+          section2: FAIL
+        grade_reason: 
+          section2: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
     when: status.failed
     ignore_errors: yes 
     delegate_to: localhost

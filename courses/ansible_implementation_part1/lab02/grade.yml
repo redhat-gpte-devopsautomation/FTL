@@ -1,4 +1,4 @@
-#- import_playbook: section1.yml
+- import_playbook: section1.yml
 - import_playbook: section2.yml
 
 - hosts:
@@ -8,11 +8,13 @@
   tasks:
     - name: Grade status
       debug:
-        msg: "Section 1 grade is: {{grade_temp}}"
+        msg: "section grade is: {{item.section1}}"
+      loop: "{{ grade_temp }}"
 
     - name: Grade reason
       debug:
-        msg: "{{grade_reason}}"
+        msg: "{{item.section1}}"
+      loop: "{{ grade_reason }}"    
 
 #
 # grade:
@@ -25,3 +27,5 @@
 #   lab3:
 #     section1: pass
 #     section2: fail
+
+
