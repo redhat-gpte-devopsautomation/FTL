@@ -6,23 +6,13 @@
   connection: local
   gather_facts: no
   tasks:
- #   - import_tasks: section1.yml
- #   - import_tasks: section2.yml
-    - debug: var=grade_temp
-    - debug: var=grade_reason
     - name: Grade status
       debug:
-        msg: "section grade is: {{item.section1}}"
-      loop: 
-        - "{{ grade_temp }}"
-        
+        msg: "Section 1 grade is: {{grade_temp}}"
 
     - name: Grade reason
       debug:
-        msg: "{{item.section1}}"
-      loop: 
-        - "{{ grade_reason }}" 
-           
+        msg: "{{grade_reason}}"
 
 #
 # grade:
@@ -35,5 +25,3 @@
 #   lab3:
 #     section1: pass
 #     section2: fail
-
-
