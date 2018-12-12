@@ -22,35 +22,29 @@
     ignore_errors: yes
 
   
+  # - name: set grade to fail
+  #   set_fact:
+  #     array:
+  #       section2:
+  #         result: FAIL 
+  #         reason: "{{hostvars['localhost']['con_reason']}}, {{inventory_hostname}} Webpage is not having correct content}}"
+  #   when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
+
   - name: set grade to fail
     set_fact:
-      array:
-        section2:
           result: FAIL 
-          reason: "{{inventory_hostname}} Webpage is not having correct content}}"
-    when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
-    
-  - name: set grade to pass
-    set_fact:
-      array:
-        section2:
-          result: "PASS"
-          reason: "{{ inventory_hostname }} {{ webpage.content }}"
-    when: ("has been customized using Ansible" in webpage.content)
+          reason: "{{hostvars['localhost']['con_reason']}}, {{inventory_hostname}} Webpage is not having correct content}}"
+    delegate_to: localhost
+    delegate_facts: True 
+    when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")  
 
-  # - debug: var=hostvars['{{inventory_hostname}}']['reason']
-    
-
-  # - name: concatinate result and reason
+  # - name: set grade to pass
   #   set_fact:
-  #       array:
-  #         section2:
-  #           result: " {{ result }}"
-  #           reason: 
-  #             - hostvars['{{inventory_hostname}}']['reason'] 
-    
-
-  # - debug: var=array
+  #     array:
+  #       section2:
+  #         result: "PASS"
+  #         reason: "{{ inventory_hostname }} {{ webpage.content }}"
+  #   when: ("has been customized using Ansible" in webpage.content)
 
   - name: append grade list from section2
     set_fact:

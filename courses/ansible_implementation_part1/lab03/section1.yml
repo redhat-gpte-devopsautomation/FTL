@@ -41,10 +41,12 @@
     when:  ("Example" in webpage.content)
     
   # - debug: var=array
-
+- name: Concatenating array
+  hosts: apps
+  gather_facts: false
   - name: append grade list from section1
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']|combine(array)}}"
+        grade_status: "{{hostvars['localhost']['grade_status']| combine(array)}}"
     delegate_to: localhost
     delegate_facts: True
  
