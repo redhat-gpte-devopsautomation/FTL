@@ -8,7 +8,7 @@
   tasks:
     - name: Grade status
       debug:
-        msg: "Lab 02 grade is: {{item}}"
+        msg: "Lab 02 grade Section {{loop.index}} is: {{item}}"
       loop:
         - "{{ grade_temp_section1_1 }}"
         - "{{ grade_temp_section2_1 }}"
