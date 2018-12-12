@@ -57,7 +57,7 @@
 
   - name: append grade list from section1
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars['{{ inventory_hostname }}']['array'])}}"
+        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars.{{ inventory_hostname }}.array)}}"
     delegate_to: localhost
     # delegate_facts: True
  
