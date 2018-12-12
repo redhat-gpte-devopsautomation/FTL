@@ -22,8 +22,8 @@
               -
             reason:
               -
-    delegate_to: localhost
-    delegate_facts: True
+    # delegate_to: localhost
+    # delegate_facts: True
  
   - name: Run a Curl Test against Frontend
     uri:
@@ -37,11 +37,11 @@
     set_fact:
       array:
         section1:
-          result:  "{{ hostvars['localhost']array.section1.result + [ 'Pass' ] }}"
+          result:  "{{ hostvars['localhost']['array']['section1']['result'] + [ 'Pass' ] }}"
           reason:  "{{ hostvars['localhost']array.section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    delegate_to: localhost
-    delegate_facts: True    
+    # delegate_to: localhost
+    # delegate_facts: True    
 
   - name: set grade to pass
     set_fact:
