@@ -25,19 +25,23 @@
   
   - name: set grade to fail
     set_fact:
-        array:
-          section2:
-            result: FAIL 
-            reason: "{{inventory_hostname}} Webpage is not having correct content}}"
+      result: FAIL 
+      reason: "{{inventory_hostname}} Webpage is not having correct content}}"
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
     
   - name: set grade to pass
     set_fact:
+      result: "PASS"
+      reason: "{{ inventory_hostname }} {{ webpage.content }}"
+    when: ("has been customized using Ansible" in webpage.content)
+
+    - name: set grade to pass
+    set_fact:
         array:
           section2:
-            result: "PASS"
-            reason: "{{ inventory_hostname }} {{ webpage.content }}"
-    when: ("has been customized using Ansible" in webpage.content)
+            result: "{{ hostvars['app1'].result }} + {{ hostvars['app2'].result }}"
+            reason: "{{ hostvars['app1'].reason }} + {{ hostvars['app2'].reason }}"
+
   - debug: var=array
 
   - name: append grade list from section2
