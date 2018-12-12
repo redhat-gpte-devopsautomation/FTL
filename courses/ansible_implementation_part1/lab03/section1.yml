@@ -46,9 +46,9 @@
   - name: set grade to fail
     set_fact:
       array:
-          section1:
-            result: "{{ hostvars['localhost'].array.section1.result + [ 'FAIL' ] }}"
-            reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
+        section1:
+          result: "{{ hostvars['localhost'].array.section1.result + [ 'FAIL' ] }}"
+          reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True
@@ -60,7 +60,7 @@
         section1:
           result: "{{ hostvars['localhost'].array.section1.result + [ 'PASS' ] }}"
           reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} webpage.content'] }}"
-    when:  "Example" in webpage.content
+    when:  ("Example" in webpage.content)
     delegate_to: localhost
     delegate_facts: True
     # ignore_errors: yes
