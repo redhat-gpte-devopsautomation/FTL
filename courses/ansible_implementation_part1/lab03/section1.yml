@@ -40,7 +40,8 @@
           reason: "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
-  # - debug: var=array
+  - debug: var=array
+  
 - name: Concatenating array
   hosts: apps
   gather_facts: false
