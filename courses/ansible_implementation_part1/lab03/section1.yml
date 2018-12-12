@@ -49,9 +49,7 @@
           result: "{{ array.section1.result + [ 'FAIL' ] }}"
           reason: "{{ array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    delegate_to: localhost
-    delegate_facts: True
-
+    
 
   - name: set grade to pass
     set_fact:
@@ -60,9 +58,7 @@
           result: "{{ array.section1.result + [ 'PASS' ] }}"
           reason: "{{ array.section1.reason + [ '{{inventory_hostname}} {{ webpage.content }}'] }}"
     when:  ("Example" in webpage.content)
-    delegate_to: localhost
-    delegate_facts: True
-    # ignore_errors: yes
+    
   - debug: var=array.section1
 
   - name: append grade list from section1
