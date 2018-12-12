@@ -44,6 +44,7 @@
 - name: Concatenating array
   hosts: apps
   gather_facts: false
+  tasks:
   - name: append grade list from section1
     set_fact:
         grade_status: "{{hostvars['localhost']['grade_status']| combine(array)}}"
