@@ -35,6 +35,10 @@
       reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
 
+  - debug: var=hostvars['item']reason
+    loop: 
+        - "{{ groups['apps'] }}"
+
   - name: concatinate result and reason
     set_fact:
         array:
