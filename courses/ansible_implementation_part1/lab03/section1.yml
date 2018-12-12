@@ -46,7 +46,7 @@
           reason: "{{ array.section1.reason + [ '{{inventory_hostname}} {{ webpage.content }}'] }}"
     when:  ("Example" in webpage.content)
     
-  - debug: var=array.section1
+  - debug: var=array
 
   - name: append grade list from section1
     set_fact:
