@@ -35,7 +35,7 @@
       reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
 
-    - name: set grade to pass
+  - name: set grade to pass
     set_fact:
         array:
           section2:
