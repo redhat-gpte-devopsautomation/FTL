@@ -38,7 +38,7 @@
       array:
         section1:
           result:  "{{ hostvars['localhost']['array']['section1']['result'] + [ 'Fail' ] }}"
-      #    reason:  "{{ hostvars['localhost']array.section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
+          reason:  "{{ hostvars['localhost']['array']['section1']['result'] + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True    
@@ -51,12 +51,12 @@
           reason: "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
-  - debug: var=array
+  - debug: var=hostvars['localhost']['array']['section1']['result']
 
 
   - name: append grade list from section1
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars.array)}}"
+        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars['lovslhody']['array'])}}"
     delegate_to: localhost
     delegate_facts: True
  
