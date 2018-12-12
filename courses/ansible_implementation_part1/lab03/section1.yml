@@ -32,13 +32,13 @@
     register: webpage
     ignore_errors: yes
   - debug: var=webpage.content
-  
+  - debug: var=hostvars['localhost']['array']['section1']['result']
   - name: set grade to fail
     set_fact:
       array:
         section1:
-          result:  "{{ hostvars['localhost']['array']['section1']['result'] + [ 'Pass' ] }}"
-          reason:  "{{ hostvars['localhost']array.section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
+          result:  "{{ hostvars['localhost']['array']['section1']['result'] + [ 'Fail' ] }}"
+      #    reason:  "{{ hostvars['localhost']array.section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     # delegate_to: localhost
     # delegate_facts: True    
