@@ -11,7 +11,7 @@
         msg: "Lab 03 grade is: {{item}}"
       loop:
         - "{{ grade_temp_section1_1 }}"
-        - "{{ grade_temp_section2_1 }}"
+   #     - "{{ grade_temp_section2_1 }}"
 #        - "{{ grade_temp_section2_2 }}"
         
 
@@ -20,7 +20,7 @@
         msg: "{{item}}"
       loop:
         - "{{ grade_reason_section1_1 }}"
-        - "{{ grade_reason_section2_1 }}"
+    #    - "{{ grade_reason_section2_1 }}"
 #        - "{{ grade_reason_section2_2 }}"
 
 #
