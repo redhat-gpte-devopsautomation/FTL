@@ -38,14 +38,13 @@
   - debug: var=hostvars['{{inventory_hostname}}']['reason']
     
 
-  # - name: concatinate result and reason
-  #   set_fact:
-  #       array:
-  #         section2:
-  #           result: " {{ result }}"
-  #           reason: " {{ hostvars['{{item}}']reason }} "
-  #   loop: 
-  #       - "{{ groups['apps'] }}"
+  - name: concatinate result and reason
+    set_fact:
+        array:
+          section2:
+            result: " {{ result }}"
+            reason: " {{ hostvars['{{inventory_hostname}}']['reason'] }} "
+    
 
   - debug: var=array
 
