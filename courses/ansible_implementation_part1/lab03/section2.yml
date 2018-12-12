@@ -25,7 +25,7 @@
   - name: set grade to fail
     set_fact:
       array:
-        section1:
+        section2:
           result: FAIL 
           reason: "{{inventory_hostname}} Webpage is not having correct content}}"
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
@@ -33,7 +33,7 @@
   - name: set grade to pass
     set_fact:
       array:
-        section1:
+        section2:
           result: "PASS"
           reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
