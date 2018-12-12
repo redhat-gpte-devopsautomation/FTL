@@ -22,8 +22,8 @@
               -
             reason:
               -
-    delegate_to: localhost
-    delegate_facts: True
+    # delegate_to: localhost
+    # delegate_facts: True
  
   - name: Run a Curl Test against Frontend
     uri:
@@ -32,7 +32,7 @@
     register: webpage
     ignore_errors: yes
   - debug: var=webpage.content
-  - debug: var=hostvars['localhost']['array']['section1']['result']
+  # - debug: var=hostvars['localhost']['array']['section1']['result']
   - name: set grade to fail
     set_fact:
       array:
@@ -40,8 +40,8 @@
           result:  "{{ hostvars['localhost']['array']['section1']['result'] + [ 'Fail' ] }}"
           reason:  "{{ hostvars['localhost']['array']['section1']['reason'] + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    delegate_to: localhost
-    delegate_facts: True    
+    # delegate_to: localhost
+    # delegate_facts: True    
 
   - name: set grade to pass
     set_fact:
@@ -51,12 +51,13 @@
           reason: "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
-  - debug: var=hostvars['localhost']['array']['section1']
+  # - debug: var=hostvars['localhost']['array']['section1']
+  - debug: var=array
 
 
   - name: append grade list from section1
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars['lovslhody']['array'])}}"
+        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars['{{ inventory_hostname }}']['array'])}}"
     delegate_to: localhost
-    delegate_facts: True
+    # delegate_facts: True
  
