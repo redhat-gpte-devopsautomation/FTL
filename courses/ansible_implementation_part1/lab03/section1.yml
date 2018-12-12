@@ -1,17 +1,4 @@
-# - hosts:
-#     - localhost
-#   connection: local
-#   gather_facts: no
-#   tasks:
-#     - name: running section1
-#       debug:
-#         msg: "Running Section1"
-#     - set_fact:
-#         grade_temp_section1_1: "PASS"
-#         grade_reason_section1_1: ""
-# 
-
-   
+  
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -66,8 +53,4 @@
         grade_status: "{{hostvars['localhost']['grade_status']|combine(array)}}"
     delegate_to: localhost
     delegate_facts: True
-  # - name: Success if 'Example web content' is in the page content
-  #   debug: 
-  #     msg: "Success: Example web content' is in the page content"
-  #   when: "'Example' in webpage.content"
-  #   ignore_errors: yes
+ 
