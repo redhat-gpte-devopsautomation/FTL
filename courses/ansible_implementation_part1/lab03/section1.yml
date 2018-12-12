@@ -32,7 +32,7 @@
       return_content: yes
     register: webpage
     ignore_errors: yes
-  - debug: var=webpage
+  - debug: var=webpage.content
   
   - name: set grade to fail
     set_fact:
