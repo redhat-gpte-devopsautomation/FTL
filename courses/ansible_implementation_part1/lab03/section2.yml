@@ -47,7 +47,7 @@
         array:
           section2:
             result: "{{ array.section2.result + [ 'FAIL' ] }}"
-            reason: "{{ array.section2.reason + [ "{{inventory_hostname}} Webpage is not having correct content"] }}"
+            reason: "{{ array.section2.reason + [ '"{{inventory_hostname}}" Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
     
   - name: set grade to pass
@@ -55,7 +55,7 @@
         array:
           section2:
             result: "{{ array.section2.result + [ 'PASS' ] }}"
-            reason: "{{ array.section2.reason + [ "{{inventory_hostname}} {{ webpage.content }}" ] }}"
+            reason: "{{ array.section2.reason + [ '"{{ inventory_hostname }} {{ webpage.content }}"'' ] }}"
     when: ("has been customized using Ansible" in webpage.content)
   - debug: var=array.section1
   - name: append grade list from section2
