@@ -13,13 +13,7 @@
   hosts: apps
   gather_facts: no
   tasks:
-  # - set_fact:
-  #     array:
-  #       section2:
-  #         result:
-  #           -
-  #         reason:
-  #           -
+  
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}

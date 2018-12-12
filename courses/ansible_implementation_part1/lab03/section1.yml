@@ -14,13 +14,7 @@
   hosts: apps
   gather_facts: no
   tasks:
-  - set_fact:
-      array:
-        section1:
-          result:
-            -
-          reason:
-            -
+ 
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}
@@ -33,8 +27,8 @@
     set_fact:
       array:
         section1:
-          result: "{{ array.section1.result + [ 'FAIL' ] }}"
-          reason: "{{ array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
+          result: "FAIL"
+          reason: "{{inventory_hostname}} Webpage is not having correct content}}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     
 
@@ -42,8 +36,8 @@
     set_fact:
       array:
         section1:
-          result: "{{ array.section1.result + [ 'PASS' ] }}"
-          reason: "{{ array.section1.reason + [ '{{inventory_hostname}} {{ webpage.content }}'] }}"
+          result: "PASS"
+          reason: "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
   - debug: var=array
