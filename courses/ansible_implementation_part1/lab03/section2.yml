@@ -1,16 +1,3 @@
-# - hosts:
-#     - localhost
-#   connection: local
-#   gather_facts: no
-#   tasks:
-#     - name: running section2
-#       debug:
-#         msg: "Running section2"
-#     - set_fact:
-#         grade_temp_section2_1: "PASS"
-#         grade_reason_section2_1: ""
-
-
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -26,13 +13,13 @@
   hosts: apps
   gather_facts: no
   tasks:
-  - set_fact:
-      array:
-        section2:
-          result:
-            -
-          reason:
-            -
+  # - set_fact:
+  #     array:
+  #       section2:
+  #         result:
+  #           -
+  #         reason:
+  #           -
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}
@@ -46,31 +33,23 @@
     set_fact:
         array:
           section2:
-            result: "{{ array.section2.result + [ 'FAIL' ] }}"
-            reason: "{{ array.section2.reason + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
+            result: FAIL 
+            reason: "{{inventory_hostname}} Webpage is not having correct content}}"
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
     
   - name: set grade to pass
     set_fact:
         array:
           section2:
-            result: "{{ array.section2.result + [ 'PASS' ] }}"
-            reason: "{{ array.section2.reason + [ '{{ inventory_hostname }} {{ webpage.content }}' ] }}"
+            result: "PASS"
+            reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
-  - debug: var=array.section2
-  
+  - debug: var=array
+
   - name: append grade list from section2
     set_fact:
         grade_status: "{{hostvars['localhost']['grade_status']|combine(array)}}"
     delegate_to: localhost
     delegate_facts: True
  
-    # delegate_to: localhost
-    # delegate_facts: True
-    # ignore_errors: yes
-
-  # - name: Success if 'has been customized using Ansible' is in the page content
-  #   debug: 
-  #     msg: "Success: has been customized using Ansible' is in the page content"
-  #   when: "'has been customized using Ansible' in webpage.content"
-  #   ignore_errors: yes
+    
