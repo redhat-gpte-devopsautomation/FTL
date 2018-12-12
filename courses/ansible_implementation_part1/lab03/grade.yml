@@ -39,8 +39,9 @@
 
     - name: Print Reason and Result
       debug:
-        msg: "Section Name: {{ item.key }} --> {{ item.value.reason }} ({{ item.value.result }})"
-      loop: "{{ lookup('dict', grade_status) }}"
+        var: grade_status
+      #   msg: "Section Name: {{ item.key }} --> {{ item.value.reason }} ({{ item.value.result }})"
+      # loop: "{{ lookup('dict', grade_status) }}"
 
  #   - name: Print particular result
  #     debug:
