@@ -57,10 +57,10 @@
   - name: set grade to pass
     set_fact:
       array:
-          section1:
-            result: "{{ hostvars['localhost'].array.section1.result + [ 'PASS' ] }}"
-            reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} webpage.content'] }}"
-    when:  'Example' not in webpage.content
+        section1:
+          result: "{{ hostvars['localhost'].array.section1.result + [ 'PASS' ] }}"
+          reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} webpage.content'] }}"
+    when:  "Example" in webpage.content
     delegate_to: localhost
     delegate_facts: True
     # ignore_errors: yes
