@@ -40,7 +40,7 @@
         array:
           section2:
             result: " {{ result }}"
-            reason: " {{ hostvars['{{ item }}'].reason }} "
+            reason: " {{ hostvars.{{ item }}.reason }} "
       loop: 
         - "{{ groups['apps'] }}"
 
