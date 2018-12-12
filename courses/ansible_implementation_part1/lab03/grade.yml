@@ -3,7 +3,7 @@
     - name: Setup grade_temp list at localhost
       set_fact:
         grade_status:
-          dummy: "Welcome to Lab03"
+          module: "Lab03"
 
 - import_playbook: section1.yml
 - import_playbook: section2.yml
