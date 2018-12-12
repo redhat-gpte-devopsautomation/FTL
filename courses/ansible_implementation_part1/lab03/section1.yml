@@ -47,11 +47,22 @@
     set_fact:
       array:
           section1:
-            result: "{{ array.section1.result + [ 'FAIL' ] }}"
-            reason: "{{ array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
+            result: "{{ hostvars['localhost'].array.section1.result + [ 'FAIL' ] }}"
+            reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    # delegate_to: localhost
-    # delegate_facts: True
+    delegate_to: localhost
+    delegate_facts: True
+
+
+  - name: set grade to pass
+    set_fact:
+      array:
+          section1:
+            result: "{{ hostvars['localhost'].array.section1.result + [ 'PASS' ] }}"
+            reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} webpage.content'] }}"
+    when:  'Example' not in webpage.content
+    delegate_to: localhost
+    delegate_facts: True
     # ignore_errors: yes
 
   # - name: Success if 'Example web content' is in the page content
