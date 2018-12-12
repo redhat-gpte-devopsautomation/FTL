@@ -41,7 +41,8 @@
           section2:
             result: " {{ result }}"
             reason: " {{ hostvars['{{ item }}'].reason }} "
-      loop: "{{ groups['apps']  }}"
+      loop: 
+        - "{{ groups['apps'] }}"
 
   - debug: var=array
 
