@@ -64,7 +64,7 @@
     delegate_to: localhost
     delegate_facts: True
     # ignore_errors: yes
-
+  - debug: var=hostvars['localhost'].array.section1
   # - name: Success if 'Example web content' is in the page content
   #   debug: 
   #     msg: "Success: Example web content' is in the page content"
