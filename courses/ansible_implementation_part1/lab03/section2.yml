@@ -20,34 +20,37 @@
       return_content: yes
     register: webpage
     ignore_errors: yes
- 
-  - debug: var=webpage
+
   
   - name: set grade to fail
     set_fact:
-      result: FAIL 
-      reason: "{{inventory_hostname}} Webpage is not having correct content}}"
+      array:
+        section1:
+          result: FAIL 
+          reason: "{{inventory_hostname}} Webpage is not having correct content}}"
     when:  ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
     
   - name: set grade to pass
     set_fact:
-      result: "PASS"
-      reason: "{{ inventory_hostname }} {{ webpage.content }}"
+      array:
+        section1:
+          result: "PASS"
+          reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
 
-  - debug: var=hostvars['{{inventory_hostname}}']['reason']
+  # - debug: var=hostvars['{{inventory_hostname}}']['reason']
     
 
-  - name: concatinate result and reason
-    set_fact:
-        array:
-          section2:
-            result: " {{ result }}"
-            reason: 
-              - hostvars['{{inventory_hostname}}']['reason'] 
+  # - name: concatinate result and reason
+  #   set_fact:
+  #       array:
+  #         section2:
+  #           result: " {{ result }}"
+  #           reason: 
+  #             - hostvars['{{inventory_hostname}}']['reason'] 
     
 
-  - debug: var=array
+  # - debug: var=array
 
   - name: append grade list from section2
     set_fact:
