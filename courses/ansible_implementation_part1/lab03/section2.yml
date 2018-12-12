@@ -11,7 +11,7 @@
 
 - name: Verify Section2
   hosts: apps
-  gather_facts: no
+  gather_facts: True
   tasks:
   
   - name: Run a Curl Test against Frontend
@@ -40,7 +40,7 @@
         array:
           section2:
             result: " {{ result }}"
-            reason: " {{ hostvars[{{item}}] }} "
+            reason: " {{ hostvars['{{item}}'] }} "
     loop: 
         - "{{ groups['apps'] }}"
 
