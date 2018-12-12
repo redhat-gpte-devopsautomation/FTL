@@ -35,7 +35,7 @@
       reason: "{{ inventory_hostname }} {{ webpage.content }}"
     when: ("has been customized using Ansible" in webpage.content)
 
-  - debug: var=hostvars['{{inventory_hostname}}']
+  - debug: var=hostvars['{{inventory_hostname}}']['reason']
     
 
   # - name: concatinate result and reason
