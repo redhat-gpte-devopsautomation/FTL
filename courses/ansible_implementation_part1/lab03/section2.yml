@@ -57,7 +57,8 @@
             result: "{{ array.section2.result + [ 'PASS' ] }}"
             reason: "{{ array.section2.reason + [ '{{ inventory_hostname }} {{ webpage.content }}' ] }}"
     when: ("has been customized using Ansible" in webpage.content)
-  - debug: var=array.section1
+  - debug: var=array.section2
+  
   - name: append grade list from section2
     set_fact:
         grade_status: "{{hostvars['localhost']['grade_status']|combine(array)}}"
