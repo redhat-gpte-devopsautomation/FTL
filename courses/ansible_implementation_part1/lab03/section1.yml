@@ -38,7 +38,7 @@
     set_fact:
         grade_temp_section1_1: FAIL
         grade_reason_section1_1: "{{hostvars['localhost']['grade_reason_section1_1']}},{{inventory_hostname}} Webpage is not having correct content"     
-    when:  ( webpage.status == -1 )  or ("'Example web content' not in webpage.content")
+    when:  ( webpage.status == -1 )  or ("Example web content not in webpage.content")
     delegate_to: localhost
     delegate_facts: True
     ignore_errors: yes
@@ -46,5 +46,5 @@
   - name: Success if 'Example web content' is in the page content
     debug: 
       msg: "Success: Example web content' is in the page content"
-    when: "'Example web content' in webpage.content"
+    when: "Example web content in webpage.content"
     ignore_errors: yes
