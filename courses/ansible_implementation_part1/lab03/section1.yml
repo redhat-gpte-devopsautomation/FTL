@@ -12,7 +12,7 @@
 
 - name: Verify Section1
   hosts: apps
-    gather_facts: no
+  gather_facts: no
   tasks:
   - name: Initialize variables
     set_fact:
