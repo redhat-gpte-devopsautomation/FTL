@@ -12,8 +12,18 @@
 
 - name: Verify Section1
   hosts: apps
-  gather_facts: no
+    gather_facts: no
   tasks:
+  - name: Initialize variables
+    set_fact:
+        array:
+          section1:
+            result:
+              -
+            reason:
+              -
+    delegate_to: localhost
+    delegate_facts: True
  
   - name: Run a Curl Test against Frontend
     uri:
@@ -24,13 +34,14 @@
   - debug: var=webpage.content
   
   - name: set grade to fail
-    set_fact:
+    set_facts:
       array:
         section1:
-          result: "FAIL"
-          reason: "{{inventory_hostname}} Webpage is not having correct content}}"
+          result:  "{{ hostvars[array]section1.result + [ 'Pass' ] }}"
+          reason: " "{{ hostvars[array]section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    
+    delegate_to: localhost
+    delegate_facts: True    
 
   - name: set grade to pass
     set_fact:
@@ -41,14 +52,11 @@
     when:  ("Example" in webpage.content)
     
   - debug: var=array
-  
-- name: Concatenating array
-  hosts: apps
-  gather_facts: false
-  tasks:
+
+
   - name: append grade list from section1
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']| combine(array)}}"
+        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars.array)}}"
     delegate_to: localhost
     delegate_facts: True
  
