@@ -1,16 +1,25 @@
-- hosts:
-    - localhost
-  connection: local
-  gather_facts: no
+# - hosts:
+#     - localhost
+#   connection: local
+#   gather_facts: no
+#   tasks:
+#     - name: running section1
+#       debug:
+#         msg: "Running Section1"
+#     - set_fact:
+#         grade_temp_section1_1: "PASS"
+#         grade_reason_section1_1: ""
+# 
+- hosts: localhost
   tasks:
-    - name: running section1
-      debug:
-        msg: "Running Section1"
     - set_fact:
-        grade_temp_section1_1: "PASS"
-        grade_reason_section1_1: ""
-
-
+        array:
+          section1:
+            result:
+              -
+            reason:
+              -
+   
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -36,15 +45,17 @@
   
   - name: set grade to fail
     set_fact:
-        grade_temp_section1_1: FAIL
-        grade_reason_section1_1: "{{hostvars['localhost']['grade_reason_section1_1']}},{{inventory_hostname}} Webpage is not having correct content"     
+      array:
+          section1:
+            result: "{{ array.section1.result + [ 'FAIL' ] }}"
+            reason: "{{ array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    delegate_to: localhost
-    delegate_facts: True
-    ignore_errors: yes
+    # delegate_to: localhost
+    # delegate_facts: True
+    # ignore_errors: yes
 
-  - name: Success if 'Example web content' is in the page content
-    debug: 
-      msg: "Success: Example web content' is in the page content"
-    when: "'Example' in webpage.content"
-    ignore_errors: yes
+  # - name: Success if 'Example web content' is in the page content
+  #   debug: 
+  #     msg: "Success: Example web content' is in the page content"
+  #   when: "'Example' in webpage.content"
+  #   ignore_errors: yes

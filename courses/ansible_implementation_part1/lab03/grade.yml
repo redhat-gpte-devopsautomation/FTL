@@ -1,27 +1,53 @@
+- hosts: localhost
+  tasks:
+    - name: Setup grade_temp list at localhost
+      set_fact:
+        grade_status:
+          dummy: 
+            result:
+              - 
+            reason:
+              - 
+
 - import_playbook: section1.yml
 #- import_playbook: section2.yml
 
-- hosts:
-    - localhost
-  connection: local
-  gather_facts: no
+# - hosts:
+#     - localhost
+#   connection: local
+#   gather_facts: no
+#   tasks:
+#     - name: Grade status
+#       debug:
+#         msg: "Lab 03 grade is: {{item}}"
+#       loop:
+#         - "{{ grade_temp_section1_1 }}"
+#    #     - "{{ grade_temp_section2_1 }}"
+# #        - "{{ grade_temp_section2_2 }}"
+#         
+# 
+#     - name: Grade reason
+#       debug:
+#         msg: "{{item}}"
+#       loop:
+#         - "{{ grade_reason_section1_1 }}"
+#     #    - "{{ grade_reason_section2_1 }}"
+# #        - "{{ grade_reason_section2_2 }}"
+# 
+- hosts: localhost
   tasks:
-    - name: Grade status
-      debug:
-        msg: "Lab 03 grade is: {{item}}"
-      loop:
-        - "{{ grade_temp_section1_1 }}"
-   #     - "{{ grade_temp_section2_1 }}"
-#        - "{{ grade_temp_section2_2 }}"
-        
 
-    - name: Grade reason
+    - name: Print Reason and Result
       debug:
-        msg: "{{item}}"
-      loop:
-        - "{{ grade_reason_section1_1 }}"
-    #    - "{{ grade_reason_section2_1 }}"
-#        - "{{ grade_reason_section2_2 }}"
+        msg: "Section Name: {{ item.key }} --> {{ item.value.reason }} ({{ item.value.result }})"
+      loop: "{{ lookup('dict', grade_status) }}"
+
+ #   - name: Print particular result
+ #     debug:
+ 
+ #       msg: "{{ item }}"
+ #     loop: "{{ lookup('dict', grade_status) }}"
+    
 
 #
 # grade:
