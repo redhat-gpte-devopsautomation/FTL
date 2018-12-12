@@ -10,15 +10,7 @@
 #         grade_temp_section1_1: "PASS"
 #         grade_reason_section1_1: ""
 # 
-- hosts: localhost
-  tasks:
-    - set_fact:
-        array:
-          section1:
-            result:
-              -
-            reason:
-              -
+
    
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
@@ -35,6 +27,13 @@
   hosts: apps
   gather_facts: no
   tasks:
+  - set_fact:
+      array:
+        section1:
+          result:
+            -
+          reason:
+            -
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}
@@ -47,8 +46,8 @@
     set_fact:
       array:
         section1:
-          result: "{{ hostvars['localhost'].array.section1.result + [ 'FAIL' ] }}"
-          reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
+          result: "{{ array.section1.result + [ 'FAIL' ] }}"
+          reason: "{{ array.section1.reason + [ '{{inventory_hostname}} Webpage is not having correct content'] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True
@@ -58,13 +57,19 @@
     set_fact:
       array:
         section1:
-          result: "{{ hostvars['localhost'].array.section1.result + [ 'PASS' ] }}"
-          reason: "{{ hostvars['localhost'].array.section1.reason + [ '{{inventory_hostname}} {{ webpage.content }}'] }}"
+          result: "{{ array.section1.result + [ 'PASS' ] }}"
+          reason: "{{ array.section1.reason + [ '{{inventory_hostname}} {{ webpage.content }}'] }}"
     when:  ("Example" in webpage.content)
     delegate_to: localhost
     delegate_facts: True
     # ignore_errors: yes
-  - debug: var=hostvars['localhost'].array.section1
+  - debug: var=array.section1
+
+  - name: append grade list from section1
+    set_fact:
+        grade_status: "{{hostvars['localhost']['grade_status']|combine(array)}}"
+    delegate_to: localhost
+    delegate_facts: True
   # - name: Success if 'Example web content' is in the page content
   #   debug: 
   #     msg: "Success: Example web content' is in the page content"
