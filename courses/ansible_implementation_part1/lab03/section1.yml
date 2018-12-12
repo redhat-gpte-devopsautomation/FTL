@@ -37,8 +37,8 @@
     set_fact:
       array:
         section1:
-          result:  "{{ hostvars[array]section1.result + [ 'Pass' ] }}"
-          reason:  "{{ hostvars[array]section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
+          result:  "{{ hostvars['localhost']array.section1.result + [ 'Pass' ] }}"
+          reason:  "{{ hostvars['localhost']array.section1.result + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     delegate_to: localhost
     delegate_facts: True    
