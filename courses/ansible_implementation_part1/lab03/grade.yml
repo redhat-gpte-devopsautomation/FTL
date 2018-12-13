@@ -8,7 +8,7 @@
           module: "Lab03"
 
 - import_playbook: section1.yml
-- import_playbook: section2.yml
+#- import_playbook: section2.yml
 
 
 - hosts: localhost

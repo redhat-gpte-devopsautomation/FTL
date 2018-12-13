@@ -69,5 +69,6 @@
 
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"
-      
+
+
  
