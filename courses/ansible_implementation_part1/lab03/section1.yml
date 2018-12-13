@@ -14,14 +14,7 @@
   hosts: apps
   gather_facts: no
   tasks:
-  # - name: Initialize variables
-  #   set_fact:
-  #       result:
-  #         -
-  #       reason:
-  #         -
-    # delegate_to: localhost
-    # delegate_facts: True
+  
  
   - name: Run a Curl Test against Frontend
     uri:
@@ -30,14 +23,13 @@
     register: webpage
     ignore_errors: yes
   - debug: var=webpage.content
-  # - debug: var=hostvars['localhost']['array']['section1']['result']
+ 
   - name: set grade to fail
     set_fact:
       result: 'Fail' 
       reason: "{{inventory_hostname}} Webpage is not having correct content"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
-    # delegate_to: localhost
-    # delegate_facts: True    
+       
 
   - name: set grade to pass
     set_fact:
@@ -45,8 +37,8 @@
       reason: "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
-  - debug: var=reason
-  - debug: var=result
+  # - debug: var=reason
+  # - debug: var=result
 
 
 - name: append grade list from section1
