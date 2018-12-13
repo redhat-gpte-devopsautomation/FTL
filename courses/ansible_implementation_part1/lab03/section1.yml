@@ -67,6 +67,7 @@
               - "{{ hostvars['app1']['reason'] }}"
               - "{{ hostvars['app2']['reason'] }}"
 
-      grade_status: "{{grade_status | combine( array )}}"
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
       
  
