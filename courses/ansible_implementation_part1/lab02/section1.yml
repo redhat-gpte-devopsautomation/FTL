@@ -19,6 +19,7 @@
     uri:
       url: http://{{ inventory_hostname }}
       return_content: yes
+    register: webpage
 
   # - debug: var=webpage.content
  
