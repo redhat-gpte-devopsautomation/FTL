@@ -15,7 +15,7 @@
 
 
     - add_host:
-        name: "{{item.name}"
+        name: "{{item.name}}"
         ansible_host: "{{item.ansible_hostname}}"
         ansible_ssh_user: "{{item.ansible_ssh_user}}"
         ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
