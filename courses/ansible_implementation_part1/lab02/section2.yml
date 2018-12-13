@@ -1,18 +1,3 @@
-- hosts:
-    - localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: running section1
-      debug:
-        msg: "Running Section2"
-    - set_fact:
-        grade_temp_section2_1: "PASS"
-        grade_temp_section2_2: "PASS"
-        grade_reason_section2_1: ""
-        grade_reason_section2_2: ""
-
-
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -26,69 +11,73 @@
 
 - name: Verify Section2
   hosts: apps
-  gather_facts: yes
+  gather_facts: True
   tasks:
-  
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://{{ inventory_hostname }}
+      return_content: yes
+    register: webpage
+    ignore_errors: yes
 
+  - name: Verify section2
+  hosts: apps
+  gather_facts: no
+  tasks:
   - name: Gather Facts
     setup:
       filter: ansible_local
-   
   - debug: var=ansible_facts
   - block:
     - block:
         - name: Fail if custom facts are incorrect
           set_fact:
-              grade_temp_section2_1: FAIL
-              grade_reason_section2_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom facts are not setup correctly."
+              result: FAIL
+              reason: "{{inventory_hostname}} custom facts are not setup correctly."
           when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
                 ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
                 ( ansible_facts.ansible_local.custom.general.state != "started" ) 
-          #( ansible_facts.ansible_local == "" ) or ( ansible_facts.ansible_local.custom.general.package not defined ) or 
-          delegate_to: localhost
-          delegate_facts: true
-          ignore_errors: yes
       when: ansible_facts.ansible_local.custom is defined
     always: 
       - name: Setting up grade reason
         set_fact:
-          grade_temp_section2_1: FAIL
-          grade_reason_section2_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} custom variable is not set properly"
+          result: FAIL
+          reason: "{{inventory_hostname}} custom variable is not set properly"
         when: ansible_facts.ansible_local.custom is not defined
-        ignore_errors: yes 
-        delegate_to: localhost
-        delegate_facts: true
-
-    
-    
-
-  - name: Success if custom facts setup correctly
-    debug:
-      msg: "Success: custom facts setup correctly."
-    when: 
-      - ansible_facts.ansible_local.custom.general.package == "httpd"
-      - ansible_facts.ansible_local.custom.general.service == "httpd"
-      - ansible_facts.ansible_local.custom.general.state == "started"
-    ignore_errors: yes
-    
-     
+        
   - name: Check httpd service status
     shell: systemctl status httpd
     register: status
     ignore_errors: yes
 
-
   - name: Fail if httpd service is not started
     set_fact:
-        grade_temp_section2_2: FAIL
-        grade_reason_section2_2: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} httpd service is not started"
+        result: FAIL
+        reason: "{{inventory_hostname}} httpd service is not started"
     when: status.failed
-    ignore_errors: yes 
-    delegate_to: localhost
-    delegate_facts: true
+    
 
-  - name: Success if httpd is started
-    debug: 
-      msg: "Success: httpd service is started."
-    when: not status.failed
-    ignore_errors: yes
+    
+  # - debug: var=reason
+  # - debug: var=result
+
+
+- name: append grade list from section2
+  hosts: localhost
+  tasks:
+  - name: setting up section2 array
+    set_fact:
+      array:
+        section2:
+          result: 
+              - "{{ hostvars['app1']['result'] }}"
+              - "{{ hostvars['app2']['result'] }}"
+          reason:
+              - "{{ hostvars['app1']['reason'] }}"
+              - "{{ hostvars['app2']['reason'] }}"
+
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
+
+
+ 

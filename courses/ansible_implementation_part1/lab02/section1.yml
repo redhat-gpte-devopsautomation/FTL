@@ -1,16 +1,4 @@
-- hosts:
-    - localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: running section1
-      debug:
-        msg: "Running Section1"
-    - set_fact:
-        grade_temp_section1_1: "PASS"
-        grade_reason_section1_1: ""
-
-
+  
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -26,29 +14,47 @@
   hosts: apps
   gather_facts: no
   tasks:
+   
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}
       return_content: yes
-    register: webpage
-    ignore_errors: yes
-  - debug: var=webpage
-  
+
+  # - debug: var=webpage.content
+ 
   - name: set grade to fail
     set_fact:
-        grade_temp_section1_1: FAIL
-        grade_reason_section1_1: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} Webpage is not having correct content"     
-    when:  ( webpage.status == -1 )  or ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
-    delegate_to: localhost
-    delegate_facts: True
-    ignore_errors: yes
+      result: 'Fail' 
+      reason: "{{inventory_hostname}} Webpage is not having correct content" 
+    when: ( webpage.status == -1 )  or 
+          ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
 
-  - name: Success if 'Hoorraaayyy!!! My first playbook ran successfully' is in the page content
-    debug: 
-      msg: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
-    when: "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
-    ignore_errors: yes
+  - name: set grade to pass
+    set_fact:
+      result: "PASS" 
+      reason: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+    when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
+    
+  # - debug: var=reason
+  # - debug: var=result
 
 
+- name: append grade list from section1
+  hosts: localhost
+  tasks:
+  - name: setting up section1 array
+    set_fact:
+      array:
+        section1:
+          result: 
+              - "{{ hostvars['app1']['result'] }}"
+              - "{{ hostvars['app2']['result'] }}"
+          reason:
+              - "{{ hostvars['app1']['reason'] }}"
+              - "{{ hostvars['app2']['reason'] }}"
+
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
 
 
+ 

@@ -2,8 +2,6 @@
   tasks:
     - name: Setup grade_temp list at localhost
       set_fact:
-        con_reason: ""
-        con_result: ""
         grade_status:
           module: "Lab03"
 
