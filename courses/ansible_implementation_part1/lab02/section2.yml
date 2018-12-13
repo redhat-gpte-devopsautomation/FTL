@@ -9,18 +9,8 @@
 - import_playbook: ./solve_section2.yml
   when: solve == "true"
 
-- name: Verify Section2
-  hosts: apps
-  gather_facts: True
-  tasks:
-  - name: Run a Curl Test against Frontend
-    uri:
-      url: http://{{ inventory_hostname }}
-      return_content: yes
-    register: webpage
-    ignore_errors: yes
 
-  - name: Verify section2
+- name: Verify section2
   hosts: apps
   gather_facts: no
   tasks:
