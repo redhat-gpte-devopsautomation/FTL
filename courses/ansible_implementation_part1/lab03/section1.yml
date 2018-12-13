@@ -14,14 +14,12 @@
   hosts: apps
   gather_facts: no
   tasks:
-  - name: Initialize variables
-    set_fact:
-        array:
-          section1:
-            result:
-              -
-            reason:
-              -
+  # - name: Initialize variables
+  #   set_fact:
+  #       result:
+  #         -
+  #       reason:
+  #         -
     # delegate_to: localhost
     # delegate_facts: True
  
@@ -35,29 +33,38 @@
   # - debug: var=hostvars['localhost']['array']['section1']['result']
   - name: set grade to fail
     set_fact:
-      array:
-        section1:
-          result:  "{{ array['section1']['result'] + [ 'Fail' ] }}"
-          reason:  "{{ array['section1']['reason'] + [ '{{inventory_hostname}} Webpage is not having correct content' ] }}"
+      result:  
+        - 'Fail' 
+      reason: 
+        - "{{inventory_hostname}} Webpage is not having correct content"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content")
     # delegate_to: localhost
     # delegate_facts: True    
 
   - name: set grade to pass
     set_fact:
-      array:
-        section1:
-          result: "PASS"
-          reason: "{{inventory_hostname}} {{ webpage.content }}"
+      result:  
+        - "PASS" 
+      reason: 
+        - "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content)
     
-  # - debug: var=hostvars['localhost']['array']['section1']
-  - debug: var=array
+  - debug: var=reason
+  - debug: var=result
 
 
   - name: append grade list from section1
+    hosts: localhost
     set_fact:
-        grade_status: "{{hostvars['localhost']['grade_status']| combine(hostvars.{{ inventory_hostname }}.array)}}"
-    delegate_to: localhost
-    # delegate_facts: True
+        array:
+          section1:
+            result: 
+              - "{{ hostvars['app1'][result] }}"
+              - "{{ hostvars['app2'][result] }}"
+            reason:
+              - "{{ hostvars['app1'][reason] }}"
+              - "{{ hostvars['app2'][reason] }}"
+
+        grade_status: "{{grade_status | combine( array )}}"
+    
  
