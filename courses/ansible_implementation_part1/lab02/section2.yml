@@ -23,7 +23,7 @@
   - name: Fail if custom fact is not defined
     set_fact:
       result: 
-        - FAIL
+        - "{{ inventory_hostname }} : FAIL"
       reason: 
         - "{{inventory_hostname}} custom facts are not setup correctly."
     when: 
@@ -32,7 +32,7 @@
   - name: Fail if custom facts are incorrect
     set_fact:
       result: 
-        - FAIL
+        - "{{ inventory_hostname }} : FAIL"
       reason: 
         - "{{inventory_hostname}} custom facts are not setup correctly."
     when: 
@@ -44,7 +44,7 @@
 ############# condiation1 Pass #############        
   - name: Pass if custom facts are defined and correct
     set_fact:
-      result: PASS
+      result: "{{ inventory_hostname }} : PASS"
       reason: "{{inventory_hostname}} custom facts are setup correctly."
     when: 
       ( ansible_facts.ansible_local.custom     is            defined  ) and
@@ -59,14 +59,14 @@
 ############# condition2 Fail #############
   - name: Fail if httpd service is not started
     set_fact:
-        result: "{{ result + [ 'FAIL' ] }}" 
+        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' httpd service is not started ]' }}" 
     when: shell_status.failed 
 
 ############# condition2 Pass #############
   - name: Pass if httpd service is started
     set_fact:
-        result: "{{ result + [ 'PASS' ] }}" 
+        result: "{{ result + [  inventory_hostname + ' : PASS' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' httpd service is started' ] }}"
     when: not shell_status.failed
     
