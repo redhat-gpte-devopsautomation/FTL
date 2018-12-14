@@ -28,7 +28,7 @@
       result: 
         - "{{ inventory_hostname }} : Fail"
       reason: 
-        - "{{inventory_hostname}} Webpage is not having correct content" 
+        - "{{inventory_hostname}} :  Webpage is not having correct content" 
     when: ( webpage.status == -1 )  or 
           ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
 
@@ -37,7 +37,7 @@
       result: 
         - "{{ inventory_hostname }} : PASS" 
       reason: 
-        - "{{inventory_hostname}} Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+        - "{{inventory_hostname}} : Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
     when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
     
   # - debug: var=reason
