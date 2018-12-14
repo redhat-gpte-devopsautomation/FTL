@@ -1,16 +1,3 @@
----
-- hosts:
-    - localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: running section1
-      debug:
-        msg: "Running Section1"
-    - set_fact:
-        grade_temp: "PASS"
-        grade_reason: ""
-
 
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
@@ -27,6 +14,7 @@
   hosts: all:!bastions
   gather_facts: no
   tasks:
+############# condiation1 #############
     - name: Verify devops user is created
       shell: "grep devops /etc/passwd | cut -d: -f1"
       register: user_created
@@ -36,14 +24,16 @@
     - debug:
         msg: "Fail: devops user present"
       when: user_created.stdout != "devops"
+############# condiation1 Fail #############
     - name: set grade to fail
       set_fact:
-        grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}}, devops user not present"
-      delegate_to: localhost
-      delegate_facts: true
+        result: 
+          - "{{ inventory_hostname }} : FAIL"
+        reason: 
+          - "{{inventory_hostname}} : devops user not present."
       when: user_created.stdout != "devops"
 
+############# condiation2 #############
     - name: Verify /etc/motd has content
       shell: "cat /etc/motd"
       register: motd
@@ -54,10 +44,30 @@
         msg: "Fail: /etc/motd has required content"
       when: motd.stdout != "Managed by Ansible"
 
+############# condiation2 Fail #############
     - name: set grade to fail
       set_fact:
-        grade_temp: FAIL
-        grade_reason: "{{hostvars['localhost']['grade_reason']}},{{inventory_hostname}} /etc/motd missing content"
-      delegate_to: localhost
-      delegate_facts: true
+        result: 
+          - "{{ inventory_hostname }} : FAIL"
+        reason: 
+          - "{{inventory_hostname}} : /etc/motd missing content"
       when: motd.stdout != "Managed by Ansible"
+
+
+- name: append grade list from section2
+  hosts: localhost
+  tasks:
+  - name: setting up section2 array
+    set_fact:
+      array:
+        section2:
+          result: 
+              - "{{ hostvars['app1']['result'] }}"
+              - "{{ hostvars['app2']['result'] }}"
+          reason:
+              - "{{ hostvars['app1']['reason'] }}"
+              - "{{ hostvars['app2']['reason'] }}"
+
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
+
