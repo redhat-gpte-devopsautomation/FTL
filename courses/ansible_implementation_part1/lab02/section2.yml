@@ -13,6 +13,7 @@
   hosts: apps
   gather_facts: no
   tasks:
+  
 ############# condition1 ############# 
   - name: Gather Facts
     setup:
@@ -50,7 +51,7 @@
         result: FAIL
         reason: "{{inventory_hostname}} httpd service is not started"
     when: shell_status.failed 
-    
+
 ############# condition2 Pass #############
   - name: Pass if httpd service is started
     set_fact:
