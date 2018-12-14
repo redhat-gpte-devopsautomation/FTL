@@ -55,23 +55,33 @@
       ( ansible_facts.ansible_local.custom.general.state == "started" ) 
       
 ############# condition2 #############
+  - name: Check httpd service status with service module
+    service: 
+      name: httpd
+
   - name: Check httpd service status
-    shell: systemctl status httpd
-    register: shell_status
+    service:
+      name: httpd
+    register: httpd
+    # shell: systemctl status httpd
+    #UnitFileState
+    #ActiveState
   
 ############# condition2 Fail #############
   - name: Fail if httpd service is not started
     set_fact:
         result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' : httpd service is not started' ] }}" 
-    when: shell_status.failed 
+    when: ( httpd.UnitFileState is not defined ) or
+          ( httpd.ActiveState == "active" )
 
 ############# condition2 Pass #############
   - name: Pass if httpd service is started
     set_fact:
         result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' : httpd service is started' ] }}" 
-    when: not shell_status.failed
+    when: ( httpd.UnitFileState is defined ) and
+          ( httpd.ActiveState == "active" )
     
   # - debug: var=reason
   # - debug: var=result
