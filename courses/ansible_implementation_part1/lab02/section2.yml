@@ -20,33 +20,33 @@
       filter: ansible_local
 #  - debug: var=ansible_facts
 ############# condiation1 Fail #############
-  - name: Fail if custom1 fact is not defined
+  - name: Fail if custom fact is not defined
     set_fact:
       result: FAIL
-      reason: "{{inventory_hostname}} custom1 facts are not setup correctly."
+      reason: "{{inventory_hostname}} custom facts are not setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1 is not defined) 
+      ( ansible_facts.ansible_local.custom is not defined) 
 
-  - name: Fail if custom1 facts are incorrect
+  - name: Fail if custom facts are incorrect
     set_fact:
       result: FAIL
-      reason: "{{inventory_hostname}} custom1 facts are not setup correctly."
+      reason: "{{inventory_hostname}} custom facts are not setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1     is            defined ) and (
-      ( ansible_facts.ansible_local.custom1.general.package != "httpd" ) or 
-      ( ansible_facts.ansible_local.custom1.general.service != "httpd" ) or
-      ( ansible_facts.ansible_local.custom1.general.state != "started" ) )
+      ( ansible_facts.ansible_local.custom     is            defined ) and (
+      ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or
+      ( ansible_facts.ansible_local.custom.general.state != "started" ) )
     
 ############# condiation1 Pass #############        
-  - name: Pass if custom1 facts are correct
+  - name: Pass if custom facts are defined and correct
     set_fact:
       result: PASS
-      reason: "{{inventory_hostname}} custom1 facts are setup correctly."
+      reason: "{{inventory_hostname}} custom facts are setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1     is            defined  ) and
-      ( ansible_facts.ansible_local.custom1.general.package == "httpd" ) and
-      ( ansible_facts.ansible_local.custom1.general.service == "httpd" ) and
-      ( ansible_facts.ansible_local.custom1.general.state == "started" ) 
+      ( ansible_facts.ansible_local.custom     is            defined  ) and
+      ( ansible_facts.ansible_local.custom.general.package == "httpd" ) and
+      ( ansible_facts.ansible_local.custom.general.service == "httpd" ) and
+      ( ansible_facts.ansible_local.custom.general.state == "started" ) 
       
 ############# condition2 #############
   - name: Check httpd service status
