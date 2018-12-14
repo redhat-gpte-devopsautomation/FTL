@@ -32,9 +32,8 @@
       result: FAIL
       reason: "{{inventory_hostname}} custom1 facts are not setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1     is not         defined ) or
-      ( ansible_facts.ansible_local.custom1.general.package != "httpd" ) or 
-      ( ansible_facts.ansible_local.custom1.general.service != "httpd" ) or 
+      ( ansible_facts.ansible_local.custom1     is            defined ) 
+      (( ansible_facts.ansible_local.custom1.general.package != "httpd" ) or (ansible_facts.ansible_local.custom1.general.service != "httpd" )) 
       ( ansible_facts.ansible_local.custom1.general.state != "started" ) 
     
 ############# condiation1 Pass #############        
@@ -43,11 +42,11 @@
       result: PASS
       reason: "{{inventory_hostname}} custom1 facts are setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1 is defined) and (
-      ( ansible_facts.ansible_local.custom1.general.package == "httpd" ) or 
-      ( ansible_facts.ansible_local.custom1.general.service == "httpd" ) or 
+      ( ansible_facts.ansible_local.custom1     is            defined  ) 
+      ( ansible_facts.ansible_local.custom1.general.package == "httpd" )  
+      ( ansible_facts.ansible_local.custom1.general.service == "httpd" )  
       ( ansible_facts.ansible_local.custom1.general.state == "started" ) 
-      )
+      
 ############# condition2 #############
   - name: Check httpd service status
     shell: systemctl status httpd
