@@ -25,7 +25,7 @@
       result: FAIL
       reason: "{{inventory_hostname}} custom facts are not setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom is defined) and (
+      ( ansible_facts.ansible_local.custom is not defined) and (
       ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
       ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
       ( ansible_facts.ansible_local.custom.general.state != "started" ) 
@@ -37,9 +37,9 @@
       reason: "{{inventory_hostname}} custom facts are setup correctly."
     when: 
       ( ansible_facts.ansible_local.custom is defined) and (
-      ( ansible_facts.ansible_local.custom.general.package = "httpd" ) or 
-      ( ansible_facts.ansible_local.custom.general.service = "httpd" ) or 
-      ( ansible_facts.ansible_local.custom.general.state = "started" ) 
+      ( ansible_facts.ansible_local.custom.general.package == "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.service == "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.state == "started" ) 
       )
 ############# condition2 #############
   - name: Check httpd service status
