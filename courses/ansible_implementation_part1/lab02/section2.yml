@@ -43,9 +43,9 @@
       result: PASS
       reason: "{{inventory_hostname}} custom1 facts are setup correctly."
     when: 
-      ( ansible_facts.ansible_local.custom1     is            defined  ) 
-      ( ansible_facts.ansible_local.custom1.general.package == "httpd" )  
-      ( ansible_facts.ansible_local.custom1.general.service == "httpd" )  
+      ( ansible_facts.ansible_local.custom1     is            defined  ) and
+      ( ansible_facts.ansible_local.custom1.general.package == "httpd" ) and
+      ( ansible_facts.ansible_local.custom1.general.service == "httpd" ) and
       ( ansible_facts.ansible_local.custom1.general.state == "started" ) 
       
 ############# condition2 #############
