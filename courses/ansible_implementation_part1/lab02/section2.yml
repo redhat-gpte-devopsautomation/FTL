@@ -9,44 +9,54 @@
 - import_playbook: ./solve_section2.yml
   when: solve == "true"
 
-
 - name: Verify section2
   hosts: apps
   gather_facts: no
   tasks:
+############# condition1 ############# 
   - name: Gather Facts
     setup:
       filter: ansible_local
-  - debug: var=ansible_facts
-  - block:
-    - block:
-        - name: Fail if custom facts are incorrect
-          set_fact:
-              result: FAIL
-              reason: "{{inventory_hostname}} custom facts are not setup correctly."
-          when: ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
-                ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
-                ( ansible_facts.ansible_local.custom.general.state != "started" ) 
-      when: ansible_facts.ansible_local.custom is defined
-    always: 
-      - name: Setting up grade reason
-        set_fact:
-          result: FAIL
-          reason: "{{inventory_hostname}} custom variable is not set properly"
-        when: ansible_facts.ansible_local.custom is not defined
-        
+#  - debug: var=ansible_facts
+############# condiation1 Fail #############
+  - name: Fail if custom facts are incorrect
+    set_fact:
+      result: FAIL
+      reason: "{{inventory_hostname}} custom facts are not setup correctly."
+    when: 
+      ( ansible_facts.ansible_local.custom is defined) and (
+      ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.state != "started" ) 
+      )
+############# condiation1 Pass #############        
+  - name: Pass if custom facts are correct
+    set_fact:
+      result: PASS
+      reason: "{{inventory_hostname}} custom facts are setup correctly."
+    when: 
+      ( ansible_facts.ansible_local.custom is defined) and (
+      ( ansible_facts.ansible_local.custom.general.package = "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.service = "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.state = "started" ) 
+      )
+############# condition2 #############
   - name: Check httpd service status
     shell: systemctl status httpd
-    register: status
-    ignore_errors: yes
-
+    register: shell_status
+############# condition2 Fail #############
   - name: Fail if httpd service is not started
     set_fact:
         result: FAIL
         reason: "{{inventory_hostname}} httpd service is not started"
-    when: status.failed
+    when: shell_status.failed 
     
-
+############# condition2 Pass #############
+  - name: Pass if httpd service is started
+    set_fact:
+        result: PASS
+        reason: "{{inventory_hostname}} httpd service is started"
+    when: not shell_status.failed
     
   # - debug: var=reason
   # - debug: var=result
