@@ -18,12 +18,7 @@
     - name: Verify devops user is created
       shell: "grep devops /etc/passwd | cut -d: -f1"
       register: user_created
-    - debug:
-        msg: "Success: devops user present"
-      when: user_created.stdout == "devops"
-    - debug:
-        msg: "Fail: devops user present"
-      when: user_created.stdout != "devops"
+ 
 ############# condiation1 Fail #############
     - name: set grade to fail
       set_fact:
@@ -45,12 +40,7 @@
     - name: Verify /etc/motd has content
       shell: "cat /etc/motd"
       register: motd
-    - debug:
-        msg: "Success: /etc/motd has required content"
-      when: motd.stdout == "Managed by Ansible"
-    - debug:
-        msg: "Fail: /etc/motd has required content"
-      when: motd.stdout != "Managed by Ansible"
+
 
 ############# condiation2 Fail #############
     - name: set grade to fail
