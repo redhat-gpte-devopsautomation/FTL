@@ -63,9 +63,19 @@
 ############## Play for Adding variable back to localhost ##############################
 - name: append grade list from section2
   hosts: localhost
-  roles:
-  - role: adding_variable_to_localhost
-    module: Lab01
-    section: 01
+  tasks:
+  - name: setting up section2 array
+    set_fact:
+      array:
+        section1:
+          result: 
+              - "{{ hostvars['app1']['result'] }}"
+              - "{{ hostvars['app2']['result'] }}"
+          reason:
+              - "{{ hostvars['app1']['reason'] }}"
+              - "{{ hostvars['app2']['reason'] }}"
+
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
   
 
