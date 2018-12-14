@@ -44,8 +44,10 @@
 ############# condiation1 Pass #############        
   - name: Pass if custom facts are defined and correct
     set_fact:
-      result: "{{ inventory_hostname }} : PASS"
-      reason: "{{inventory_hostname}} : custom facts are setup correctly."
+      result: 
+        - "{{ inventory_hostname }} : PASS"
+      reason: 
+        - "{{inventory_hostname}} : custom facts are setup correctly."
     when: 
       ( ansible_facts.ansible_local.custom     is            defined  ) and
       ( ansible_facts.ansible_local.custom.general.package == "httpd" ) and
