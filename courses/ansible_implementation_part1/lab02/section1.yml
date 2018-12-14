@@ -43,7 +43,7 @@
   # - debug: var=reason
   # - debug: var=result
 
-
+############## Play for Adding variable back to localhost ##############################
 - name: append grade list from section1
   hosts: localhost
   tasks:
