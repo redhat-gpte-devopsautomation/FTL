@@ -66,7 +66,7 @@
 ############# condition2 Pass #############
   - name: Pass if httpd service is started
     set_fact:
-        result: "{{ result + [  inventory_hostname + ' : PASS' ] }}" 
+        result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' : httpd service is started' ] }}" 
     when: not shell_status.failed
     
