@@ -17,7 +17,7 @@
    
   - name: Run a Curl Test against Frontend
     uri:
-      url: http://{{ inventory_hostname }}
+      url: http://{{ ansible_hostname }}
       status_code: 403,200,-1
       return_content: yes
     register: webpage
