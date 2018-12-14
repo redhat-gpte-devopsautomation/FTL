@@ -70,7 +70,7 @@
         reason: "{{ reason + [ inventory_hostname + ' httpd service is started' ] }}"
     when: not shell_status.failed
     
-  - debug: var=reason
+  # - debug: var=reason
   # - debug: var=result
 
 

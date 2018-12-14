@@ -26,16 +26,20 @@
  
   - name: set grade to fail
     set_fact:
-      result: 'Fail' 
-      reason: "{{inventory_hostname}} Webpage is not having correct content"
+      result: 
+        - 'Fail' 
+      reason: 
+        - "{{inventory_hostname}} Webpage is not having correct content"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content") or
            ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
        
 
   - name: set grade to pass
     set_fact:
-      result: "PASS" 
-      reason: "{{inventory_hostname}} {{ webpage.content }}"
+      result: 
+        - "PASS" 
+      reason: 
+        - "{{inventory_hostname}} {{ webpage.content }}"
     when:  ("Example" in webpage.content) or
            ("has been customized using Ansible" in webpage.content)
     

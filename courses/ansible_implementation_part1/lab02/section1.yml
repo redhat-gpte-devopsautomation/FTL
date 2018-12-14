@@ -25,15 +25,19 @@
  
   - name: set grade to fail
     set_fact:
-      result: 'Fail' 
-      reason: "{{inventory_hostname}} Webpage is not having correct content" 
+      result: 
+        - 'Fail' 
+      reason: 
+        - "{{inventory_hostname}} Webpage is not having correct content" 
     when: ( webpage.status == -1 )  or 
           ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
 
   - name: set grade to pass
     set_fact:
-      result: "PASS" 
-      reason: "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+      result: 
+        - "PASS" 
+      reason: 
+        - "Success: Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
     when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
     
   # - debug: var=reason
