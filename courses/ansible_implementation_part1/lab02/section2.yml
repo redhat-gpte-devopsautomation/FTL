@@ -56,6 +56,7 @@
   - name: Check httpd service status
     shell: systemctl status httpd
     register: shell_status
+  - debug: var=shell_status
 ############# condition2 Fail #############
   - name: Fail if httpd service is not started
     set_fact:
