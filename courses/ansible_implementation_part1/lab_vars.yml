@@ -27,7 +27,7 @@ instances:
 
   - name: "appdb"
     ansible_hostname: appdb1.{{GUID}}.example.opentlc.com
-    ansible_internal: appdb.{{GUID}}.internal
+    ansible_internal: appdb1.{{GUID}}.internal
     ansible_ssh_user: ec2-user
     groups: appdbs
 
