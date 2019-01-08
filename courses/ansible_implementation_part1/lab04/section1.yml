@@ -107,6 +107,41 @@
   # - debug: var=reason
   # - debug: var=result
 
+################## Condition 2 #####################
+
+- name: Verify Section2
+  hosts: localhost
+  gather_facts: no
+  tasks:
+   
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://hostvars['appdb']['internal_hostname']/?name=kiosk
+      status_code: 403,200,-1
+      return_content: yes
+    register: webpage
+
+  # - debug: var=webpage.content
+################## Condition 2 Fail #####################
+  - name: set grade to fail
+    set_fact:
+      result: 
+        - "{{ inventory_hostname }} : Fail"
+      reason: 
+        - "{{inventory_hostname}} :  Webpage is not having correct content" 
+    when: ( webpage.status == -1 )  or 
+          ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
+
+################ Condition 2 Pass #####################
+
+  - name: set grade to pass
+    set_fact:
+      result: 
+        - "{{ inventory_hostname }} : PASS" 
+      reason: 
+        - "{{inventory_hostname}} : Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+    when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
+
 ############## Play for Adding variable back to localhost ##############################
 - name: append grade list from section1
   hosts: localhost
