@@ -45,28 +45,36 @@
   ############# condition1 Fail #############
   - name: Fail if firewalld service is not started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : FAIL' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : firewalld service is not started' ] }}" 
+        result:  
+          - "{{ inventory_hostname }} : Fail"
+        reason: 
+          - "{{  inventory_hostname }}  :  firewalld service is not started" 
     when: ( firewalld_output.status.UnitFileState is not defined ) or ( firewalld_output.status.ActiveState != "active" )
 
   - name: Fail if httpd service is not started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : FAIL' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : httpd service is not started' ] }}" 
+        result: 
+          - "{{ inventory_hostname }} : FAIL" 
+        reason: 
+          - "{{ inventory_hostname }} : httpd service is not started" 
     when: ( inventory_hostname in groups['apps'] )   and 
           (( httpd_output.status.UnitFileState is not defined ) or ( httpd_output.status.ActiveState != "active" ))
 
   - name: Fail if haproxy service is not started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : FAIL' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : haproxy service is not started' ] }}" 
+        result: 
+          - "{{  inventory_hostname}} : FAIL" 
+        reason: 
+          - "{{ [ inventory_hostname }} : haproxy service is not started" 
     when: ( inventory_hostname in groups['frontends'] )   and 
           (( haproxy_output.status.UnitFileState is not defined ) or ( haproxy_output.status.ActiveState != "active" ))
 
   - name: Fail if mysqld service is not started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : FAIL' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : mysqld service is not started' ] }}" 
+        result: 
+          - "{{ inventory_hostname }} : FAIL" 
+        reason: 
+          - "{{ [ inventory_hostname }} : mysqld service is not started" 
     when: ( inventory_hostname in groups['appdbs'] )   and 
           (( mysqld_output.status.UnitFileState is not defined ) or ( mysqld_output.status.ActiveState != "active" ))
 
@@ -75,31 +83,39 @@
 
   - name: Pass if firewalld service is started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : firewalld service is started' ] }}" 
+        result: 
+          - "{{  inventory_hostname }} : Pass" 
+        reason: 
+          - "{{ [ inventory_hostname }} : firewalld service is started" 
     when: ( firewalld_output.status.UnitFileState is defined ) and
           ( firewalld_output.status.ActiveState == "active" ) 
 
   - name: Pass if httpd service is started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : httpd service is started' ] }}" 
+        result: 
+          - "{{ inventory_hostname }} : Pass" 
+        reason: 
+          - "{{ [ inventory_hostname }} : httpd service is started" 
     when: ( inventory_hostname in groups['apps'] )          and
           ( httpd_output.status.UnitFileState is defined )  and
           ( httpd_output.status.ActiveState == "active" )
 
   - name: Pass if haproxy service is started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : haproxy service is started' ] }}" 
+        result: 
+          - "{{ [ inventory_hostname }} : Pass" 
+        reason: 
+          - "{{ [ inventory_hostname }} : haproxy service is started" 
     when: ( inventory_hostname in groups['frontends'] )       and
           ( haproxy_output.status.UnitFileState is defined )  and
           ( haproxy_output.status.ActiveState == "active" )
 
   - name: Pass if mysqld service is started
     set_fact:
-        result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
-        reason: "{{ [ inventory_hostname + ' : mysqld service is started' ] }}" 
+        result: 
+          - "{{ [ inventory_hostname }} : Pass" 
+        reason: 
+          - "{{ [ inventory_hostname }} : mysqld service is started" 
     when: ( inventory_hostname in groups['appdbs'] )          and
           ( mysqld_output.status.UnitFileState is defined )   and
           ( mysqld_output.status.ActiveState == "active"  )
@@ -121,26 +137,24 @@
       return_content: yes
     register: webpage
 
-  # - debug: var=webpage.content
+  - debug: var=webpage.content
 ################## Condition 2 Fail #####################
-  - name: set grade to fail
+  - name: Check kiosk data in db fail
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : Fail"
-      reason: 
-        - "{{inventory_hostname}} :  Webpage is not having correct content" 
+      result: "{{ result + [ inventory_hostname + ' : FAIL`" 
+      reason: "{{ reason + [ inventory_hostname + ' : kiosk user's details are not present ] }}" 
     when: ( webpage.status == -1 )  or 
-          ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
+          ("'kiosk redhat /bin/bash /home/kiosk' not in webpage.content")
 
 ################ Condition 2 Pass #####################
 
-  - name: set grade to pass
+  - name: Check kiosk data in db pass
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : PASS" 
-      reason: 
-        - "{{inventory_hostname}} : Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
-    when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
+      result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : kiosk user's details are present ] }}"  
+        
+    when:  "'kiosk redhat /bin/bash /home/kiosk' in webpage.content"
+
 
 ############## Play for Adding variable back to localhost ##############################
 - name: append grade list from section1
