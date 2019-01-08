@@ -31,14 +31,12 @@
 
     - name: Create Password file1
       copy:
-        content: "{{ item.1 }}"
-        dest: ~devops/ansible_implementation/{{ item.0 }}
+        content: "{{ item.value }}"
+        dest: ~devops/ansible_implementation/{{ item.key }}
         mode: 0644  
         owner: devops
         group: devops 
-      loop: 
-        - "{{ vault-pass: redhat }}"
-        - "{{ vault-pass-change: ansible }}"
+      loop: "[ vault-pass: 'redhat', vault-pass-change: 'ansible' ]"
 
     - name: Encrypt file by ansible-vault
       shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.0}} --vault-password-file=/home/devops/ansible_implementation/{{item.1}}
