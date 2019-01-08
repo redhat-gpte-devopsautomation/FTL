@@ -8,10 +8,12 @@
   tasks:
 
   ####### Solution 1 ###################
-    - name: Create User devops
-      user: 
-        name: devops
-        state: present
+    # - name: Create User devops
+    #   user: 
+    #     name: devops
+    #     state: present
+    - name: Include devops user role
+      include_role: devops_user
 
     - name: Create Directory
       file: 
