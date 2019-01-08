@@ -14,7 +14,7 @@
   register: ssh_pubkey
   when: inventory_hostname in groups['bastions']
 
-- debug: var=ssh_pubkey
+- debug: var=hostvars['bastion'][ssh_pubkey][stdout] 
 
 - name: Copy ssh public key on all servers
   authorized_key: 
