@@ -1,0 +1,92 @@
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+# - name: Verify section1
+#   hosts: apps
+#   gather_facts: no
+#   tasks:
+#   ############# condition1 ############# 
+#   - name: Gather Facts
+#     setup:
+#       filter: ansible_local
+#   #  - debug: var=ansible_facts
+#   ############# condiation1 Fail #############
+#   - name: Fail if custom fact is not defined
+#     set_fact:
+#       result: 
+#         - "{{ inventory_hostname }} : FAIL"
+#       reason: 
+#         - "{{inventory_hostname}} : custom facts are not setup correctly."
+#     when: 
+#       ( ansible_facts.ansible_local.custom is not defined) 
+#   - name: Fail if custom facts are incorrect
+#     set_fact:
+#       result: 
+#         - "{{ inventory_hostname }} : FAIL"
+#       reason: 
+#         - "{{inventory_hostname}} : custom facts are not setup correctly."
+#     when: 
+#       ( ansible_facts.ansible_local.custom     is            defined ) and (
+#       ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+#       ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or
+#       ( ansible_facts.ansible_local.custom.general.state != "started" ) )
+#   ############# condiation1 Pass #############        
+#   - name: Pass if custom facts are defined and correct
+#     set_fact:
+#       result: 
+#         - "{{ inventory_hostname }} : PASS"
+#       reason: 
+#         - "{{inventory_hostname}} : custom facts are setup correctly."
+#     when: 
+#       ( ansible_facts.ansible_local.custom     is            defined  ) and
+#       ( ansible_facts.ansible_local.custom.general.package == "httpd" ) and
+#       ( ansible_facts.ansible_local.custom.general.service == "httpd" ) and
+#       ( ansible_facts.ansible_local.custom.general.state == "started" ) 
+#   ############# condition2 #############
+
+#   - name: Check httpd service status
+#     service:
+#       name: httpd
+#     register: httpd    
+#   ############# condition2 Fail #############
+#   - name: Fail if httpd service is not started
+#     set_fact:
+#         result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+#         reason: "{{ reason + [ inventory_hostname + ' : httpd service is not started' ] }}" 
+#     when: ( httpd.UnitFileState is not defined ) or
+#           ( httpd.ActiveState == "active" )
+#   ############# condition2 Pass #############
+#   - name: Pass if httpd service is started
+#     set_fact:
+#         result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+#         reason: "{{ reason + [ inventory_hostname + ' : httpd service is started' ] }}" 
+#     when: ( httpd.UnitFileState is defined ) and
+#           ( httpd.ActiveState == "active" ) 
+#   # - debug: var=reason
+#   # - debug: var=result
+
+# ############## Play for Adding variable back to localhost ##############################
+# - name: append grade list from section1
+#   hosts: localhost
+#   tasks:
+#   - name: setting up section1 array
+#     set_fact:
+#       array:
+#         section1:
+#           result: 
+#               - "{{ hostvars['app1']['result'] }}"
+#               - "{{ hostvars['app2']['result'] }}"
+#           reason:
+#               - "{{ hostvars['app1']['reason'] }}"
+#               - "{{ hostvars['app2']['reason'] }}"
+
+#   -  set_fact:   
+#       grade_status: "{{ grade_status | combine(array) }}"

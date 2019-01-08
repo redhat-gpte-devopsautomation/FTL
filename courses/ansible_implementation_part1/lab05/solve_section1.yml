@@ -1,0 +1,48 @@
+- hosts: bastions
+  become: yes
+  tasks:
+
+  ####### Condition 1 ###################
+    - name: Create Directory
+      file: 
+        path: ~devops/ansible_implementation
+        state: directory
+      mode: 0755  
+      owner: devops
+      group: devops
+
+    - name: Create file
+      copy:
+        content: >
+          This is encrypted.
+          This is also encrypted.
+        dest: ~devops/ansible_implementation/{{ item }}
+      mode: 0644  
+      owner: devops
+      group: devops 
+      loop: 
+        - super-secret.yml
+        - super-secret-decrypted.yml
+
+    - name: Create Password file1
+      copy:
+        content: "{{ item.1 }}"
+        dest: ~devops/ansible_implementation/{{ item.0 }}
+      mode: 0644  
+      owner: devops
+      group: devops 
+      loop: 
+        - {{ vault-pass: redhat }}
+        - {{ vault-pass-change: ansible }}
+
+    - name: Encrypt file by ansible-vault
+      shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.0}} --vault-password-file=/home/devops/ansible_implementation/{{item.1}}
+    
+      loop:
+        - "{{ super-secret.yml: vault-pass-change }}"
+        - "{{ super-secret-encrypted.yml: vault-pass }}"
+    
+
+
+
+    
