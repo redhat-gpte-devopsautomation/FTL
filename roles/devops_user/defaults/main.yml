@@ -1,2 +1,4 @@
 ---
 # defaults file for devops_user
+
+user_name: devops
