@@ -2,7 +2,7 @@
   become: yes
   vars:
     file_and_password:
-      vault-pass: redhat, 
+      vault-pass: redhat 
       vault-pass-change: ansible 
 
     vault_file:
@@ -48,7 +48,7 @@
       loop: "{{ file_and_password |dict2items }}"
 
     - name: Encrypt file by ansible-vault
-      shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.0}} --vault-password-file=/home/devops/ansible_implementation/{{item.1}}
+      shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.key}} --vault-password-file=/home/devops/ansible_implementation/{{item.value}}
     
       loop: "{{ vault_file |dict2items }}"
     
