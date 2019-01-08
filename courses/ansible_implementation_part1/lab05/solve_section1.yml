@@ -1,12 +1,13 @@
 - hosts: bastions
   become: yes
   vars:
+    file_path: /home/devops/ansible_implementation
     file_and_password:
       vault-pass: redhat 
       vault-pass-change: ansible 
   tasks:
 
-  ####### Condition 1 ###################
+  ####### Solution 1 ###################
     - name: Create User devops
       user: 
         name: devops
@@ -37,7 +38,7 @@
       copy:
         content: "{{ item.value }}"
         dest: ~devops/ansible_implementation/{{ item.key }}
-        mode: 0644  
+        mode: 0600  
         owner: devops
         group: devops 
       loop: "{{ file_and_password |dict2items }}"
@@ -49,8 +50,62 @@
     - name: Encrypt file by ansible-vault
       shell:  sudo -u devops ansible-vault encrypt /home/devops/ansible_implementation/super-secret-decrypted.yml --output=/home/devops/ansible_implementation/super-secret-encrypted.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass
       
-      
-    
+   ####### Solution 2 ###################
+    - name: Create secret variable file
+      copy:
+        content: |
+          newusers:
+            - name: ansibleuser1
+              pw: redhat
+            - name: ansibleuser2
+              pw: Re4H1T  
+        dest: "{{file_path}}/secret.yml" 
+        mode: 0644  
+        owner: devops
+        group: devops   
+
+    - name: Encrypt secret variable by ansible-vault
+      shell: sudo -u devops ansible-vault encrypt "{{file_path}}/secret.yml" --vault-password-file="{{file_path}}/vault-pass"
+         
+    - name: Create secret variable file
+      copy:
+        content: |
+            - name: create user accounts for all our servers
+              hosts: lb
+              become: True
+              remote_user: devops
+              vars_files:
+                - secret.yml
+              tasks:
+                - name: Creating users from secret.yml
+                  user:
+                    name: "{{ item.name }}"
+                    password: "{{ item.pw | password_hash('sha512') }}"
+                  with_items: "{{ newusers }}"
+        dest: "{{file_path}}/create_users.yml" 
+        mode: 0644  
+        owner: devops
+        group: devops
+
+    - name: Create secret variable file
+      copy:
+        content: |
+            [lb]
+            frontend1.${GUID}.internal
+
+            [webservers]
+            app1.${GUID}.internal
+            app2.${GUID}.internal
+
+            [db]
+            appdb1.${GUID}.internal
+        dest: "{{file_path}}/hosts" 
+        mode: 0644  
+        owner: devops
+        group: devops
+
+    - name: Execute Playbook
+      shell: sudo -u devops ansible-playbook -i "{{file_path}}/hosts"  "{{file_path}}/create_users.yml"  --vault-password-file="{{file_path}}/vault-pass"
       
     
 
