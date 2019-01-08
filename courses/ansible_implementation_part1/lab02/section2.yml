@@ -51,9 +51,7 @@
       ( ansible_facts.ansible_local.custom.general.service == "httpd" ) and
       ( ansible_facts.ansible_local.custom.general.state == "started" ) 
   ############# condition2 #############
-  - name: Check httpd service status with service module
-    service: 
-      name: httpd
+
   - name: Check httpd service status
     service:
       name: httpd
