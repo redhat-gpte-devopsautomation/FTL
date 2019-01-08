@@ -1,5 +1,14 @@
 - hosts: bastions
   become: yes
+  vars:
+    file_and_password:
+      vault-pass: redhat, 
+      vault-pass-change: ansible 
+
+    vault_file:
+      super-secret.yml: vault-pass-change 
+      super-secret-encrypted.yml: vault-pass  
+
   tasks:
 
   ####### Condition 1 ###################
@@ -36,14 +45,12 @@
         mode: 0644  
         owner: devops
         group: devops 
-      loop: "{{ vault-pass: 'redhat', vault-pass-change: 'ansible' }}"
+      loop: "{{ file_and_password |dict2items }}"
 
     - name: Encrypt file by ansible-vault
       shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.0}} --vault-password-file=/home/devops/ansible_implementation/{{item.1}}
     
-      loop:
-        - "{{ super-secret.yml: vault-pass-change }}"
-        - "{{ super-secret-encrypted.yml: vault-pass }}"
+      loop: "{{ vault_file |dict2items }}"
     
 
 
