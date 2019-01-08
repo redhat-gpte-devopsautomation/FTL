@@ -44,10 +44,13 @@
 
     - name: Encrypt file by ansible-vault
       shell: ansible-vault encrypt /home/devops/ansible_implementation/super-secret.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass-change
+      owner: devops
+      group: devops
     
     - name: Encrypt file by ansible-vault
       shell: ansible-vault encrypt /home/devops/ansible_implementation/super-secret-decrypted.yml --output=/home/devops/ansible_implementation/super-secret-encrypted.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass
-    
+      owner: devops
+      group: devops    
       
     
       
