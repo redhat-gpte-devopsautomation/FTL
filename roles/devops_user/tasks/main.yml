@@ -3,11 +3,13 @@
 - name: Create devops user
   user:
     name: "{{ user_name }}"
+    password: "{{ 'r3dh4t1!' | password_hash('sha512') }}" 
     generate_ssh_key: True
     state: present
 
-- name: Setting up user's password
-  shell: echo 'r3dh4t1!' | passwd --stdin {{ user_name }}
+
+# - name: Setting up user's password
+#   shell: echo 'r3dh4t1!' | passwd --stdin {{ user_name }}
 
 - name: get devops user's public key
   shell: cat /home/devops/.ssh/id_rsa.pub
