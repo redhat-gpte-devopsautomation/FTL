@@ -7,9 +7,9 @@
       file: 
         path: ~devops/ansible_implementation
         state: directory
-      mode: 0755  
-      owner: devops
-      group: devops
+        mode: 0755  
+        owner: devops
+        group: devops
 
     - name: Create file
       copy:
@@ -17,9 +17,9 @@
           This is encrypted.
           This is also encrypted.
         dest: ~devops/ansible_implementation/{{ item }}
-      mode: 0644  
-      owner: devops
-      group: devops 
+        mode: 0644  
+        owner: devops
+        group: devops 
       loop: 
         - super-secret.yml
         - super-secret-decrypted.yml
