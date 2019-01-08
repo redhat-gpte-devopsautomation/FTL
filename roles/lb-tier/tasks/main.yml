@@ -47,3 +47,6 @@
    state: enabled
    immediate: true
    permanent: true
+- debug: 
+   var: groups['apps']
+
