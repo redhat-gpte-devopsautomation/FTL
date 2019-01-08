@@ -1,0 +1,127 @@
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+########## Play to test #################
+
+- name: Verify section1
+  hosts: apps:appdbs:frontends
+  gather_facts: no
+  tasks:
+
+  
+  ############# condition1 #############
+  - name: Check httpd service status
+    service:
+      name: firewalld
+    register: firewalld_output  
+
+  - name: Check httpd service status
+    service:
+      name: httpd
+    register: httpd_output   
+    when: inventory_hostname in groups['apps']
+
+  - name: Check httpd service status
+    service:
+      name: haproxy
+    register: haproxy_output   
+    when: inventory_hostname in groups['frontends']
+  
+  - name: Check httpd service status
+    service:
+      name: mysqld
+    register: mysqld_output   
+    when: inventory_hostname in groups['appdbs']
+    
+
+  ############# condition1 Fail #############
+  - name: Fail if firewalld service is not started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : firewalld service is not started' ] }}" 
+    when: ( firewalld_output.UnitFileState is not defined ) or ( firewalld_output.ActiveState != "active" )
+
+  - name: Fail if httpd service is not started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : httpd service is not started' ] }}" 
+    when: ( inventory_hostname in groups['apps'] )   and 
+          (( httpd_output.UnitFileState is not defined ) or ( httpd_output.ActiveState != "active" ))
+
+  - name: Fail if haproxy service is not started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : haproxy service is not started' ] }}" 
+    when: ( inventory_hostname in groups['frontends'] )   and 
+          (( haproxy_output.UnitFileState is not defined ) or ( haproxy_output.ActiveState != "active" ))
+
+  - name: Fail if mysqld service is not started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : mysqld service is not started' ] }}" 
+    when: ( inventory_hostname in groups['appdbs'] )   and 
+          (( mysqld_output.UnitFileState is not defined ) or ( mysqld_output.ActiveState != "active" ))
+
+  ############# condition1 Pass #############
+
+
+- name: Pass if firewalld service is started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : firewalld service is started' ] }}" 
+    when: ( firewalld_output.UnitFileState is defined ) or
+          ( firewalld_output.ActiveState == "active" )
+
+  - name: Pass if httpd service is started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : httpd service is started' ] }}" 
+    when: ( inventory_hostname in groups['apps'] )   and 
+          (( httpd_output.UnitFileState is defined ) or ( httpd_output.ActiveState == "active" ))
+
+  - name: Pass if haproxy service is started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : haproxy service is started' ] }}" 
+    when: ( inventory_hostname in groups['frontends'] )   and 
+          (( haproxy_output.UnitFileState is defined ) or ( haproxy_output.ActiveState == "active" ))
+
+  - name: Pass if mysqld service is started
+    set_fact:
+        result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
+        reason: "{{ reason + [ inventory_hostname + ' : mysqld service is started' ] }}" 
+    when: ( inventory_hostname in groups['appdbs'] )   and 
+          (( mysqld_output.UnitFileState is defined ) or ( mysqld_output.ActiveState == "active" ))
+  # - debug: var=reason
+  # - debug: var=result
+
+############## Play for Adding variable back to localhost ##############################
+- name: append grade list from section1
+  hosts: localhost
+  tasks:
+  - name: setting up section1 array
+    set_fact:
+      array:
+        section1:
+          result: 
+              - "{{ hostvars['app1']['result'] }}"
+              - "{{ hostvars['app2']['result'] }}"
+              - "{{ hostvars['frontend']['result'] }}"
+              - "{{ hostvars['appdb']['result'] }}"
+
+          reason:
+              - "{{ hostvars['app1']['reason'] }}"
+              - "{{ hostvars['app2']['reason'] }}"
+              - "{{ hostvars['frontend']['reason'] }}"
+              - "{{ hostvars['appdb']['reason'] }}"
+
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
