@@ -93,7 +93,7 @@
         group: devops
 
     - name: Execute Playbook
-      shell: sudo -u devops ansible-playbook -i "{{file_path}}/hosts"  "{{file_path}}/create_users.yml"  --vault-password-file="{{file_path}}/vault-pass"
+      shell: ansible-playbook -i "{{file_path}}/hosts"  "{{file_path}}/create_users.yml"  --vault-password-file="{{file_path}}/vault-pass"
       
     
 
