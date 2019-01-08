@@ -1,7 +1,6 @@
 - name: create user accounts for all our servers
   hosts: lb
   become: True
-  remote_user: devops
   vars_files:
     - secret.yml
   tasks:
