@@ -1,0 +1,45 @@
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+frontend  main *:5000
+	stats uri /haproxy?stats
+    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .png .css .js
+
+#---------------------------------------------------------------------
+frontend  http_front
+	bind *:80
+   	default_backend             http_back
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+backend http_back
+    balance     roundrobin
+    {% for i in groups['webservers'] %}
+    server  server{{ loop.index }}  {{hostvars[i]['inventory_hostname']}}:80  check
+    {%endfor%}

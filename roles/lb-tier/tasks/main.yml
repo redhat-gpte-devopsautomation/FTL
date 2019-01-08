@@ -1,0 +1,48 @@
+---
+# tasks file for roles/lb-tier
+- name: Install Firewalld
+  yum:
+   name: firewalld
+   state: latest
+
+
+- name: Start firewalld service
+  service:
+   name: firewalld
+   state: started
+   enabled: true
+
+- name: Install haproxy
+  yum: 
+   name: "{{ item  }}"
+   state: latest
+  loop:
+   - "{{ haproxy_pkg }}"
+
+
+- name: Start haproxy 
+  service:
+   name: "{{ haproxy_srv }}"
+   enabled: true
+   state: started
+
+- name: Copy haproxy template
+  template:
+   src: haproxy.j2
+   dest: /etc/haproxy/haproxy.cfg
+  notify:
+   - restart_haproxy
+
+- name: Open haproxy port
+  firewalld:
+   service: http
+   state: enabled
+   immediate: true
+   permanent: true
+
+- name: Open haproxy statistics port
+  firewalld:
+   port: 5000/tcp
+   state: enabled
+   immediate: true
+   permanent: true
