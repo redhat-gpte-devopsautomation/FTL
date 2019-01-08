@@ -4,6 +4,7 @@
   user:
     name: "{{ user_name }}"
     generate_ssh_key: True
+    state: present
 
 - name: Setting up user's password
   shell: echo 'r3dh4t1!' | passwd --stdin {{ user_name }}
