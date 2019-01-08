@@ -79,14 +79,14 @@
       copy:
         content: |
             [lb]
-            frontend1.${GUID}.internal
+            frontend1.{{GUID}}.internal
 
             [webservers]
-            app1.${GUID}.internal
-            app2.${GUID}.internal
+            app1.{{GUID}}.internal
+            app2.{{GUID}}.internal
 
             [db]
-            appdb1.${GUID}.internal
+            appdb1.{{GUID}}.internal
         dest: "{{file_path}}/hosts" 
         mode: 0644  
         owner: devops
