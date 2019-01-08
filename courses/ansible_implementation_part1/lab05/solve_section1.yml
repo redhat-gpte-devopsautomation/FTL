@@ -69,19 +69,7 @@
          
     - name: Create secret variable file
       copy:
-        content: |
-            - name: create user accounts for all our servers
-              hosts: lb
-              become: True
-              remote_user: devops
-              vars_files:
-                - secret.yml
-              tasks:
-                - name: Creating users from secret.yml
-                  user:
-                    name: "{{ item.name }}"
-                    password: "{{ item.pw | password_hash('sha512') }}"
-                  with_items: "{{ newusers }}"
+        src: ./create_users.yml  
         dest: "{{file_path}}/create_users.yml" 
         mode: 0644  
         owner: devops
