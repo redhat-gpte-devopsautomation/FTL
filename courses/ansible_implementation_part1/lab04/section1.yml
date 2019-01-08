@@ -137,12 +137,12 @@
       return_content: yes
     register: webpage
 
-  - debug: var=webpage.content
+  - debug: var=webpage
 ################## Condition 2 Fail #####################
   - name: Check kiosk data in db fail
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL`" 
-      reason: "{{ reason + [ inventory_hostname + ' : kiosk user's details are not present ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : kiosk is not present ] }}" 
     when: ( webpage.status == -1 )  or 
           ("'kiosk redhat /bin/bash /home/kiosk' not in webpage.content")
 
@@ -151,7 +151,7 @@
   - name: Check kiosk data in db pass
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
-      reason: "{{ reason + [ inventory_hostname + ' : kiosk user's details are present ] }}"  
+      reason: "{{ reason + [ inventory_hostname + ' : kiosk  is present ] }}"  
         
     when:  "'kiosk redhat /bin/bash /home/kiosk' in webpage.content"
 
