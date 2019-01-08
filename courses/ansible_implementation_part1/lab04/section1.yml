@@ -29,7 +29,7 @@
     register: httpd_output  
 
   - debug: var=httpd_output
-  
+
     when: inventory_hostname in groups['apps']
 
   - name: Check httpd service status
@@ -80,31 +80,31 @@
     set_fact:
         result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ [ inventory_hostname + ' : firewalld service is started' ] }}" 
-    when: ( firewalld_output.status.UnitFileState is defined ) 
+    when: ( firewalld_output.status.UnitFileState is defined ) and
           ( firewalld_output.status.ActiveState == "active" ) 
 
   - name: Pass if httpd service is started
     set_fact:
         result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ [ inventory_hostname + ' : httpd service is started' ] }}" 
-    when: ( inventory_hostname in groups['apps'] )  
-          ( httpd_output.status.UnitFileState is defined )  
+    when: ( inventory_hostname in groups['apps'] )          and
+          ( httpd_output.status.UnitFileState is defined )  and
           ( httpd_output.status.ActiveState == "active" )
 
   - name: Pass if haproxy service is started
     set_fact:
         result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ [ inventory_hostname + ' : haproxy service is started' ] }}" 
-    when: ( inventory_hostname in groups['frontends'] )  
-          ( haproxy_output.status.UnitFileState is defined ) 
+    when: ( inventory_hostname in groups['frontends'] )       and
+          ( haproxy_output.status.UnitFileState is defined )  and
           ( haproxy_output.status.ActiveState == "active" )
 
   - name: Pass if mysqld service is started
     set_fact:
         result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ [ inventory_hostname + ' : mysqld service is started' ] }}" 
-    when: ( inventory_hostname in groups['appdbs'] )   
-          ( mysqld_output.status.UnitFileState is defined ) 
+    when: ( inventory_hostname in groups['appdbs'] )          and
+          ( mysqld_output.status.UnitFileState is defined )   and
           ( mysqld_output.status.ActiveState == "active"  )
 
   # - debug: var=reason
