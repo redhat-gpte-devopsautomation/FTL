@@ -41,5 +41,5 @@ frontend  http_front
 backend http_back
     balance     roundrobin
     {% for i in groups['apps'] %}
-    server  server{{ loop.index }}  {{hostvars[i]['ansible_fqdn']}}:80  check
+    server  server{{ loop.index }}  {{hostvars[i]['ansible_host']}}:80  check
     {%endfor%}
