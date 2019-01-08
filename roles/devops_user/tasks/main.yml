@@ -15,7 +15,7 @@
   when: inventory_hostname in groups['bastions']
 
 - debug: 
-    var: "{{ hostvars['bastion']['ssh_pubkey']['stdout'] }}"  
+    msg: "{{ hostvars['bastion']['ssh_pubkey']['stdout'] }}"  
 
 - name: Copy ssh public key on all servers
   authorized_key: 
