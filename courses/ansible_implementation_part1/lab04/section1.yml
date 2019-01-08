@@ -132,7 +132,7 @@
    
   - name: Run a Curl Test against Frontend
     uri:
-      url: http://hostvars['appdb']['internal_hostname']/?name=kiosk
+      url: http://{{ hostvars.frontend.ansible_host }}/?name=kiosk
       status_code: 403,200,-1
       return_content: yes
     register: webpage
