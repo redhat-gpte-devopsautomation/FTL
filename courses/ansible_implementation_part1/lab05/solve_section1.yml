@@ -3,6 +3,11 @@
   tasks:
 
   ####### Condition 1 ###################
+    - name: Create User devops
+      user: 
+        name: devops
+        state: present
+
     - name: Create Directory
       file: 
         path: ~devops/ansible_implementation
