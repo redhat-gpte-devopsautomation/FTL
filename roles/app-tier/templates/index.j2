@@ -1,6 +1,6 @@
 
 <?php
-	$db=mysqli_connect("{{ groups.db | list | join ('\',\'') }}", {{ db['user'] | to_json }} ,{{ db['password'] | to_json }}, {{ db['database'] | to_json }});
+	$db=mysqli_connect("{{ groups.appdbs | list | join ('\',\'') }}", {{ db['user'] | to_json }} ,{{ db['password'] | to_json }}, {{ db['database'] | to_json }});
 
 	if (mysqli_connect_errno()){
 		echo "Failed to connect";
