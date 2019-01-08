@@ -32,8 +32,8 @@
       owner: devops
       group: devops 
       loop: 
-        - {{ vault-pass: redhat }}
-        - {{ vault-pass-change: ansible }}
+        - "{{ vault-pass: redhat }}"
+        - "{{ vault-pass-change: ansible }}"
 
     - name: Encrypt file by ansible-vault
       shell: ansible-vault encrypt ~devops/ansible_implementation/{{item.0}} --vault-password-file=/home/devops/ansible_implementation/{{item.1}}
