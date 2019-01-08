@@ -74,7 +74,7 @@
 
 
   - name: Pass if firewalld service is started
-   set_fact:
+    set_fact:
         result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ reason + [ inventory_hostname + ' : firewalld service is started' ] }}" 
     when: ( firewalld_output.UnitFileState is defined ) or
