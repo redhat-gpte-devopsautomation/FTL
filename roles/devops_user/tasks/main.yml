@@ -19,7 +19,7 @@
 - name: Copy ssh public key on all servers
   authorized_key: 
     user: "{{ user_name }}" 
-    key: "{{ ssh_pubkey.stdout }}"
+    key: "{{ hostvars['bastion'][ssh_pubkey][stdout] }}"
   when: inventory_hostname not in groups['bastions']
 
 - name: Sudoer user setup
