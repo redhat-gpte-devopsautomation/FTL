@@ -27,7 +27,7 @@
 
     - name: Create file
       copy:
-        content: >
+        content: |
           This is encrypted.
           This is also encrypted.
         dest: ~devops/ansible_implementation/{{ item }}
