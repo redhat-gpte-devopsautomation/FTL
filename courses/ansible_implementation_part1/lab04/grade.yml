@@ -14,5 +14,5 @@
 
     - name: Print Reason and Result
       debug:
-        var: grade_status
+        var: grade_status.upper()
  

@@ -22,14 +22,11 @@
     service:
       name: firewalld
     register: firewalld_output  
-  - debug: var=firewalld_output 
+
   - name: Check httpd service status
     service:
       name: httpd
     register: httpd_output  
-
-  - debug: var=httpd_output
-
     when: inventory_hostname in groups['apps']
 
   - name: Check httpd service status
