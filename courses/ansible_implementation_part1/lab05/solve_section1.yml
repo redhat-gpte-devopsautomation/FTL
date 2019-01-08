@@ -28,9 +28,9 @@
       copy:
         content: "{{ item.1 }}"
         dest: ~devops/ansible_implementation/{{ item.0 }}
-      mode: 0644  
-      owner: devops
-      group: devops 
+        mode: 0644  
+        owner: devops
+        group: devops 
       loop: 
         - "{{ vault-pass: redhat }}"
         - "{{ vault-pass-change: ansible }}"
