@@ -1,0 +1,23 @@
+---
+# tasks file for devops_user
+- name: Create devops user
+  user:
+    name: "{{ user_name }}"
+    generate_ssh_key: True
+
+- name: get devops user's public key
+  shell: cat /home/devops/.ssh/id_rsa.pub
+  register: ssh_pubkey
+  when: inventory_hostname in groups['bastions']
+
+- name: Copy ssh public key on all servers
+  authorized_key: 
+    user: "{{ user_name }}" 
+    key: "{{ ssh_pubkey.stdout }}"
+  when: inventory_hostname not in groups['bastions']
+
+- name: Sudoer user setup
+  lineinfile:
+    dest: /etc/sudoers 
+    state: present 
+    line: '{{ user_name }} ALL=(ALL) NOPASSWD: ALL'
