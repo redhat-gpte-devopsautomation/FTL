@@ -77,8 +77,8 @@
     set_fact:
         result: "{{ [ inventory_hostname + ' : Pass' ] }}" 
         reason: "{{ [ inventory_hostname + ' : firewalld service is started' ] }}" 
-    when: ( firewalld_output.status.UnitFileState is defined ) and 
-          ( ( firewalld_output.status.ActiveState is defined ) and ( firewalld_output.status.ActiveState == "active" ) )
+    when: ( firewalld_output.status.UnitFileState is defined ) 
+          ( firewalld_output.status.ActiveState == "active" ) 
 
   - name: Pass if httpd service is started
     set_fact:
