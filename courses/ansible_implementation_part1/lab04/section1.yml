@@ -126,7 +126,7 @@
 ################## Condition 2 #####################
 
 - name: Verify Section2
-  hosts: localhost
+  hosts: frontends
   gather_facts: no
   tasks:
    
