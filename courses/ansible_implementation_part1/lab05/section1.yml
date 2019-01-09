@@ -61,19 +61,19 @@
 
   - name: File check pass 0
     set_fact:
-      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + '  exist.'  ] " 
     when:  stat_output.results.0.stat.exists
         
   - name:  File check pass 1
     set_fact:
-      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "     
     when:  stat_output.results.1.stat.exists 
 
   - name:  File check pass 2
     set_fact:
-      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
     when:  stat_output.results.2.stat.exists  
 
