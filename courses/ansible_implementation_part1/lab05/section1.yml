@@ -65,31 +65,31 @@
 ### condiation1 Pass #### 
   - name: File check pass 0
     set_fact:
-      result:  "{{ inventory_hostname }} : PASS"
+      a_result:  "{{ inventory_hostname }} : PASS"
         #"{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      reason: "Files {{ stat_output.results.0.item }}  exist."
+      a_reason: "Files {{ stat_output.results.0.item }}  exist."
         #"{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + '  exist.'  ] " 
-      assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
+      assessment_result: "{{ assessment_result }} + {{ a_result  +  a_reason }} "
     when:  stat_output.results.0.stat.exists
         
-  - name:  File check pass 1
-    set_fact:
-      result: "{{ inventory_hostname }} : PASS" 
-      # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      reason:  "Files {{ stat_output.results.1.item }}  exist."  
-      #"{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "   
-      #add_array: "{{ result }}" + 
-      assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
-    when:  stat_output.results.1.stat.exists 
+  # - name:  File check pass 1
+  #   set_fact:
+  #     result: "{{ inventory_hostname }} : PASS" 
+  #     # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+  #     reason:  "Files {{ stat_output.results.1.item }}  exist."  
+  #     #"{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "   
+  #     #add_array: "{{ result }}" + 
+  #     assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
+  #   when:  stat_output.results.1.stat.exists 
 
-  - name:  File check pass 2
-    set_fact:
-      result: "{{ inventory_hostname }} : PASS" 
-      # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      reason:  "Files {{ stat_output.results.0.item }}  exist."
-      # "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
-      assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
-    when:  stat_output.results.2.stat.exists  
+  # - name:  File check pass 2
+  #   set_fact:
+  #     result: "{{ inventory_hostname }} : PASS" 
+  #     # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+  #     reason:  "Files {{ stat_output.results.0.item }}  exist."
+  #     # "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
+  #     assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
+  #   when:  stat_output.results.2.stat.exists  
 
 # #****************************#
 # ########## Grade 2 ########### 
