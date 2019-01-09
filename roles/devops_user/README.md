@@ -1,22 +1,23 @@
-Role Name
+devops-user 
 =========
 
-A brief description of the role goes here.
-
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+devops-user role creates user (defined in user_name variable), 
+generates ssh key, 
+set password (defined in user_password variable) sha-512 based, 
+copies ssh-pubkey ( when copy_ssh_pubkey: yes) fron server (defined in primary_server variable) onto rest host for key based authentication and 
+also adds user into sudoers (when user_is_sudoer: yes) with complete & NOPASSWD parameter.
 
 Role Variables
 --------------
+Following are the variable defined in defaults with default value 
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+user_name: devops
+primary_server: bastions
+user_password: r3dh4t1!
+copy_ssh_pubkey: yes
+user_is_sudoer: yes
 
-Dependencies
-------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
 Example Playbook
 ----------------
@@ -25,14 +26,14 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: devops_user, user_password: redhat }
 
 License
 -------
 
-BSD
+GPL
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+GPTE
