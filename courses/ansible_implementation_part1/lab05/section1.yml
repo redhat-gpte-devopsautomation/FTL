@@ -196,6 +196,7 @@
               - "{{ hostvars['bastion']['reason'] }}"
           assessment_result:
             - "{{ hostvars['bastion']['assessment_result'] }}"          
-            
+
+         
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"

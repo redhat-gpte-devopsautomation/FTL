@@ -5,19 +5,20 @@
   gather_facts: no
   roles:
   - { role: "infra-ec2-wait_for_linux_hosts" }
-
+###############     Play for solutions  ###############
 - import_playbook: ./solve_section1.yml
   when: solve == "true"
 
-########## Play to test #################
+###############     Play1 for grade     ###############
 
 - name: Verify section1
   hosts: apps:appdbs:frontends
   gather_facts: no
   tasks:
 
-  
-  ############# condition1 #############
+#****************************#
+########## Grade 1 ########### 
+#****************************#
   - name: Check httpd service status
     service:
       name: firewalld
@@ -41,8 +42,7 @@
     register: mysqld_output   
     when: inventory_hostname in groups['appdbs']
     
-
-  ############# condition1 Fail #############
+#### condiation1 Fail ####
   - name: Fail if firewalld service is not started
     set_fact:
         result:  
@@ -78,9 +78,7 @@
     when: ( inventory_hostname in groups['appdbs'] )   and 
           (( mysqld_output.status.UnitFileState is not defined ) or ( mysqld_output.status.ActiveState != "active" ))
 
-  ############# condition1 Pass #############
-
-
+#### condiation1 Psss ####
   - name: Pass if firewalld service is started
     set_fact:
         result: 
@@ -122,14 +120,22 @@
 
   # - debug: var=reason
   # - debug: var=result
+#******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
+  - name: Include concatenate assessment_result role in play1
+    include_role: assessment_result
+ # - debug: var=assessment_result
+#************************        End of Concatenate list, Must be included         ********************************#
 
-################## Condition 2 #####################
 
+###############     Play2 for grade      ###############
 - name: Verify Section2
   hosts: frontends
   gather_facts: no
   tasks:
-   
+
+#****************************#
+########## Grade 2 ########### 
+#****************************# 
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ hostvars.frontend.ansible_host }}/?name=kiosk
@@ -137,8 +143,7 @@
       return_content: yes
     register: webpage
 
-  - debug: var=webpage
-################## Condition 2 Fail #####################
+#### condiation2 Fail ####
   - name: Check kiosk data in db fail
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
@@ -146,14 +151,21 @@
     when: ( webpage.status == -1 )  and 
           ("'kiosk redhat /bin/bash /home/kiosk' not in webpage.content")
 
-################ Condition 2 Pass #####################
-
+#### condiation2 Pass ####
   - name: Check kiosk data in db pass
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : Pass' ] }}" 
       reason: "{{ reason + [ inventory_hostname + ' : kiosk  is present' ] }}"  
         
     when:  "'kiosk redhat /bin/bash /home/kiosk' in webpage.content"
+
+  # - debug: var=reason
+  # - debug: var=result
+#******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
+  - name: Include concatenate assessment_result role in play2
+    include_role: assessment_result
+ # - debug: var=assessment_result
+#************************        End of Concatenate list, Must be included         ********************************#
 
 
 ############## Play for Adding variable back to localhost ##############################
@@ -175,6 +187,11 @@
               - "{{ hostvars['app2']['reason'] }}"
               - "{{ hostvars['frontend']['reason'] }}"
               - "{{ hostvars['appdb']['reason'] }}"
+          assessment_result:
+              - "{{ hostvars['app1']['assessment_result'] }}"
+              - "{{ hostvars['app2']['assessment_result'] }}"
+              - "{{ hostvars['frontend']['assessment_result'] }}"
+              - "{{ hostvars['appdb']['assessment_result'] }}"
 
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"
