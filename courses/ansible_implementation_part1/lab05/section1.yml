@@ -55,7 +55,7 @@
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason: "{{ reason + [ inventory_hostname + ' : files ' + stat_output.results.stat_loop.item + ' does not exist.' ] }}" 
         
-    when: ( ! stat_output.results.{{ item }}.stat.exists )   
+    when: ( ! stat_output.results.{{ stat_loop }}.stat.exists )   
     loop: 
         - 0
         - 1
