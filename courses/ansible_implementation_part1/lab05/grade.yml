@@ -8,10 +8,10 @@
 - import_playbook: section1.yml
 
 
-# - hosts: localhost
-#   tasks:
+- hosts: localhost
+  tasks:
 
-#     - name: Print Reason and Result
-#       debug:
-#         var: grade_status
+    - name: Print Reason and Result
+      debug:
+        var: grade_status
  
