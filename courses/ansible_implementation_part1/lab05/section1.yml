@@ -178,7 +178,7 @@
   - debug: var=reason
   - debug: var=result
   - set_fact:
-      assessment_result:  "{{ assessment_result }} + [ 'Result for ' + '{{ item.0 }}' + ', Summary ===> ' + '{{ item.1 }}' ]"
+      assessment_result:  "{{ assessment_result }} + [ 'Result for ' + '{{ item.0 }}' + ', Summary ===> at ' + '{{ item.1 }}' ]"
     with_together:
       - "{{ result }}"
       - "{{ reason }}"
@@ -195,6 +195,8 @@
               - "{{ hostvars['bastion']['result'] }}" 
           reason:
               - "{{ hostvars['bastion']['reason'] }}"
+        assessment_result:
+          - "{{ hostvars['bastion']['assessment_result'] }}"
               
 
   -  set_fact:   
