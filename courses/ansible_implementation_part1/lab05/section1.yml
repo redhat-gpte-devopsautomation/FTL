@@ -36,21 +36,32 @@
       - "{{ file_path }}/super-secret-decrypted.yml"  
       - "{{ file_path }}/super-secret-ecrypted.yml"  
         
-  - debug: var=stat_output
-  - debug: var=stat_output.results.0.stat.exists
-  - debug: var=stat_output.results.0.item
-  - debug: var=stat_output.results.1.stat.exists
-  - debug: var=stat_output.results.1.item
-  - debug: var=stat_output.results.2.stat.exists
-  - debug: var=stat_output.results.2.item
-
-#   - name: Fail if files are not exist
-#     set_fact:
-#       result: 
-#         - "{{ inventory_hostname }} : FAIL"
-#       reason: 
-#         - "{{inventory_hostname}} : files are not exist."
-#     when: 
+  # - debug: var=stat_output
+  # - debug: var=stat_output.results.0.stat.exists
+  # - debug: var=stat_output.results.0.item
+  # - debug: var=stat_output.results.1.stat.exists
+  # - debug: var=stat_output.results.1.item
+  # - debug: var=stat_output.results.2.stat.exists
+  # - debug: var=stat_output.results.2.item
+  - name: Fail if files are not exist
+    set_fact:
+      result: 
+        - 
+      reason: 
+        - 
+        
+  - name: Fail if files are not exist
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : files ' + stat_output.results.stat_loop.item + ' does not exist.' ] }}" 
+        
+    when: ( ! stat_output.results.{{ item }}.stat.exists )   
+    loop: 
+        - 0
+        - 1
+        - 2
+    loop_control:
+        label: stat_loop
        
 #   - name: Fail if custom facts are incorrect
 #     set_fact:
@@ -98,20 +109,19 @@
 #   # - debug: var=reason
 #   # - debug: var=result
 
-# ############## Play for Adding variable back to localhost ##############################
-# - name: append grade list from section1
-#   hosts: localhost
-#   tasks:
-#   - name: setting up section1 array
-#     set_fact:
-#       array:
-#         section1:
-#           result: 
-#               - "{{ hostvars['app1']['result'] }}"
-#               - "{{ hostvars['app2']['result'] }}"
-#           reason:
-#               - "{{ hostvars['app1']['reason'] }}"
-#               - "{{ hostvars['app2']['reason'] }}"
+############## Play for Adding variable back to localhost ##############################
+- name: append grade list from section1
+  hosts: localhost
+  tasks:
+  - name: setting up section1 array
+    set_fact:
+      array:
+        section1:
+          result: 
+              - "{{ hostvars['bastion']['result'] }}" 
+          reason:
+              - "{{ hostvars['bastion']['reason'] }}"
+              
 
-#   -  set_fact:   
-#       grade_status: "{{ grade_status | combine(array) }}"
+  -  set_fact:   
+      grade_status: "{{ grade_status | combine(array) }}"
