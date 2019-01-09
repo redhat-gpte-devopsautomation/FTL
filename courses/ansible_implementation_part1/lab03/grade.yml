@@ -4,7 +4,7 @@
       set_fact:
         grade_status:
           module: "Lab03"
-          
+
 - hosts: all
   tasks:
     - name: array
@@ -24,6 +24,6 @@
       debug:
         var: grade_status.section1.assessment_result
 
-     - name: Print Assessment_result for section2
+    - name: Print Assessment_result for section2
       debug:
         var: grade_status.section1.assessment_result
