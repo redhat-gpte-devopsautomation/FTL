@@ -103,17 +103,30 @@
   - debug: var=secret_encrypted_output
 
 #### condiation1 Fail ####
-  - name: File check fail 0
+  - name: File check file super_secret.yml
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stderr }}'   ] " 
     when:  secret_output.rc == 1
 
-  - name: File check fail 0
+  - name: File check file super_secret_encrypt.yml
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stderr }}'  ] " 
     when:  secret_encrypted_output.rc == 1
+
+  - name: File check super_secret.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stderr }}'   ] " 
+    when:  ( secret_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" in secret_output.stdout )
+
+  - name: File check super_secret_encrypt.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stderr }}'  ] " 
+    when:  ( secret_encrypted_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" in secret_encrypted_output.stdout )
+
 
 #***********************************************************#
 #   # - debug: var=reason
