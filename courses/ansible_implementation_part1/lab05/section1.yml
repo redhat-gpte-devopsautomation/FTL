@@ -180,7 +180,8 @@
 
 #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
   - name: Include concatenate assessment_result role 
-    include_role: assessment_result
+    include_role: 
+      name: assessment_result
  # - debug: var=assessment_result
 ###############   Play for Adding variable back to localhost  ###############
 - name: append grade list from section1
