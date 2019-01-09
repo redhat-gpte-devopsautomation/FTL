@@ -37,9 +37,9 @@
       - "{{ file_path }}/super-secret-ecrypted.yml"  
         
   - debug: var=stat_output
-  - debug: var=stat_output.results.0.stat.exist
-  - debug: var=stat_output.results.0.stat.exist
-  - debug: var=stat_output.results.0.stat.exist
+  - debug: var=stat_output.results.0.stat.exists
+  - debug: var=stat_output.results.0.stat.exists
+  - debug: var=stat_output.results.0.stat.exists
 
 #   - name: Fail if files are not exist
 #     set_fact:
