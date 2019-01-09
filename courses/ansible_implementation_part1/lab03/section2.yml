@@ -30,20 +30,16 @@
 #### condiation1 Fail ####
   - name: set grade to fail
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : Fail" 
-      reason: 
-        - "{{inventory_hostname}} : Webpage is not having correct content"
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : Webpage does not have correct content.' ] }}"
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content") or
            ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
        
 #### condiation1 Psss ####
   - name: set grade to pass
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : PASS" 
-      reason: 
-        - "{{inventory_hostname}} : {{ webpage.content }}"
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : ' + webpage.content  ] }}"
     when:  ("Example" in webpage.content) or
            ("has been customized using Ansible" in webpage.content)
     
