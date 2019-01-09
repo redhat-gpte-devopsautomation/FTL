@@ -24,9 +24,8 @@
   tasks:
   - name: array
     set_fact:
-      result:  
-      reason: 
-      assessment_result: []
+      result: [] 
+      reason: []
        
 #****************************#
 ########## Grade 1 ########### 
@@ -40,168 +39,143 @@
       - "{{ file_path }}/super-secret-decrypted.yml"  
       - "{{ file_path }}/super-secret-encrypted.yml"
 
-# #### condiation1 Fail ####
-#   - name: File check fail 0
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + ' does not exist.'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  not stat_output.results.0.stat.exists
+#### condiation1 Fail ####
+  - name: File check fail 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + ' does not exist.'  ] " 
+    when:  not stat_output.results.0.stat.exists
         
-#   - name:  File check fail 1
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + ' does not exist.'  ] "   
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']  
-#     when:  not stat_output.results.1.stat.exists 
+  - name:  File check fail 1
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + ' does not exist.'  ] "     
+    when:  not stat_output.results.1.stat.exists 
 
-#   - name:  File check fail 2
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' does not exist.'  ] "  
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  not stat_output.results.2.stat.exists  
+  - name:  File check fail 2
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' does not exist.'  ] "  
+    when:  not stat_output.results.2.stat.exists  
   
-### condiation1 Pass #### 
+#### condiation1 Pass #### 
   - name: File check pass 0
     set_fact:
-      a_result:  "{{ inventory_hostname }} : PASS"
-        #"{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      a_reason: "Files {{ stat_output.results.0.item }}  exist."
-        #"{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + '  exist.'  ] " 
-      assessment_result: "{{ assessment_result }} + {{ a_result  +  a_reason }} "
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + '  exist.'  ] " 
     when:  stat_output.results.0.stat.exists
         
-  # - name:  File check pass 1
-  #   set_fact:
-  #     result: "{{ inventory_hostname }} : PASS" 
-  #     # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-  #     reason:  "Files {{ stat_output.results.1.item }}  exist."  
-  #     #"{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "   
-  #     #add_array: "{{ result }}" + 
-  #     assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
-  #   when:  stat_output.results.1.stat.exists 
+  - name:  File check pass 1
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "     
+    when:  stat_output.results.1.stat.exists 
 
-  # - name:  File check pass 2
-  #   set_fact:
-  #     result: "{{ inventory_hostname }} : PASS" 
-  #     # "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-  #     reason:  "Files {{ stat_output.results.0.item }}  exist."
-  #     # "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
-  #     assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
-  #   when:  stat_output.results.2.stat.exists  
+  - name:  File check pass 2
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
+    when:  stat_output.results.2.stat.exists  
 
-# #****************************#
-# ########## Grade 2 ########### 
-# #****************************#  
-#   - name: Create Password file1
-#     copy:
-#       content: "{{ item.value }}"
-#       dest: /tmp/{{ item.key }}
-#       mode: 0600  
-#       owner: devops
-#       group: devops 
-#     loop: "{{ file_and_password |dict2items }}"
+#****************************#
+########## Grade 2 ########### 
+#****************************#  
+  - name: Create Password file1
+    copy:
+      content: "{{ item.value }}"
+      dest: /tmp/{{ item.key }}
+      mode: 0600  
+      owner: devops
+      group: devops 
+    loop: "{{ file_and_password |dict2items }}"
 
-#   - name: Checking super-secret.yml files
-#     shell: ansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
-#     ignore_errors: yes
-#     register: secret_output
+  - name: Checking super-secret.yml files
+    shell: ansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
+    ignore_errors: yes
+    register: secret_output
 
-#   - name: Checking super-secret-encrypted.yml files
-#     shell: ansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
-#     ignore_errors: yes
-#     register: secret_encrypted_output
+  - name: Checking super-secret-encrypted.yml files
+    shell: ansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
+    ignore_errors: yes
+    register: secret_encrypted_output
 
-#   - name: Checking Users
-#     shell: getent passwd {{ item }}
-#     remote_user: ec2-user
-#     become: yes
-#     register: getent_output
-#     loop:
-#       - ansibleuser1
-#       - ansibleuser2
-#     delegate_to: frontend1.{{GUID}}.example.opentlc.com
-#     ignore_errors: yes
+  - name: Checking Users
+    shell: getent passwd {{ item }}
+    remote_user: ec2-user
+    become: yes
+    register: getent_output
+    loop:
+      - ansibleuser1
+      - ansibleuser2
+    delegate_to: frontend1.{{GUID}}.example.opentlc.com
+    ignore_errors: yes
 
-# #### condiation1 Fail ####
-#   - name: File check file super_secret.yml
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stderr }}'   ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  secret_output.rc == 1
+#### condiation1 Fail ####
+  - name: File check file super_secret.yml
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stderr }}'   ] " 
+    when:  secret_output.rc == 1
 
-#   - name: File check file super_secret_encrypt.yml
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stderr }}'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  secret_encrypted_output.rc == 1
+  - name: File check file super_secret_encrypt.yml
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stderr }}'  ] " 
+    when:  secret_encrypted_output.rc == 1
 
-#   - name: File check super_secret.yml file content
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret.yml has correct content' ]" 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  ( secret_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted"  not in secret_output.stdout )
-    
+  - name: File check super_secret.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret.yml has correct content' ]" 
+    when:  ( secret_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted"  not in secret_output.stdout )
 
-#   - name: File check super_secret_encrypt.yml file content
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret_encrypted.yml has wrong content'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  ( secret_encrypted_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" not in secret_encrypted_output.stdout )
+  - name: File check super_secret_encrypt.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret_encrypted.yml has wrong content'  ] " 
+    when:  ( secret_encrypted_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" not in secret_encrypted_output.stdout )
 
-#   - name: User check fail 0
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.0.item }}' + ' does not exist.'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  getent_output.results.0.rc != 0
+  - name: User check fail 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.0.item }}' + ' does not exist.'  ] " 
+    when:  getent_output.results.0.rc != 0
         
-#   - name:  User check fail 1
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.1.item }}' + ' does not exist.'  ] "   
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']  
-#     when:  getent_output.results.1.rc != 0 
+  - name:  User check fail 1
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.1.item }}' + ' does not exist.'  ] "     
+    when:  getent_output.results.1.rc != 0 
 
-# #### condiation1 Pass ####
-#   - name: File check super_secret.yml file content
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-#       reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret.yml has correct content' ]" 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  ( secret_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_output.stdout )
+#### condiation1 Pass ####
+  - name: File check super_secret.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret.yml has correct content' ]" 
+    when:  ( secret_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_output.stdout )
 
-#   - name: File check super_secret_encrypt.yml file content
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-#       reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret_encrypted.yml has correct content'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  ( secret_encrypted_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_encrypted_output.stdout )
+  - name: File check super_secret_encrypt.yml file content
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret_encrypted.yml has correct content'  ] " 
+    when:  ( secret_encrypted_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_encrypted_output.stdout )
 
-#   - name: User check pass 0
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.0.item }}' + ' exist.'  ] " 
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
-#     when:  getent_output.results.0.rc == 0
+  - name: User check pass 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.0.item }}' + ' exist.'  ] " 
+    when:  getent_output.results.0.rc == 0
         
-#   - name:  User check pass 1
-#     set_fact:
-#       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-#       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.1.item }}' + ' exist.'  ] "   
-# #      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']  
-#     when:  getent_output.results.1.rc == 0 
+  - name:  User check pass 1
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : User ' +  '{{ getent_output.results.1.item }}' + ' exist.'  ] "     
+    when:  getent_output.results.1.rc == 0 
 
 
 #*******************Debug variables***********************#
   - debug: var=reason
   - debug: var=result
-  - debug: var=assessment_result
 
 ###############   Play for Adding variable back to localhost  ###############
 - name: append grade list from section1
@@ -215,8 +189,7 @@
               - "{{ hostvars['bastion']['result'] }}" 
           reason:
               - "{{ hostvars['bastion']['reason'] }}"
-          assessment_result:     
-              - "{{ hostvars['bastion']['reason'] }}"
+              
 
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"
