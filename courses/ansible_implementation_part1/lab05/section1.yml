@@ -75,7 +75,8 @@
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "   
-      assessment_result: "{{ assessment_result }} + [ '{{ result }}' + '{{ reason }}' ] "
+      #add_array: "{{ result }}" + 
+      assessment_result: "{{ assessment_result }} + [ '{{ result  +  reason }}' ] "
     when:  stat_output.results.1.stat.exists 
 
   - name:  File check pass 2
