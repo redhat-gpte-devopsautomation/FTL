@@ -121,8 +121,8 @@
   # - debug: var=reason
   # - debug: var=result
 #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
-  - name: Include concatenate assessment_result role in play1
-    include_role: assessment_result
+  # - name: Include concatenate assessment_result role in play1
+  #   include_role: assessment_result
  # - debug: var=assessment_result
 #************************        End of Concatenate list, Must be included         ********************************#
 
