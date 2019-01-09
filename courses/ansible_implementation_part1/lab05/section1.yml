@@ -9,24 +9,42 @@
 - import_playbook: ./solve_section1.yml
   when: solve == "true"
 
-# - name: Verify section1
-#   hosts: apps
-#   gather_facts: no
-#   tasks:
-#   ############# condition1 ############# 
-#   - name: Gather Facts
-#     setup:
-#       filter: ansible_local
-#   #  - debug: var=ansible_facts
-#   ############# condiation1 Fail #############
-#   - name: Fail if custom fact is not defined
+#################################################
+- name: Verify section1
+  hosts: bastions
+  gather_facts: no
+  vars:
+    file_path: /home/devops/ansible_implementation
+    file_and_password:
+      vault-pass: redhat 
+      vault-pass-change: ansible   
+  tasks:
+#****************************#
+########## Grade 1 ########### 
+#****************************#
+
+   
+####condiation1 Fail #############
+
+  - name: Check files
+    stat:
+      path: "{{ item }}"
+    register: stat_output
+    loop: 
+      - "{{ file_path }}/super-secret.yml"
+      - "{{ file_path }}/super-secret-decrypted.yml"  
+      - "{{ file_path }}/super-secret-ecrypted.yml"  
+        
+  - debug: var=stat_output
+
+#   - name: Fail if files are not exist
 #     set_fact:
 #       result: 
 #         - "{{ inventory_hostname }} : FAIL"
 #       reason: 
-#         - "{{inventory_hostname}} : custom facts are not setup correctly."
+#         - "{{inventory_hostname}} : files are not exist."
 #     when: 
-#       ( ansible_facts.ansible_local.custom is not defined) 
+       
 #   - name: Fail if custom facts are incorrect
 #     set_fact:
 #       result: 

@@ -2,7 +2,6 @@
   become: yes
   roles:
     - devops_user
-
 - hosts: bastions
   become: yes
   vars:
@@ -11,9 +10,9 @@
       vault-pass: redhat 
       vault-pass-change: ansible 
   tasks:
-
-  ####### Solution 1 ###################
-
+#******************************#
+########## Solution 1 ##########
+#******************************#
     - name: Create Directory
       file: 
         path: ~devops/ansible_implementation
@@ -52,7 +51,9 @@
       shell:  ansible-vault encrypt /home/devops/ansible_implementation/super-secret-decrypted.yml --output=/home/devops/ansible_implementation/super-secret-encrypted.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass
       become: yes
 
-   ####### Solution 2 ###################
+#******************************#
+########## Solution 2 ##########
+#******************************#
     - name: Create secret variable file
       copy:
         content: |
@@ -78,6 +79,7 @@
         owner: devops
         group: devops
 
+#### Creating static hosts inventory file ####
     - name: Create secret variable file
       copy:
         content: |
@@ -95,6 +97,7 @@
         owner: devops
         group: devops
 
+#### Execute remote playbook ####
     - name: Execute Playbook
       shell: ansible-playbook -i "{{file_path}}/hosts"  "{{file_path}}/create_users.yml"  --vault-password-file="{{file_path}}/vault-pass" -vvv
       
