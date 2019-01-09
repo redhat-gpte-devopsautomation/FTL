@@ -21,13 +21,14 @@
       vault-pass: redhat 
       vault-pass-change: ansible   
   tasks:
+  - name: array
+    set_fact:
+      result: [] 
+      reason: []
+       
 #****************************#
 ########## Grade 1 ########### 
 #****************************#
-
-   
-####condiation1 Fail #############
-
   - name: Check files
     stat:
       path: "{{ item }}"
@@ -35,83 +36,71 @@
     loop: 
       - "{{ file_path }}/super-secret.yml"
       - "{{ file_path }}/super-secret-decrypted.yml"  
-      - "{{ file_path }}/super-secret-ecrypted.yml"  
-        
-  # - debug: var=stat_output
-  # - debug: var=stat_output.results.0.stat.exists
-  # - debug: var=stat_output.results.0.item
-  # - debug: var=stat_output.results.1.stat.exists
-  # - debug: var=stat_output.results.1.item
-  # - debug: var=stat_output.results.2.stat.exists
-  # - debug: var=stat_output.results.2.item
-  - name: array
-    set_fact:
-      result: [] 
-      reason: []
-       
-  - name: File check 0
+      - "{{ file_path }}/super-secret-encrypted.yml"
+
+#### condiation1 Fail ####
+  - name: File check fail 0
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + ' does not exist.'  ] " 
-    #when:  not stat_output.results.0.stat.exists
+    when:  not stat_output.results.0.stat.exists
         
-  - name:  File check 1
+  - name:  File check fail 1
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + ' does not exist.'  ] "     
-    #when:  not stat_output.results.1.stat.exists 
+    when:  not stat_output.results.1.stat.exists 
 
-  - name:  File check 2
+  - name:  File check fail 2
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' does not exist.'  ] " 
-        #"{% reason.append( inventory_hostname  + ' : files ' + {{ stat_output.results.2.item }} + ' does not exist.' )  %)"
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' does not exist.'  ] "  
     when:  not stat_output.results.2.stat.exists  
   
-       
-#   - name: Fail if custom facts are incorrect
-#     set_fact:
-#       result: 
-#         - "{{ inventory_hostname }} : FAIL"
-#       reason: 
-#         - "{{inventory_hostname}} : custom facts are not setup correctly."
-#     when: 
-#       ( ansible_facts.ansible_local.custom     is            defined ) and (
-#       ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
-#       ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or
-#       ( ansible_facts.ansible_local.custom.general.state != "started" ) )
-#   ############# condiation1 Pass #############        
-#   - name: Pass if custom facts are defined and correct
-#     set_fact:
-#       result: 
-#         - "{{ inventory_hostname }} : PASS"
-#       reason: 
-#         - "{{inventory_hostname}} : custom facts are setup correctly."
-#     when: 
-#       ( ansible_facts.ansible_local.custom     is            defined  ) and
-#       ( ansible_facts.ansible_local.custom.general.package == "httpd" ) and
-#       ( ansible_facts.ansible_local.custom.general.service == "httpd" ) and
-#       ( ansible_facts.ansible_local.custom.general.state == "started" ) 
-#   ############# condition2 #############
+#### condiation1 Pass #### 
 
-#   - name: Check httpd service status
-#     service:
-#       name: httpd
-#     register: httpd    
-#   ############# condition2 Fail #############
-#   - name: Fail if httpd service is not started
-#     set_fact:
-#         result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-#         reason: "{{ reason + [ inventory_hostname + ' : httpd service is not started' ] }}" 
-#     when: ( httpd.UnitFileState is not defined ) or
-#           ( httpd.ActiveState == "active" )
-#   ############# condition2 Pass #############
-#   - name: Pass if httpd service is started
-#     set_fact:
-#         result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-#         reason: "{{ reason + [ inventory_hostname + ' : httpd service is started' ] }}" 
-#     when: ( httpd.UnitFileState is defined ) and
-#           ( httpd.ActiveState == "active" ) 
+  - name: File check pass 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.0.item }}' + '  exist.'  ] " 
+    when:  stat_output.results.0.stat.exists
+        
+  - name:  File check pass 1
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.1.item }}' + '  exist.'  ] "     
+    when:  stat_output.results.1.stat.exists 
+
+  - name:  File check pass 2
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
+    when:  stat_output.results.2.stat.exists  
+
+#****************************#
+########## Grade 2 ########### 
+#****************************#  
+    - name: Create Password file1
+      copy:
+        content: "{{ item.value }}"
+        dest: /tmp/{{ item.key }}
+        mode: 0600  
+        owner: devops
+        group: devops 
+      loop: "{{ file_and_password |dict2items }}"
+
+  - name: Checking super-secret.yml files
+    shell: export ansibleansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
+    register: secret_output
+
+  - name: Checking super-secret-encrypted.yml files
+    shell: export ansibleansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
+    register: secret_encrypted_output
+
+  - debug: var=secret_output
+  - debug: var=secret_encrypted_output
+
+#***********************************************************#
 #   # - debug: var=reason
 #   # - debug: var=result
 
