@@ -118,32 +118,32 @@
   - name: File check super_secret.yml file content
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : File has wrong content -->' +  '{{ secret_output.stdout }}'   ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stdout }}'   ] " 
     when:  ( secret_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" not in secret_output.stdout )
 
   - name: File check super_secret_encrypt.yml file content
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : File has wrong content -->' +  '{{ secret_encrypted_output.stdout }}'  ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stdout }}'  ] " 
     when:  ( secret_encrypted_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" not in secret_encrypted_output.stdout )
 
 #### condiation1 Pass ####
   - name: File check super_secret.yml file content
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : File has following content -->' +  '{{ secret_output.stdout }}'   ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stdout }}'   ] " 
     when:  ( secret_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_output.stdout )
 
   - name: File check super_secret_encrypt.yml file content
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : File has following content -->' +  '{{ secret_encrypted_output.stdout }}'  ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stdout }}'  ] " 
     when:  ( secret_encrypted_output.rc == 1 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_encrypted_output.stdout )
 
 
 #***********************************************************#
-#   # - debug: var=reason
-#   # - debug: var=result
+  - debug: var=reason
+  - debug: var=result
 
 ############## Play for Adding variable back to localhost ##############################
 - name: append grade list from section1
