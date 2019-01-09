@@ -10,6 +10,14 @@
 - import_playbook: ./solve_section2.yml
   when: solve == "true"
 
+###############  Play1 to reset arrays  ###############
+- hosts: all
+  tasks:
+    - name: array
+      set_fact:
+        result: [] 
+        reason: []
+        assessment_result: []
 ###############     Play1 for grade     ###############
 - name: Verify Section2
   hosts: apps
