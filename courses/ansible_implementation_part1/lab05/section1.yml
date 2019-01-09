@@ -91,10 +91,12 @@
 
   - name: Checking super-secret.yml files
     shell: ansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
+    ignore_errors: yes
     register: secret_output
 
   - name: Checking super-secret-encrypted.yml files
     shell: ansible-vault view "{{ file_path }}/super-secret-decrypted.yml" --vault-password-file=/tmp/vault-pass
+    ignore_errors: yes
     register: secret_encrypted_output
 
   - debug: var=secret_output
