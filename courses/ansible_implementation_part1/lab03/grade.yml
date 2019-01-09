@@ -22,8 +22,7 @@
 
     - name: Print Assessment_result for section1
       debug:
-        msg: "{{ grade_status.section1.assessment_result}} \n
-              {{ grade_status.section1.assessment_result }}"
+        var: grade_status.section1.assessment_result
 
     - name: Print Assessment_result for section2
       debug:
