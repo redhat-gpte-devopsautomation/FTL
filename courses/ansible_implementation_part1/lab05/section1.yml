@@ -95,12 +95,25 @@
     register: secret_output
 
   - name: Checking super-secret-encrypted.yml files
-    shell: ansible-vault view "{{ file_path }}/super-secret-decrypted.yml" --vault-password-file=/tmp/vault-pass
+    shell: ansible-vault view "{{ file_path }}/super-secret-decrypted.yml" --vault-password-file=/tmp/vault-pas
     ignore_errors: yes
     register: secret_encrypted_output
 
   - debug: var=secret_output
   - debug: var=secret_encrypted_output
+
+#### condiation1 Fail ####
+  - name: File check fail 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_output.stderr }}'   ] " 
+    when:  not secret_output.rc
+
+  - name: File check fail 0
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : ' +  '{{ secret_encrypted_output.stderr }}'  ] " 
+    when:  not secret_encrypted_output.rc
 
 #***********************************************************#
 #   # - debug: var=reason
