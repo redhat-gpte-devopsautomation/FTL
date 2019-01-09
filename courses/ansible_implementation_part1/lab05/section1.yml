@@ -61,7 +61,7 @@
         - 1
         - 2
     loop_control:
-        label: stat_loop
+        label: "{{ stat_loop }}"
        
 #   - name: Fail if custom facts are incorrect
 #     set_fact:
