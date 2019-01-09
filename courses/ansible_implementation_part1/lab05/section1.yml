@@ -6,10 +6,11 @@
   roles:
   - { role: "infra-ec2-wait_for_linux_hosts" }
 
+###############     Play for solutions  ###############
 - import_playbook: ./solve_section1.yml
   when: solve == "true"
 
-#################################################
+###############     Play for grade      ###############
 - name: Verify section1
   hosts: bastions
   become: yes
@@ -58,7 +59,6 @@
     when:  not stat_output.results.2.stat.exists  
   
 #### condiation1 Pass #### 
-
   - name: File check pass 0
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
@@ -99,7 +99,6 @@
     ignore_errors: yes
     register: secret_encrypted_output
 
-
   - name: Checking Users
     shell: getent passwd {{ item }}
     remote_user: ec2-user
@@ -108,11 +107,8 @@
     loop:
       - ansibleuser1
       - ansibleuser2
-      
     delegate_to: frontend1.{{GUID}}.example.opentlc.com
     ignore_errors: yes
-
-  - debug: var=getent_output
 
 #### condiation1 Fail ####
   - name: File check file super_secret.yml
@@ -177,11 +173,11 @@
     when:  getent_output.results.1.rc == 0 
 
 
-#***********************************************************#
+#*******************Debug variables***********************#
   - debug: var=reason
   - debug: var=result
 
-############## Play for Adding variable back to localhost ##############################
+###############   Play for Adding variable back to localhost  ###############
 - name: append grade list from section1
   hosts: localhost
   tasks:
