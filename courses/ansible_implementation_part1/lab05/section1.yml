@@ -83,7 +83,7 @@
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' +  '{{ stat_output.results.2.item }}' + ' exist.'  ] "  
-#      assessment_result: "{{ assessment_result }}" + [ '{{ result }}' + ' ==> '  + '{{ reason }}']
+      assessment_result: "{{ assessment_result }} + {{ result  +  reason }} "
     when:  stat_output.results.2.stat.exists  
 
 #****************************#
