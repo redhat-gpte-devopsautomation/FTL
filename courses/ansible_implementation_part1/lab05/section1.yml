@@ -12,6 +12,7 @@
 #################################################
 - name: Verify section1
   hosts: bastions
+  become: yes
   gather_facts: no
   vars:
     file_path: /home/devops/ansible_implementation
