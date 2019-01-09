@@ -24,8 +24,8 @@
   tasks:
   - name: array
     set_fact:
-      # result: [] 
-      # reason: []
+      result:  
+      reason: 
       assessment_result: []
        
 #****************************#
