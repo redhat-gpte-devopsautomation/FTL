@@ -21,13 +21,7 @@
     file_and_password:
       vault-pass: redhat 
       vault-pass-change: ansible   
-  tasks:
-  # - name: array
-  #   set_fact:
-  #     result: [] 
-  #     reason: []
-  #     assessment_result: []
-       
+  tasks:     
 #****************************#
 ########## Grade 1 ########### 
 #****************************#
