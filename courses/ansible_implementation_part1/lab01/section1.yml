@@ -31,10 +31,8 @@
 #### condiation1 Fail ####
   - name: set grade to fail
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : FAIL"
-      reason: 
-        - "{{inventory_hostname}} : devops user not present."
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : devops user does not exist. ] }}"
     when: user_created.stdout != "devops"
 
   - name: set grade to fail
@@ -46,10 +44,8 @@
 #### condiation1 Psss ####
   - name: set grade to Pass
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : PASS"
-      reason: 
-        - "{{inventory_hostname}} : devops user is present."
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : devops user exists.' ] }}"
     when: user_created.stdout == "devops"
 
   - name: set grade to Pass
