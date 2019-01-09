@@ -19,7 +19,7 @@
 - hosts: localhost
   tasks:
 
-    - name: Print Reason and Result
+    - name: Print Assessment_result for section1
       debug:
-        var: grade_status
+        var: grade_status.section1.assessment_result
  
