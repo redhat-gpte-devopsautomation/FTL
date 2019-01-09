@@ -45,11 +45,11 @@
       loop: "{{ file_and_password |dict2items }}"
 
     - name: Encrypt file by ansible-vault
-      shell: devops ansible-vault encrypt /home/devops/ansible_implementation/super-secret.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass-change
+      shell:  ansible-vault encrypt /home/devops/ansible_implementation/super-secret.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass-change
       become: yes
 
     - name: Encrypt file by ansible-vault
-      shell:  devops ansible-vault encrypt /home/devops/ansible_implementation/super-secret-decrypted.yml --output=/home/devops/ansible_implementation/super-secret-encrypted.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass
+      shell:  ansible-vault encrypt /home/devops/ansible_implementation/super-secret-decrypted.yml --output=/home/devops/ansible_implementation/super-secret-encrypted.yml --vault-password-file=/home/devops/ansible_implementation/vault-pass
       become: yes
 
    ####### Solution 2 ###################
@@ -67,9 +67,9 @@
         group: devops   
 
     - name: Encrypt secret variable by ansible-vault
-      shell: devops ansible-vault encrypt "{{file_path}}/secret.yml" --vault-password-file="{{file_path}}/vault-pass"
+      shell: ansible-vault encrypt "{{file_path}}/secret.yml" --vault-password-file="{{file_path}}/vault-pass"
       become: yes
-         
+
     - name: Create secret variable file
       copy:
         src: ./create_users.yml  
