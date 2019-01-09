@@ -32,7 +32,7 @@
   - name: set grade to fail
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason: "{{ reason + [ inventory_hostname + ' : devops user does not exist. ] }}"
+      reason: "{{ reason + [ inventory_hostname + ' : devops user does not exist.' ] }}"
     when: user_created.stdout != "devops"
 
   - name: set grade to fail

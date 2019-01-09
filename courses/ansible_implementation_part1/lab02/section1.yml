@@ -30,20 +30,16 @@
 #### condiation1 Fail #### 
   - name: set grade to fail
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : Fail"
-      reason: 
-        - "{{inventory_hostname}} :  Webpage is not having correct content" 
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : Webpage does not have correct content.' ] }}"
     when: ( webpage.status == -1 )  or 
           ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
 
 #### condiation1 Psss ####
   - name: set grade to pass
     set_fact:
-      result: 
-        - "{{ inventory_hostname }} : PASS" 
-      reason: 
-        - "{{inventory_hostname}} : Hoorraaayyy!!! My first playbook ran successfully' is in the page content"
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : Hoorraaayyy!!! My first playbook ran successfully is in the page content' ] }}"
     when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
     
   # - debug: var=reason
