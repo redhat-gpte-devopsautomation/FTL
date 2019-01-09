@@ -4,7 +4,14 @@
       set_fact:
         grade_status:
           module: "Lab04"
-
+- hosts: all
+  tasks:
+    - name: array
+      set_fact:
+        result: [] 
+        reason: []
+        assessment_result: []
+        
 - import_playbook: section1.yml
 
 
