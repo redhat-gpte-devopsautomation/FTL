@@ -43,7 +43,7 @@
   # - debug: var=stat_output.results.1.item
   # - debug: var=stat_output.results.2.stat.exists
   # - debug: var=stat_output.results.2.item
-    - name: array
+  - name: array
     set_fact:
       result: 
         - 
