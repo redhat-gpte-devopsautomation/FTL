@@ -110,6 +110,7 @@
       - ansibleuser2
       - mitesh
     delegate_to: frontend1.{{GUID}}.example.opentlc.com
+    ignore_erros: yes
 
   - debug: var=getent_output
 
