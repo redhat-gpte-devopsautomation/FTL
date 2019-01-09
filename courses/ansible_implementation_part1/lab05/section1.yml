@@ -43,7 +43,7 @@
   # - debug: var=stat_output.results.1.item
   # - debug: var=stat_output.results.2.stat.exists
   # - debug: var=stat_output.results.2.item
-  - name: Fail if files are not exist
+  - name: Fail test
     set_fact:
       result: 
         - 
@@ -55,7 +55,7 @@
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
       reason: "{{ reason + [ inventory_hostname + ' : files ' + stat_output.results.[item]['item'] + ' does not exist.' ] }}" 
         
-    when:  not stat_output.results.[item]['stat']['exists']  
+    #when:  not stat_output.results.[item]['stat']['exists']  
     loop: 
         - 0
         - 1
