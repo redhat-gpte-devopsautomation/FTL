@@ -90,11 +90,11 @@
     loop: "{{ file_and_password |dict2items }}"
 
   - name: Checking super-secret.yml files
-    shell: export ansibleansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
+    shell: ansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
     register: secret_output
 
   - name: Checking super-secret-encrypted.yml files
-    shell: export ansibleansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
+    shell: ansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
     register: secret_encrypted_output
 
   - debug: var=secret_output
