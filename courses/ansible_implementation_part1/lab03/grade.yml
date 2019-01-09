@@ -26,4 +26,4 @@
 
     - name: Print Assessment_result for section2
       debug:
-        var: grade_status.section1.assessment_result
+        var: grade_status.section2.assessment_result
