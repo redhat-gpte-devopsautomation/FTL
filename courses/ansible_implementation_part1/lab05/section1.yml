@@ -99,8 +99,16 @@
     ignore_errors: yes
     register: secret_encrypted_output
 
-  - debug: var=secret_output
-  - debug: var=secret_encrypted_output
+
+  - name: Checking Users
+    shell: getent passwd {{ item }}
+    register: getent_output
+    loop:
+      - ansibleuser1
+      - ansibleuser2
+      - mitesh
+
+  - debug: var=getent_output
 
 #### condiation1 Fail ####
   - name: File check file super_secret.yml
@@ -139,6 +147,7 @@
       result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
       reason: "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : super_secret_encrypted.yml has correct content'  ] " 
     when:  ( secret_encrypted_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_encrypted_output.stdout )
+
 
 
 #***********************************************************#
