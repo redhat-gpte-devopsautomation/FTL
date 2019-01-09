@@ -94,7 +94,7 @@
     register: secret_output
 
   - name: Checking super-secret-encrypted.yml files
-    shell: ansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
+    shell: ansible-vault view "{{ file_path }}/super-secret-decrypted.yml" --vault-password-file=/tmp/vault-pass
     register: secret_encrypted_output
 
   - debug: var=secret_output
