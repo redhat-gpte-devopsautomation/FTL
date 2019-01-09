@@ -15,6 +15,7 @@
   become: yes
   gather_facts: no
   vars:
+    step_no: 2
     file_path: /home/devops/ansible_implementation
     file_and_password:
       vault-pass: redhat 
@@ -66,7 +67,7 @@
   - name:  File check 2
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' + '{{ stat_output.results.2.item }}' + ' does not exist.'  ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' + '{{ stat_output.results.'{{ step_no }}'.item }}' + ' does not exist.'  ] " 
         #"{% reason.append( inventory_hostname  + ' : files ' + {{ stat_output.results.2.item }} + ' does not exist.' )  %)"
     when:  not stat_output.results.2.stat.exists  
   
