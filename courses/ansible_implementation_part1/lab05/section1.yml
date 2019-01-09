@@ -175,8 +175,8 @@
 
 
 #*******************Debug variables***********************#
-  - debug: var=reason
-  - debug: var=result
+  # - debug: var=reason
+  # - debug: var=result
 
 #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
   - name: Include concatenate assessment_result role 
