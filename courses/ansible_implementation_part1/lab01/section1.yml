@@ -20,46 +20,46 @@
 #****************************#
 ########## Grade 1 ########### 
 #****************************#
-    - name: Verify devops user is created
-      shell: "grep devops /etc/passwd | cut -d: -f1"
-      register: user_created
+  - name: Verify devops user is created
+    shell: "grep devops /etc/passwd | cut -d: -f1"
+    register: user_created
 
-    - name: Verify /etc/motd has content
-      shell: "cat /etc/motd"
-      register: motd
+  - name: Verify /etc/motd has content
+    shell: "cat /etc/motd"
+    register: motd
 
 #### condiation1 Fail ####
-    - name: set grade to fail
-      set_fact:
-        result: 
-          - "{{ inventory_hostname }} : FAIL"
-        reason: 
-          - "{{inventory_hostname}} : devops user not present."
-      when: user_created.stdout != "devops"
+  - name: set grade to fail
+    set_fact:
+      result: 
+        - "{{ inventory_hostname }} : FAIL"
+      reason: 
+        - "{{inventory_hostname}} : devops user not present."
+    when: user_created.stdout != "devops"
 
-    - name: set grade to fail
-      set_fact:
-        result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-        reason: "{{ reason + [ inventory_hostname + ' : /etc/motd missing content' ] }}"
-      when: motd.stdout != "Managed by Ansible"
+  - name: set grade to fail
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : /etc/motd missing content' ] }}"
+    when: motd.stdout != "Managed by Ansible"
 
 #### condiation1 Psss ####
-    - name: set grade to Pass
-      set_fact:
-        result: 
-          - "{{ inventory_hostname }} : PASS"
-        reason: 
-          - "{{inventory_hostname}} : devops user is present."
-      when: user_created.stdout == "devops"
+  - name: set grade to Pass
+    set_fact:
+      result: 
+        - "{{ inventory_hostname }} : PASS"
+      reason: 
+        - "{{inventory_hostname}} : devops user is present."
+    when: user_created.stdout == "devops"
 
-    - name: set grade to Pass
-      set_fact:
-        result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
-        reason: "{{ reason + [ inventory_hostname + ' : /etc/motd missing content' ] }}"
-      when: motd.stdout == "Managed by Ansible"
-    
-  # - debug: var=reason
-  # - debug: var=result
+  - name: set grade to Pass
+    set_fact:
+      result: "{{ result + [ inventory_hostname + ' : PASS' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : /etc/motd missing content' ] }}"
+    when: motd.stdout == "Managed by Ansible"
+  
+# - debug: var=reason
+# - debug: var=result
 #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
   - name: Include concatenate assessment_result role in play1
     include_role: 
