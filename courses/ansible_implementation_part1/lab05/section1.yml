@@ -176,7 +176,11 @@
 #*******************Debug variables***********************#
   - debug: var=reason
   - debug: var=result
-
+  - debug:
+      msg: "{{ item.0 }} ==> {{ item.1 }}"
+    with_nested:
+      - "{{ result }}"
+      - "{{ reason }}"
 ###############   Play for Adding variable back to localhost  ###############
 - name: append grade list from section1
   hosts: localhost
