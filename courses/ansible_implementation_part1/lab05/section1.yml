@@ -107,8 +107,8 @@
     register: getent_output
     loop:
       - ansibleuser1
-      - ansibleuser2
-      - mitesh
+      - ansibleuser
+      
     delegate_to: frontend1.{{GUID}}.example.opentlc.com
     ignore_errors: yes
 
