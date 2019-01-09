@@ -102,7 +102,8 @@
 
   - name: Checking Users
     shell: getent passwd {{ item }}
-    
+    remote_user: ec2-user
+    become: yes
     register: getent_output
     loop:
       - ansibleuser1
