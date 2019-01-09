@@ -80,14 +80,14 @@
 #****************************#
 ########## Grade 2 ########### 
 #****************************#  
-    - name: Create Password file1
-      copy:
-        content: "{{ item.value }}"
-        dest: /tmp/{{ item.key }}
-        mode: 0600  
-        owner: devops
-        group: devops 
-      loop: "{{ file_and_password |dict2items }}"
+  - name: Create Password file1
+    copy:
+      content: "{{ item.value }}"
+      dest: /tmp/{{ item.key }}
+      mode: 0600  
+      owner: devops
+      group: devops 
+    loop: "{{ file_and_password |dict2items }}"
 
   - name: Checking super-secret.yml files
     shell: export ansibleansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
