@@ -107,6 +107,7 @@
       - ansibleuser1
       - ansibleuser2
       - mitesh
+    delegate_to: frontend1.{{GUID}}.internal
 
   - debug: var=getent_output
 
