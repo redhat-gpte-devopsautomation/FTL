@@ -102,12 +102,13 @@
 
   - name: Checking Users
     shell: getent passwd {{ item }}
+    
     register: getent_output
     loop:
       - ansibleuser1
       - ansibleuser2
       - mitesh
-    delegate_to: frontend1.{{GUID}}.internal
+    delegate_to: frontend1.{{GUID}}.example.opentlc.com
 
   - debug: var=getent_output
 
