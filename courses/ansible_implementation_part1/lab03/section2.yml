@@ -6,27 +6,19 @@
   roles:
   - { role: "infra-ec2-wait_for_linux_hosts" }
 
+###############     Play for solutions  ###############
 - import_playbook: ./solve_section2.yml
   when: solve == "true"
 
+###############     Play1 for grade     ###############
 - name: Verify Section2
   hosts: apps
   gather_facts: True
   tasks:
   
-  - name: Run a Curl Test against Frontend
-    uri:
-      url: http://{{ inventory_hostname }}
-      return_content: yes
-    register: webpage
-    ignore_errors: yes
-
-  - name: Verify section2
-  hosts: apps
-  gather_facts: no
-  tasks:
-  
- 
+#****************************#
+########## Grade 1 ########### 
+#****************************# 
   - name: Run a Curl Test against Frontend
     uri:
       url: http://{{ inventory_hostname }}
@@ -35,6 +27,7 @@
     ignore_errors: yes
   - debug: var=webpage.content
  
+#### condiation1 Fail ####
   - name: set grade to fail
     set_fact:
       result: 
@@ -44,7 +37,7 @@
     when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content") or
            ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
        
-
+#### condiation1 Psss ####
   - name: set grade to pass
     set_fact:
       result: 
@@ -56,9 +49,15 @@
     
   # - debug: var=reason
   # - debug: var=result
+#******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
+  - name: Include concatenate assessment_result role in play1
+    include_role: 
+      name: assessment_result
+ # - debug: var=assessment_result
+#************************        End of Concatenate list, Must be included         ********************************#
 
 ############## Play for Adding variable back to localhost ##############################
-- name: append grade list from section1
+- name: append grade list from section2
   hosts: localhost
   tasks:
   - name: setting up section2 array
@@ -71,6 +70,9 @@
           reason:
               - "{{ hostvars['app1']['reason'] }}"
               - "{{ hostvars['app2']['reason'] }}"
+          assessment_result:
+              - "{{ hostvars['app1']['assessment_result'] }}"
+              - "{{ hostvars['app2']['assessment_result'] }}"
 
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"

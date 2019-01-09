@@ -5,12 +5,12 @@
   gather_facts: no
   roles:
   - { role: "infra-ec2-wait_for_linux_hosts" }
+
 ###############     Play for solutions  ###############
 - import_playbook: ./solve_section1.yml
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
-
 - name: Verify section1
   hosts: apps:appdbs:frontends
   gather_facts: no
