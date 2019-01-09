@@ -53,15 +53,15 @@
   - name: Fail if files are not exist
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason: "{{ reason + [ inventory_hostname + ' : files ' + stat_output.results.stat_loop.item + ' does not exist.' ] }}" 
+      reason: "{{ reason + [ inventory_hostname + ' : files ' + stat_output.results.[item]['item'] + ' does not exist.' ] }}" 
         
-    when:  not stat_output.results.[stat_loop]['stat']['exists']  
+    when:  not stat_output.results.[item]['stat']['exists']  
     loop: 
         - 0
         - 1
         - 2
-    loop_control:
-        label: "{{ stat_loop }}"
+    # loop_control:
+    #     label: "{{ stat_loop }}"
        
 #   - name: Fail if custom facts are incorrect
 #     set_fact:
