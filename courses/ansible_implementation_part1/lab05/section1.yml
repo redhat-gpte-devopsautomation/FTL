@@ -179,11 +179,8 @@
   - debug: var=result
 
 #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
-  - set_fact:
-      assessment_result:  "{{ assessment_result }} + [ 'Result for ' + '{{ item.0 }}' + ', Summary ===> at ' + '{{ item.1 }}' ]"
-    with_together:
-      - "{{ result }}"
-      - "{{ reason }}"
+  - name: Include concatenate assessment_result role 
+    include_role: assessment_result
  # - debug: var=assessment_result
 ###############   Play for Adding variable back to localhost  ###############
 - name: append grade list from section1
@@ -198,8 +195,7 @@
           reason:
               - "{{ hostvars['bastion']['reason'] }}"
           assessment_result:
-            - "{{ hostvars['bastion']['assessment_result'] }}"
-              
-
+            - "{{ hostvars['bastion']['assessment_result'] }}"          
+            
   -  set_fact:   
       grade_status: "{{ grade_status | combine(array) }}"
