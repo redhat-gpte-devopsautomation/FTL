@@ -5,6 +5,14 @@
         grade_status:
           module: "Lab05"
 
+- hosts: all
+  tasks:
+    - name: array
+      set_fact:
+        result: [] 
+        reason: []
+        assessment_result: []
+
 - import_playbook: section1.yml
 
 
