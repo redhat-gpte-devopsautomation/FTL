@@ -66,7 +66,7 @@
   - name:  File check 2
     set_fact:
       result: "{{ result + [ inventory_hostname + ' : FAIL' ] }}" 
-      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : httpd service is started' ] " 
+      reason:  "{{ reason }} +  [ '{{ inventory_hostname }}'  + ' : files ' + '{{ stat_output.results.2.item }}' + ' does not exist.'  ] " 
         #"{% reason.append( inventory_hostname  + ' : files ' + {{ stat_output.results.2.item }} + ' does not exist.' )  %)"
     when:  not stat_output.results.2.stat.exists  
   
