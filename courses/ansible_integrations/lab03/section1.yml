@@ -17,10 +17,6 @@
   become: yes
   gather_facts: false
   tasks:
-  - name: Install sshpass package
-    yum: 
-      name: sshpass
-
   - name: Loggin ssh 
     shell: sshpass -p redhat ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no mickey@ad1.{{GUID}}.example.opentlc.com  'dir'
     ignore_errors: yes
