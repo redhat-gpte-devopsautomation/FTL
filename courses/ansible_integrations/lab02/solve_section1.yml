@@ -24,7 +24,7 @@
         force: yes
 # need change some of the bash variable in repo specially GUID bash variable to ansible variable
     - name: Execute remote Playbook
-      shell: ansible-playbook ad_user_group_create.yml
+      shell: ansible-playbook ad_user_group_create.yml -e GUID={{GUID}} 
       args:
         chdir: /root/ansible-integrations-solve/
         
