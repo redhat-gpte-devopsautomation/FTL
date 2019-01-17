@@ -22,29 +22,29 @@
       name: openldap-clients
 
   - name: User list 
-    shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+    shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg== -s sub "(objectclass=user)"
     ignore_errors: yes
     register: shell_output
   - debug: var=shell_output
 
-  - name: User list using ldap module
-    ldap_entry:
-      server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
-      bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
-      bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
-      dn: "cn=donald,cn=users,dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
-      # CN=donald,CN=Users,DC=ad1,DC=mitsharmtest04,DC=example,DC=opentlc,DC=com
-      objectClass: "*"
-      # objectClass: organizationalUnit
-    register: ldap_output
+  # - name: User list using ldap module
+  #   ldap_entry:
+  #     server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
+  #     bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
+  #     bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+  #     dn: "cn=donald1,cn=users,dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+  #     # CN=donald,CN=Users,DC=ad1,DC=mitsharmtest04,DC=example,DC=opentlc,DC=com
+  #     objectClass: "*"
+  #     # objectClass: organizationalUnit
+  #   register: ldap_output
 
 
-  - debug: var=ldap_output
+  # - debug: var=ldap_output
 
   - name: Print fail msg
     debug: 
       msg: "Test failed"
-    when: shell_output.failed 
+    when: "shell_output.stdout
 
   - name: Print Pass msg
     debug: 
