@@ -21,7 +21,8 @@
     ad_admin_user: "admin@{{ ad_domain_name }}"
   tasks:
   - name: List Domain Controllers in domain
-    win_shell: "nltest /dclist:{{ ad_domain_name }}"
+  # change here again
+    win_shell: "nltest /dclist:ad1.mitsharmtest02.example.opentlc.com"
     register: domain_list
     
   - debug: var=domain_list

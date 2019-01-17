@@ -21,6 +21,7 @@
       git: 
         repo: https://github.com/redhat-gpte-devopsautomation/ansible-integrations-solve.git
         dest: /root/ansible-integrations-solve
+        force: yes
 # need change some of the bash variable in repo specially GUID bash variable to ansible variable
 
     - name: Execute remote Playbook
