@@ -23,6 +23,7 @@
 
   - name: User list 
     shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+    ignore_errors: yes
     register: shell_output
     
   - debug: var=shell_output
