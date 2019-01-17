@@ -12,17 +12,17 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
-- name: install and configure active directory
+- name: Testing Openssh 
   hosts: bastions
   become: yes
   gather_facts: false
   tasks:
-  - name: Install ldap-client
-    yum:
-      name: openldap-clients
-
-  - name: User list 
-    shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+  - name: Install sshpass package
+    yum: 
+      name: sshpass
+      
+  - name: Loggin ssh 
+    shell: sshpass -p redhat ssh micky@ad1.{{GUID}}.example.opentlc.com dir
     ignore_errors: yes
     register: shell_output
     
