@@ -32,7 +32,8 @@
       server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
       bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
       bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
-      dn: "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+      dn: "cn=donald,cn=Users,dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+      # CN=donald,CN=Users,DC=ad1,DC=mitsharmtest04,DC=example,DC=opentlc,DC=com
       objectClass: "*"
       # objectClass: organizationalUnit
     register: ldap_output
