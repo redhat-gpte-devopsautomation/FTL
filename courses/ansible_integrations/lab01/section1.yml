@@ -17,7 +17,7 @@
   gather_facts: false
   tasks:
   - name: List Domain Controllers in domain
-    win_shell: "nltest /dclist:mitsharmtest02
+    win_shell: "nltest /dclist:mitsharmtest02"
     register: domain_list
     
   - debug: var=domain_list
