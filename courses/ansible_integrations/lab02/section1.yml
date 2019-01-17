@@ -25,7 +25,12 @@
     shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg== -s sub "(objectclass=user)"
     ignore_errors: yes
     register: shell_output
+
   - debug: var=shell_output
+  - name: Print fail msg
+    debug: 
+      msg: "Test failed"
+    when: "donald" in shell_output.stdout_lines
 
   # - name: User list using ldap module
   #   ldap_entry:
@@ -41,11 +46,7 @@
 
   # - debug: var=ldap_output
 
-  # - name: Print fail msg
-  #   debug: 
-  #     msg: "Test failed"
-  #   # when: "shell_output.stdout
-
+ 
   # - name: Print Pass msg
   #   debug: 
   #     msg: "Test Passed"
