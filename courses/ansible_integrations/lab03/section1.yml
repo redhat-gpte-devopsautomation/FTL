@@ -22,7 +22,7 @@
       name: sshpass
 
   - name: Loggin ssh 
-    shell: sshpass -p redhat ssh -o “ConnectTimeout 3” -o “StrictHostKeyChecking no" micky@ad1.{{GUID}}.example.opentlc.com  'dir'
+    shell: sshpass -p redhat ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no mickey@ad1.{{GUID}}.example.opentlc.com  'dir'
     ignore_errors: yes
     register: shell_output
     
