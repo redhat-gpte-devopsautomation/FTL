@@ -27,7 +27,7 @@
     register: shell_output
   - debug: var=shell_output
 
-  - name: Make sure we have a parent entry for users
+  - name: User list using ldap module
     ldap_entry:
       server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
       bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
