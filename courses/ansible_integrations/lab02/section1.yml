@@ -33,6 +33,7 @@
       bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
       bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
       dn: "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+      objectClass: *
       # objectClass: organizationalUnit
     register: ldap_output
 
