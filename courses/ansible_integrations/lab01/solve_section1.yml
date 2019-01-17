@@ -2,6 +2,7 @@
 - name: Solve Lab if asked
   hosts: bastions
   gather_facts: no
+  become: yes
   tasks:
     - name: Install Packages
       yum: 

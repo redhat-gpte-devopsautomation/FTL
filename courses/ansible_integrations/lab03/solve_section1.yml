@@ -1,6 +1,7 @@
 ---
 - name: Solve Lab if asked
   hosts: bastions
+  become: yes
   gather_facts: no
   tasks:
     - name: Install Packages
