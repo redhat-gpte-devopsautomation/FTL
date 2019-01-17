@@ -14,6 +14,7 @@
 ###############     Play1 for grade     ###############
 - name: install and configure active directory
   hosts: bastions
+  become: yes
   gather_facts: false
   tasks:
   - name: Install ldap-client
