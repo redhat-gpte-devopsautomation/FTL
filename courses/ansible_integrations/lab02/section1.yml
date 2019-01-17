@@ -44,7 +44,7 @@
   - name: Print fail msg
     debug: 
       msg: "Test failed"
-    when: "shell_output.stdout
+    # when: "shell_output.stdout
 
   - name: Print Pass msg
     debug: 
