@@ -12,6 +12,7 @@
           - krb5-workstation 
           - python-pip 
           - gcc
+    
     - name: Install pywinrm module
       shell: pip install "pywinrm>=0.2.2"
 
@@ -22,7 +23,7 @@
 # need change some of the bash variable in repo specially GUID bash variable to ansible variable
 
     - name: Execute remote Playbook
-      shell: ansible-playbook setup_ad.yml
+      shell: ansible-playbook win_ssh_server.yml
       args:
         chdir: /root/ansible-integrations-solve/
         

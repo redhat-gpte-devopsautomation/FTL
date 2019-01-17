@@ -12,7 +12,19 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
-                                     
+- name: install and configure active directory
+  hosts: windows
+  gather_facts: false
+  tasks:
+  - name: Install ldap-client
+    yum:
+      name: openldap-clients
+
+  - name: User list 
+    shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w {WINDOWS_ADMINISTRATOR_PASSWORD}
+    register: shell_output
+    
+  - debug: var=shell_output
 
   # - name: Print fail msg
   #   debug: 
