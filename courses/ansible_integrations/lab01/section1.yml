@@ -15,9 +15,13 @@
 - name: install and configure active directory
   hosts: windows
   gather_facts: false
+  vars:
+    ad_domain_name: ad1.{{GUID}}.example.opentlc.com
+    ad_safe_mode_password: "{{ansible_password}}"
+    ad_admin_user: "admin@{{ ad_domain_name }}"
   tasks:
   - name: List Domain Controllers in domain
-    win_shell: "nltest /dclist:mitsharmtest02"
+    win_shell: "nltest /dclist:{{ ad_domain_name }}"
     register: domain_list
     
   - debug: var=domain_list

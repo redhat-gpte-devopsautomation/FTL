@@ -34,8 +34,8 @@
         name: "{{item.name}}"
         ansible_host: "{{item.ansible_hostname}}"
         internal_hostname: "{{ item.ansible_internal }}"
-        ansible_user: "{{item.ansible_ssh_user}}"
         ansible_user: Administrator
+        ansible_password: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
         ansible_connection: winrm
         ansible_winrm_server_cert_validation: ignore
         ansible_become: false
