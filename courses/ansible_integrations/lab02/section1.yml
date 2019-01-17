@@ -25,8 +25,19 @@
     shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
     ignore_errors: yes
     register: shell_output
-    
   - debug: var=shell_output
+
+  - name: Make sure we have a parent entry for users
+    ldap_entry:
+      server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
+      bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
+      bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+      dn: "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+      # objectClass: organizationalUnit
+    register: ldap_output
+
+
+  - debug: var=ldap_output
 
   - name: Print fail msg
     debug: 
