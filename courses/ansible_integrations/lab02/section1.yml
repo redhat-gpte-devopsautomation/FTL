@@ -36,7 +36,7 @@
   - name: Print Pass msg
     debug: 
       msg: "Test Passed"
-    when: ! shell_output.failed 
+    when: not shell_output.failed 
 
 
 
