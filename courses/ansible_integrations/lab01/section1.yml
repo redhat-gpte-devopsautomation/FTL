@@ -34,7 +34,7 @@
   - name: Print Pass msg
     debug: 
       msg: "Test Passed"
-    when: domain_list.stderr != ""  
+    when: domain_list.stderr == ""  
 
  
 
