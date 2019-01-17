@@ -24,7 +24,7 @@
     win_shell: "nltest /dclist:{{ ad_domain_name }}"
     register: domain_list
     
-  - debug: var=domain_list.stderr
+  - debug: var=domain_list
 
   - name: Print fail msg
     debug: 
