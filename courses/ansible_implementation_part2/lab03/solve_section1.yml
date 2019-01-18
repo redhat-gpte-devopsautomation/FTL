@@ -14,4 +14,3 @@
       shell: ansible-playbook db_playbook.yml -e set_db_root_password=true
       args:
         chdir: /root/ansible_implementation_part2_solve
-      ignore_errors: yes
