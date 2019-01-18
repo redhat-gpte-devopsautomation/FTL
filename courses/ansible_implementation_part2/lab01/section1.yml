@@ -12,3 +12,36 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: localhost
+  roles:
+    - inventory
+
+- hosts: db
+  gather_facts: false
+  tasks:
+  - name: Verify devops user is created
+    shell: "grep db_user /etc/passwd | cut -d: -f1"
+    register: output
+  - fail:
+      msg: "FAILED: User db_user not present"
+    when: output.stdout != "db_user"
+  - debug:
+      msg: "Success: db_user user present"
+    when: output.stdout == "db_user"
+  - name: Verify correct my.cnf file is created
+    shell: "grep Ansible /etc/my.cnf"
+    register: output
+  - fail:
+      msg: "FAILED: File is not copied"
+    when: output.stdout != "# Ansible file"
+  - debug:
+      msg: "Success: File is copied"
+  - name: Verify mariadb service is started 
+    service_facts:
+    register: result
+  - fail:
+      msg: "FAILED: Mariadb service is not running"
+    when: result.ansible_facts.services['mariadb.service'].state != "running"
+  - debug:
+      msg: "Success: Mariadb service is running" 
+    when: result.ansible_facts.services['mariadb.service'].state == "running"

@@ -12,3 +12,14 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- name: Play for appdbs
+  hosts: appdbs
+  tasks:
+    - name: Set the MySQL password
+      mysql_user:
+        name: root
+        password: redhat
+      ignore_errors: yes
+      register: mysql_output
+
+    - debug: mysql_output

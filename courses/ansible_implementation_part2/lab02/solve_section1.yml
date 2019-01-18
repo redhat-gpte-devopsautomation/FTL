@@ -10,12 +10,7 @@
         dest: /root/ansible_implementation_part2_solve
         force: yes
 
-    - name: Execute remote devops_playbook
-      shell: ansible-playbook devops_playbook.yml
-      args:
-        chdir: /root/ansible_implementation_part2_solve
-    
     - name: Execute remote db_playbook
-      shell: ansible-playbook db_playbook.yml
+      shell: ansible-playbook db_playbook.yml -e set_db_root_password=true
       args:
         chdir: /root/ansible_implementation_part2_solve
