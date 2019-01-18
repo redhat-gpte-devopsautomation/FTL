@@ -22,4 +22,4 @@
       ignore_errors: yes
       register: mysql_output
 
-    - debug: mysql_output
+    - debug: var=mysql_output
