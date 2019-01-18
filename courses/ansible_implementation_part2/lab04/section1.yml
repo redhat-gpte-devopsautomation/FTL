@@ -12,3 +12,16 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: bastion
+  gather_facts: false
+  tasks:
+  - name: Check URL
+    shell: curl -k https://app1.{{GUID}}.internal
+    register: output
+  - debug: var=output.stdout
+  - fail:
+      msg: "FAILED: Secure webserver is not configured"
+    when: "'has been customized by Ansible' not in output.stdout"
+  - debug:
+      msg: "Success: Secure webserver is configured" 
+    when: "'has been customized by Ansible' in output.stdout"
