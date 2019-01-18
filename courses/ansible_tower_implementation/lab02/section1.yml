@@ -1,0 +1,89 @@
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+###############     Play for solutions  ###############
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+###############     Play1 for grade     ###############
+- name: install and configure active directory
+  hosts: bastions
+  become: yes
+  gather_facts: false
+  tasks:
+  - name: Install ldap-client
+    yum:
+      name: openldap-clients
+
+  - name: User list 
+    shell: ldapsearch  -x -H ldap://ad1.{{GUID}}.example.opentlc.com -D "CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com" -b "dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" -w jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg== -s sub "(cn=mickey)"
+    ignore_errors: yes
+    register: shell_output
+
+  - debug: var=shell_output
+
+  - name: Print fail msg
+    debug: 
+      msg: "Test failed"
+    when: '"cn: mickey" not in shell_output.stdout_lines'
+  
+  - name: Print Pass msg
+    debug: 
+      msg: "Test Passed"
+    when: '"cn: mickey" in shell_output.stdout_lines'
+  
+
+  # - name: User list using ldap module
+  #   ldap_entry:
+  #     server_uri: ldap://ad1.{{GUID}}.example.opentlc.com
+  #     bind_dn: CN=Administrator,CN=Users,DC=ad1,DC={{GUID}},DC=example,DC=opentlc,DC=com
+  #     bind_pw: jVMijRwLbI02gFCo2xkjlZ9lxEA7bm7zgg==
+  #     dn: "cn=donald1,cn=users,dc=ad1,dc={{GUID}},dc=example,dc=opentlc,dc=com" 
+  #     # CN=donald,CN=Users,DC=ad1,DC=mitsharmtest04,DC=example,DC=opentlc,DC=com
+  #     objectClass: "*"
+  #     # objectClass: organizationalUnit
+  #   register: ldap_output
+
+
+  # - debug: var=ldap_output
+
+ 
+
+# # - debug: var=reason
+# # - debug: var=result
+# #******************* Concatenate list, Must be included at the end of each play in playbook ***********************#
+#   - name: Include concatenate assessment_result role in play1
+#     include_role: 
+#       name: assessment_result
+#  # - debug: var=assessment_result
+# #************************        End of Concatenate list, Must be included         ********************************#
+
+
+# ############## Play for Adding variable back to localhost ##############################
+# - name: append grade list from section1
+#   hosts: localhost
+#   tasks:
+#   - name: setting up section1 array
+#     set_fact:
+#       array:
+#         section1:
+#           result: 
+#               - "{{ hostvars['app1']['result'] }}"
+#               - "{{ hostvars['app2']['result'] }}"
+#           reason:
+#               - "{{ hostvars['app1']['reason'] }}"
+#               - "{{ hostvars['app2']['reason'] }}"
+#           assessment_result:
+#               - "{{ hostvars['app1']['assessment_result'] }}"
+#               - "{{ hostvars['app2']['assessment_result'] }}"
+
+#   -  set_fact:   
+#       grade_status: "{{ grade_status | combine(array) }}"
+  
+

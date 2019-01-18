@@ -1,0 +1,14 @@
+
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+###############     Play for solutions  ###############
+- import_playbook: ./solve_section1.yml
+  when: solve == "true"
+
+###############     Play1 for grade     ###############

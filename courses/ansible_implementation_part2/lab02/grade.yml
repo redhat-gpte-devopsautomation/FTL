@@ -1,0 +1,12 @@
+- hosts: localhost
+  tasks:
+    - name: Setup grade_temp list at localhost
+      set_fact:
+        grade_status:
+          module: "Lab02           "
+
+       
+- import_playbook: section1.yml
+
+
+

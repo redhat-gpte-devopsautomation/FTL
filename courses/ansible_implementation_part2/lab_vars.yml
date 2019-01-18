@@ -1,0 +1,38 @@
+---
+solve: false
+ansible_ssh_private_key_file: ~/.ssh/ocpkey.pem
+instances:
+  - name: "bastion"
+    ansible_hostname: bastion.{{GUID}}.example.opentlc.com
+    ansible_internal: bastion.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: bastions
+
+  - name: "frontend"
+    ansible_hostname: frontend1.{{GUID}}.example.opentlc.com
+    ansible_internal: frontend1.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: frontends
+
+  - name: "app1"
+    ansible_hostname: app1.{{GUID}}.example.opentlc.com
+    ansible_internal: app1.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: apps
+  - name: "app2"
+    ansible_hostname: app2.{{GUID}}.example.opentlc.com
+    ansible_internal: app2.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: apps
+
+  - name: "appdb"
+    ansible_hostname: appdb1.{{GUID}}.example.opentlc.com
+    ansible_internal: appdb1.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: appdbs
+
+  - name: "support"
+    ansible_hostname: support1.{{GUID}}.example.opentlc.com
+    ansible_internal: support1.{{GUID}}.internal
+    ansible_ssh_user: ec2-user
+    groups: supports

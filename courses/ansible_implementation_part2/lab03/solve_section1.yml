@@ -1,0 +1,21 @@
+---
+- name: infra-ec2-wait_for_linux_hosts
+  hosts:
+    - all:!windows
+  become: true
+  gather_facts: no
+  roles:
+  - { role: "infra-ec2-wait_for_linux_hosts" }
+
+- name: Solve Lab if asked
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: create devops user
+      shell: "adduser devops"
+      become: true
+      ignore_errors: true
+    - name: Managed by Ansible added to motd
+      shell: "echo Managed by Ansible > /etc/motd"
+      become: true
+      ignore_errors: true

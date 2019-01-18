@@ -1,0 +1,32 @@
+---
+- name: Solve Lab if asked
+  hosts: bastions
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Install Packages
+      yum: 
+        name:
+          - python-devel 
+          - krb5-devel 
+          - krb5-libs 
+          - krb5-workstation 
+          - python-pip 
+          - gcc
+          - python-ldap
+          - sshpass
+    
+    - name: Install pywinrm module
+      shell: pip install "pywinrm>=0.2.2"
+
+    - name: Clone Git repo
+      git: 
+        repo: https://github.com/redhat-gpte-devopsautomation/ansible-integrations-solve.git
+        dest: /root/ansible-integrations-solve
+        force: yes
+# need change some of the bash variable in repo specially GUID bash variable to ansible variable
+    - name: Execute remote Playbook
+      shell: ansible-playbook ad_user_group_create.yml -e GUID={{GUID}} 
+      args:
+        chdir: /root/ansible-integrations-solve/
+        
