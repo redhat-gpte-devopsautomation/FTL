@@ -12,3 +12,25 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: bastions
+  tasks:
+  - name: Check the file on bastion
+    shell: "grep connection_type /tmp/bastion.${GUID}.internal"
+    register: output
+  - fail:
+      msg: "FAILED: File is not in correct format"
+    when: output.stdout != "connection_type = local"
+  - debug:
+      msg: "Success: File is in correct format"
+
+- hosts: support
+  gather_facts: false
+  tasks:
+  - name: Check the file on support1
+    shell: "grep connection_type /tmp/{{ inventory_hostname }}"
+    register: output
+  - fail:
+      msg: "FAILED: File is not in correct format"
+    when: output.stdout != "connection_type = ssh"
+  - debug:
+      msg: "Success: File is in correct format"

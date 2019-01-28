@@ -1,5 +1,5 @@
 ---
-- name: Solve Lab06 if asked
+- name: Solve Lab07 if asked
   hosts: bastions
   become: yes
   gather_facts: no

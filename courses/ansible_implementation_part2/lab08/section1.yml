@@ -12,3 +12,15 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: apps
+  gather_facts: false
+  become: yes
+  tasks:
+  - shell: grep 'clyde@example.com' /etc/motd
+    register: result
+  - fail:
+      msg: "FAILED: Message of the day is not set correctly"
+    when: result.stdout != "You can ask clyde@example.com for access."
+  - debug:
+      msg: "Success: Message of the day is set correctly" 
+    when: result.stdout == "You can ask clyde@example.com for access."
