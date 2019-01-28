@@ -15,12 +15,7 @@
       args:
         chdir: /root/ansible_implementation_part2_solve
     
-    - name: Execute remote inventory_playbook.yml
-      shell: ansible-playbook inventory_playbook.yml -e GUID=3700
-      args:
-        chdir: /root/ansible_implementation_part2_solve
-
-    - name: Execute remote connection_plugin_playbook.yml
-      shell: ansible-playbook connection_plugin_playbook.yml  -i inventory_lab10_hosts 
+    - name: Execute remote serial_playbook
+      shell: ansible-playbook serial_playbook.yml
       args:
         chdir: /root/ansible_implementation_part2_solve
