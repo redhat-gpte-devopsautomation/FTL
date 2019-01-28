@@ -10,6 +10,6 @@
         force: yes
 
     - name: Execute remote web_playbook
-      shell: ansible-playbook web_playbook.yml 
+      shell: ansible-playbook web_playbook.yml -e LAB=04
       args:
         chdir: /root/ansible_implementation_part2_solve

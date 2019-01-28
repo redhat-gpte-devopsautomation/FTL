@@ -12,3 +12,25 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: support
+  gather_facts: false
+  tasks:
+  - name: Cheeck samba package
+    shell: rpm -q samba
+    register: pkg
+  - fail:
+      msg: "FAILED: samba package is not installed"
+    when: "'samba' not in pkg.stdout"
+  - debug:
+      msg: "Success: Samba package is installed" 
+    when: "'samba' in pkg.stdout"
+  - name: smb.conf file is present
+    stat:
+      path: /etc/samba/smb.conf
+    register: conf
+  - fail:
+      msg: "FAILED: samba conf file is not present"
+    when: conf.stat.exists != true
+  - debug:
+      msg: "Success: samba conf package is present" 
+    when: conf.stat.exists == true

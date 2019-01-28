@@ -12,3 +12,19 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- hosts: support
+  gather_facts: false
+  tasks:
+  - name: Cheeck postfix
+    wait_for:
+      port: 25
+      delay: 10
+      state: started
+    register: pkg
+  - debug: var=pkg
+  - fail:
+      msg: "FAILED: Mail relay server not configured"
+    when: pkg.state != "started"
+  - debug:
+      msg: "Success: Mail relay server configured"
+    when: pkg.state == "started"

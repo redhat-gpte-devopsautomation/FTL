@@ -1,21 +1,21 @@
 ---
-- name: infra-ec2-wait_for_linux_hosts
-  hosts:
-    - all:!windows
-  become: true
-  gather_facts: no
-  roles:
-  - { role: "infra-ec2-wait_for_linux_hosts" }
-
-- name: Solve Lab if asked
-  hosts: all
+- name: Solve Lab06 if asked
+  hosts: bastions
+  become: yes
   gather_facts: no
   tasks:
-    - name: create devops user
-      shell: "adduser devops"
-      become: true
-      ignore_errors: true
-    - name: Managed by Ansible added to motd
-      shell: "echo Managed by Ansible > /etc/motd"
-      become: true
-      ignore_errors: true
+    - name: Clone Git repo
+      git: 
+        repo: https://github.com/redhat-gpte-devopsautomation/ansible_implementation_part2_solve.git
+        dest: /root/ansible_implementation_part2_solve
+        force: yes
+
+    - name: Execute remote devops_playbook
+      shell: ansible-playbook devops_playbook.yml
+      args:
+        chdir: /root/ansible_implementation_part2_solve
+    
+    - name: Execute remote mail_playbook
+      shell: ansible-playbook  mail_playbook.yml
+      args:
+        chdir: /root/ansible_implementation_part2_solve
