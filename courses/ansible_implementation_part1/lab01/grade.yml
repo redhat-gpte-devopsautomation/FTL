@@ -5,26 +5,8 @@
         grade_status:
           module: "Lab01"
 
-- hosts: all
-  tasks:
-    - name: array
-      set_fact:
-        result: [] 
-        reason: []
-        assessment_result: []
-        
+       
 - import_playbook: section1.yml
-# - import_playbook: section2.yml
 
 
-- hosts: localhost
-  tasks:
 
-    - name: Print Assessment_result for section1
-      debug:
-        var: grade_status.section1.assessment_result
-
-    # - name: Print Assessment_result for section2
-    #   debug:
-    #     var: grade_status.section2.assessment_result
- 
