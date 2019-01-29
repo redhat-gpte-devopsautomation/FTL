@@ -1,0 +1,21 @@
+---
+- name: Solve Lab04 if asked
+  hosts: bastions
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Clone Git repo
+      git: 
+        repo: https://github.com/redhat-gpte-devopsautomation/ansible_implementation_part1_solve.git
+        dest: /root/ansible_implementation_part1_solve
+        force: yes
+
+    - name: Execute remote devops_playbook
+      shell: ansible-playbook devops_playbook.yml -e GUID={{GUID}}
+      args:
+        chdir: /root/ansible_implementation_part1_solve
+    
+    - name: Execute remote lab04_variable_test
+      shell: ansible-playbook lab04_variable_test.yml -e GUID={{GUID}}
+      args:
+        chdir: /root/ansible_implementation_part1_solve

@@ -11,3 +11,26 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- name: Grade Lab04
+  hosts: apps
+  gather_facts: True
+  tasks:
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://{{ inventory_hostname }}
+      return_content: yes
+    register: webpage
+    ignore_errors: yes
+ 
+  # - debug: var=webpage.content
+  - name:  fail
+    debug: 
+      msg:    "FAIL : Webpage does not have correct content."
+    when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content") or
+           ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
+       
+  - name: set grade to pass
+    debug: "PASS : {{ webpage.content }}"
+    when:  ("Example" in webpage.content) or
+           ("has been customized using Ansible" in webpage.content)
+  

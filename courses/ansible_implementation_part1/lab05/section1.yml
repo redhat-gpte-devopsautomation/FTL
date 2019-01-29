@@ -11,3 +11,21 @@
   when: solve == "true"
 
 ###############     Play for grade      ###############
+- hosts: bastions
+  tasks:
+  - name: Run a Curl Test against Frontend
+    uri:
+     url: http://{{ item }}
+     return_content: yes
+    with_items: "{{ groups['webservers'] }}"
+    register: webpage
+
+  - name: Fail if 'has been customized using Ansible' is not in the page content
+    fail:
+      msg: "FAILED: Webpage is not having correct content"
+    when: "'has been customized using Ansible' not in webpage.results[0].content"
+    
+  - name: Success if 'has been customized using Ansible' is in the page content
+    debug: 
+      msg: "Success: All requirements completed."
+    when: "'has been customized using Ansible' in webpage.results[0].content"

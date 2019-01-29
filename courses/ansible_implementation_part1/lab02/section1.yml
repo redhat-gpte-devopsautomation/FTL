@@ -12,3 +12,26 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- name: Verify Section1
+  hosts: apps
+  gather_facts: no
+  tasks:  
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://{{ ansible_host }}
+      status_code: 403,200,-1
+      return_content: yes
+    register: webpage
+
+  - name: fail
+    debug: 
+      msg: "FAIL : Webpage does not have correct content."
+    when: ( webpage.status == -1 )  or 
+          ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
+
+
+  - name: pass
+    debug: "PASS : Hoorraaayyy!!! My first playbook ran successfully is in the page content"
+    when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
+    
+  

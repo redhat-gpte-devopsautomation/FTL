@@ -12,3 +12,50 @@
   when: solve == "true"
 
 ###############     Play1 for grade      ###############
+- name: Grade Lab03
+  hosts: apps
+  gather_facts: no
+  tasks:
+  - name: Gather Facts
+    setup:
+      filter: ansible_local
+
+  - name: Fail if custom fact is not defined
+    debug: 
+      msg: "FAIL : custom facts are not setup correctly."
+    when: 
+      ( ansible_facts.ansible_local.custom is not defined) 
+
+  - name: Fail if custom facts are incorrect
+    debug: 
+      msg: "FAIL : custom facts are not setup correctly."
+    when: 
+      ( ansible_facts.ansible_local.custom     is            defined ) and (
+      ( ansible_facts.ansible_local.custom.general.package != "httpd" ) or 
+      ( ansible_facts.ansible_local.custom.general.service != "httpd" ) or
+      ( ansible_facts.ansible_local.custom.general.state != "started" ) )
+  
+  - name: Pass if custom facts are defined and correct
+    debug: 
+      msg: "PASS : custom facts are setup correctly."
+    when: 
+      ( ansible_facts.ansible_local.custom     is            defined  ) and
+      ( ansible_facts.ansible_local.custom.general.package == "httpd" ) and
+      ( ansible_facts.ansible_local.custom.general.service == "httpd" ) and
+      ( ansible_facts.ansible_local.custom.general.state == "started" ) 
+
+  - name: Check httpd service status
+    service:
+      name: httpd
+    register: httpd 
+
+  - name: Fail if httpd service is not started
+    debug: 
+      msg: "FAIL : httpd service is not started" 
+    when: ( httpd.UnitFileState is not defined ) or
+          ( httpd.ActiveState == "active" )
+
+  - name: Pass if httpd service is started
+    debug: "PASS : httpd service is started" 
+    when: ( httpd.UnitFileState is defined ) and
+          ( httpd.ActiveState == "active" ) 
