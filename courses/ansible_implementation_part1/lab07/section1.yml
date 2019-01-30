@@ -1,4 +1,3 @@
-
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
@@ -11,4 +10,134 @@
 - import_playbook: ./solve_section1.yml
   when: solve == "true"
 
-###############     Play1 for grade     ###############
+###############     Play for grade      ###############
+- name: Grade Lab07 
+  hosts: bastions
+  become: yes
+  gather_facts: no
+  vars:
+    step_no: 2
+    file_path: /home/devops/ansible_implementation
+    file_and_password:
+      vault-pass: redhat 
+      vault-pass-change: ansible   
+  tasks: 
+  - name: Check files
+    stat:
+      path: "{{ item }}"
+    register: stat_output
+    loop: 
+      - "{{ file_path }}/super-secret.yml"
+      - "{{ file_path }}/super-secret-decrypted.yml"  
+      - "{{ file_path }}/super-secret-encrypted.yml"
+
+  - name: File check fail 0
+    debug: 
+      msg: "FAIL : files {{ stat_output.results.0.item }}  does not exist." 
+    when:  not stat_output.results.0.stat.exists
+        
+  - name:  File check fail 1
+    debug: 
+      msg: "FAIL : files {{ stat_output.results.1.item }} does not exist."     
+    when:  not stat_output.results.1.stat.exists 
+
+  - name:  File check fail 2
+    debug: 
+      msg: "FAIL : files {{ stat_output.results.2.item }} does not exist. "  
+    when:  not stat_output.results.2.stat.exists  
+
+  - name: File check pass 0
+    debug: 
+      msg: "PASS : files {{ stat_output.results.0.item }}  exist. " 
+    when:  stat_output.results.0.stat.exists
+        
+  - name:  File check pass 1
+    debug:
+      msg:  "PASS : files {{ stat_output.results.1.item }}  exist."     
+    when:  stat_output.results.1.stat.exists 
+
+  - name:  File check pass 2
+    debug: "PASS : files {{ stat_output.results.2.item }} exist. "  
+    when:  stat_output.results.2.stat.exists  
+
+  - name: Create Password file1
+    copy:
+      content: "{{ item.value }}"
+      dest: /tmp/{{ item.key }}
+      mode: 0600  
+      owner: devops
+      group: devops 
+    loop: "{{ file_and_password |dict2items }}"
+
+  - name: Checking super-secret.yml files
+    shell: ansible-vault view "{{ file_path }}/super-secret.yml" --vault-password-file=/tmp/vault-pass-change
+    ignore_errors: yes
+    register: secret_output
+
+  - name: Checking super-secret-encrypted.yml files
+    shell: ansible-vault view "{{ file_path }}/super-secret-encrypted.yml" --vault-password-file=/tmp/vault-pass
+    ignore_errors: yes
+    register: secret_encrypted_output
+
+  - name: Checking Users
+    shell: getent passwd {{ item }}
+    remote_user: ec2-user
+    become: yes
+    register: getent_output
+    loop:
+      - ansibleuser1
+      - ansibleuser2
+    delegate_to: frontend1.{{GUID}}.example.opentlc.com
+    ignore_errors: yes
+
+#### condiation1 Fail ####
+  - name: File check file super_secret.yml
+    debug:
+      msg: "FAIL : {{ secret_output.stderr }} " 
+    when:  secret_output.rc == 1
+
+  - name: File check file super_secret_encrypt.yml
+    debug: 
+      msg: "FAIL : {{ secret_encrypted_output.stderr }}" 
+    when:  secret_encrypted_output.rc == 1
+
+  - name: File check super_secret.yml file content
+    debug: 
+      msg: "FAIL : super_secret.yml has correct content" 
+    when:  ( secret_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted"  not in secret_output.stdout )
+
+  - name: File check super_secret_encrypt.yml file content
+    debug:
+      msg: "FAIL : super_secret_encrypted.yml has wrong content" 
+    when:  ( secret_encrypted_output.rc != 1 ) and ( "This is encrypted.\nThis is also encrypted" not in secret_encrypted_output.stdout )
+
+  - name: User check fail 0
+    debug:
+      msg: "FAIL : User {{ getent_output.results.0.item }} does not exist. " 
+    when:  getent_output.results.0.rc != 0
+        
+  - name:  User check fail 1
+    debug: 
+      msg: "FAIL : User {{ getent_output.results.1.item }} does not exist."     
+    when:  getent_output.results.1.rc != 0 
+
+#### condiation1 Pass ####
+  - name: File check super_secret.yml file content
+    debug: 
+      msg: "PASS : super_secret.yml has correct content." 
+    when:  ( secret_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_output.stdout )
+
+  - name: File check super_secret_encrypt.yml file content
+    debug: 
+      msg: "PASS : super_secret_encrypted.yml has correct content" 
+    when:  ( secret_encrypted_output.rc == 0 ) and ( "This is encrypted.\nThis is also encrypted"  in secret_encrypted_output.stdout )
+
+  - name: User check pass 0
+    debug:
+      msg: " PASS : User {{ getent_output.results.0.item }} exist." 
+    when:  getent_output.results.0.rc == 0
+        
+  - name:  User check pass 1
+    debug: 
+      msg: "PASS : User {{ getent_output.results.1.item }} exist."     
+    when:  getent_output.results.1.rc == 0 

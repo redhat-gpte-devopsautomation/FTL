@@ -12,3 +12,103 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
+- name: Grade Lab06
+  hosts: apps:appdbs:frontends
+  gather_facts: no
+  tasks:
+  - name: Check firewalld service status
+    service:
+      name: firewalld
+    register: firewalld_output  
+
+  - name: Fail if firewalld service is not started
+    debug: 
+      msg: "FAIL : firewalld service is not started"
+    when: ( firewalld_output.status.UnitFileState is not defined ) or ( firewalld_output.status.ActiveState != "active" )
+
+  - name: Pass if firewalld service is started
+    debug: 
+      msg: "PASS : firewalld service is started"
+    when: ( firewalld_output.status.UnitFileState is defined ) and
+          ( firewalld_output.status.ActiveState == "active" ) 
+  
+  - name: Check httpd service status
+    service:
+      name: httpd
+    register: httpd_output  
+    when: inventory_hostname in groups['apps']
+
+  - name: Fail if httpd service is not started
+    debug: 
+      msg: "FAIL : httpd service is not started"
+    when: ( inventory_hostname in groups['apps'] )   and 
+          (( httpd_output.status.UnitFileState is not defined ) or ( httpd_output.status.ActiveState != "active" ))
+
+  - name: Pass if httpd service is started
+    debug: 
+      msg: "PASS : httpd service is started"
+    when: ( inventory_hostname in groups['apps'] )          and
+          ( httpd_output.status.UnitFileState is defined )  and
+          ( httpd_output.status.ActiveState == "active" )
+
+
+  - name: Check httpd service status
+    service:
+      name: haproxy
+    register: haproxy_output   
+    when: inventory_hostname in groups['frontends']
+
+  - name: Fail if haproxy service is not started
+    debug: 
+      msg: "FAIL : haproxy service is not started"
+    when: ( inventory_hostname in groups['frontends'] )   and 
+          (( haproxy_output.status.UnitFileState is not defined ) or ( haproxy_output.status.ActiveState != "active" ))
+  
+  - name: Pass if haproxy service is started
+    debug: "PASS : haproxy service is started"
+    when: ( inventory_hostname in groups['frontends'] )       and
+          ( haproxy_output.status.UnitFileState is defined )  and
+          ( haproxy_output.status.ActiveState == "active" )
+  
+  - name: Check httpd service status
+    service:
+      name: mysqld
+    register: mysqld_output   
+    when: inventory_hostname in groups['appdbs']
+    
+  - name: Fail if mysqld service is not started
+    debug: 
+      msg: "FAIL : mysqld service is not started"
+    when: ( inventory_hostname in groups['appdbs'] )   and 
+          (( mysqld_output.status.UnitFileState is not defined ) or ( mysqld_output.status.ActiveState != "active" ))
+
+  - name: Pass if mysqld service is started
+    debug: 
+      msg: "PASS : mysqld service is started"
+    when: ( inventory_hostname in groups['appdbs'] )          and
+          ( mysqld_output.status.UnitFileState is defined )   and
+          ( mysqld_output.status.ActiveState == "active"  )
+
+- name: Grade Lab06
+  hosts: frontends
+  gather_facts: no
+  tasks:
+  - name: Run a Curl Test against Frontend
+    uri:
+      url: http://{{ hostvars.frontend.ansible_host }}/?name=kiosk
+      status_code: 403,200,-1
+      return_content: yes
+    register: webpage
+
+
+  - name: Check kiosk data in db fail
+    debug:
+      msg: "FAIL : kiosk is not present" 
+    when: ( webpage.status == -1 )  and 
+          ("'kiosk redhat /bin/bash /home/kiosk' not in webpage.content")
+
+
+  - name: Check kiosk data in db pass
+    debug: "Pass : kiosk is present"  
+        
+    when:  "'kiosk redhat /bin/bash /home/kiosk' in webpage.content"

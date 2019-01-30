@@ -15,7 +15,7 @@
       args:
         chdir: /root/ansible_implementation_part1_solve
     
-    - name: Execute remote lab05_main_playbook
-      shell: ansible-playbook lab05_main_playbook.yml
+    - name: Execute remote lab06_webapp-main
+      shell: ansible-playbook lab06_webapp-main.yml
       args:
         chdir: /root/ansible_implementation_part1_solve
