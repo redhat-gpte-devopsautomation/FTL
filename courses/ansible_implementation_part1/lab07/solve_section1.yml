@@ -15,7 +15,7 @@
       args:
         chdir: /root/ansible_implementation_part1_solve
     
-    - name: Execute remote lab05_main_playbook
-      shell: ansible-playbook lab05_main_playbook.yml
+    - name: Execute remote lab07_ansible_vault
+      shell: ansible-playbook lab07_ansible_vault.yml  -e GUID={{GUID}}
       args:
         chdir: /root/ansible_implementation_part1_solve
