@@ -26,7 +26,7 @@
   - name: fail
     debug: 
       msg: "FAIL : Webpage does not have correct content."
-    when: ("'Hoorraaayyy!!! My first playbook ran successfully' not in webpage.content")
+    when: "'Hoorraaayyy!!! My first playbook ran successfully' != webpage.content"
 
 
   - name: pass
