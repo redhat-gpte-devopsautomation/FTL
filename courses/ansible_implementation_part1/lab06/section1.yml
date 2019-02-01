@@ -71,11 +71,13 @@
           ( haproxy_output.status.UnitFileState is defined )  and
           ( haproxy_output.status.ActiveState == "active" )
   
-  - name: Check httpd service status
+  - name: Check mysqld service status
     service:
       name: mysqld
     register: mysqld_output   
     when: inventory_hostname in groups['appdbs']
+
+  - debug: var=mysqld_output
     
   - name: Fail if mysqld service is not started
     debug: 
