@@ -49,6 +49,8 @@
       name: httpd
     register: httpd 
 
+  - debug: var=httpd
+  
   - name: Fail if httpd service is not started
     debug: 
       msg: "FAIL : httpd service is not started" 
