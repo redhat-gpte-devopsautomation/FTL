@@ -65,7 +65,8 @@
           (( haproxy_output.status.UnitFileState is not defined ) or ( haproxy_output.status.ActiveState != "active" ))
   
   - name: Pass if haproxy service is started
-    debug: "PASS : haproxy service is started"
+    debug: 
+      msg:  "PASS : haproxy service is started"
     when: ( inventory_hostname in groups['frontends'] )       and
           ( haproxy_output.status.UnitFileState is defined )  and
           ( haproxy_output.status.ActiveState == "active" )
@@ -109,6 +110,7 @@
 
 
   - name: Check kiosk data in db pass
-    debug: "Pass : kiosk is present"  
+    debug: 
+      msg: "Pass : kiosk is present"  
         
     when:  "'kiosk redhat /bin/bash /home/kiosk' in webpage.content"
