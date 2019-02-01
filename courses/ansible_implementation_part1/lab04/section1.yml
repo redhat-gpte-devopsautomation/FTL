@@ -26,7 +26,7 @@
   - name:  fail
     debug: 
       msg: "FAIL : Webpage does not have correct content."
-    when:  ("'Example web content' not in webpage.content") 
+    when:  ("'Example web content' == webpage.content") 
        
   - name: set grade to pass
     debug: 
