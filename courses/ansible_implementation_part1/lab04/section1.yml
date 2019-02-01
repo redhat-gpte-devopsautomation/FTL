@@ -25,12 +25,11 @@
   # - debug: var=webpage.content
   - name:  fail
     debug: 
-      msg:    "FAIL : Webpage does not have correct content."
-    when:  ( webpage.status == -1 )  or ("'Example' not in webpage.content") or
-           ( webpage.status == -1 )  or ("'has been customized using Ansible' not in webpage.content")
+      msg: "FAIL : Webpage does not have correct content."
+    when:  ("'Example web content' not in webpage.content") 
        
   - name: set grade to pass
-    debug: "PASS : {{ webpage.content }}"
-    when:  ("Example" in webpage.content) or
-           ("has been customized using Ansible" in webpage.content)
+    debug: 
+      msg: "PASS : {{ webpage.content }}"
+    when:  ("'Example web content' in webpage.content") 
   
