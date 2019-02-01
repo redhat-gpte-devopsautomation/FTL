@@ -53,7 +53,7 @@
     debug: 
       msg: "FAIL : httpd service is not started" 
     when: ( httpd.UnitFileState is not defined ) or
-          ( httpd.ActiveState == "active" )
+          ( httpd.ActiveState != "active" )
 
   - name: Pass if httpd service is started
     debug: 
