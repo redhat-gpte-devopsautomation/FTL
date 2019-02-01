@@ -31,7 +31,8 @@
 
 
   - name: pass
-    debug: "PASS : Hoorraaayyy!!! My first playbook ran successfully is in the page content"
+    debug: 
+      msg: "PASS : Hoorraaayyy!!! My first playbook ran successfully is in the page content"
     when:  "'Hoorraaayyy!!! My first playbook ran successfully' in webpage.content"
     
   
