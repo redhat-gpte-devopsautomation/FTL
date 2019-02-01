@@ -17,7 +17,7 @@
     uri:
      url: http://{{ item }}
      return_content: yes
-    with_items: "{{ groups['webservers'] }}"
+    with_items: "{{ groups['apps'] }}"
     register: webpage
 
   - name: Fail if 'has been customized using Ansible' is not in the page content
