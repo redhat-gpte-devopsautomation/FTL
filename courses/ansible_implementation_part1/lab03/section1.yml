@@ -49,16 +49,16 @@
       name: httpd
     register: httpd 
 
-  - debug: var=httpd
-  
+  # - debug: var=httpd
+
   - name: Fail if httpd service is not started
     debug: 
       msg: "FAIL : httpd service is not started" 
-    when: ( httpd.UnitFileState is not defined ) or
-          ( httpd.ActiveState != "active" )
+    when: ( httpd.status.UnitFileState is not defined ) or
+          ( httpd.status.ActiveState != "active" )
 
   - name: Pass if httpd service is started
     debug: 
       msg: "PASS : httpd service is started" 
-    when: ( httpd.UnitFileState is defined ) and
-          ( httpd.ActiveState == "active" ) 
+    when: ( httpd.status.UnitFileState is defined ) and
+          ( httpd.status.ActiveState == "active" ) 
