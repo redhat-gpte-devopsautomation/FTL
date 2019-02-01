@@ -1,4 +1,4 @@
-----  
+---
 - name: infra-ec2-wait_for_linux_hosts
   hosts:
     - all:!windows
