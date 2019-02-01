@@ -21,7 +21,7 @@
     register: webpage
 
   - name: Fail if 'has been customized using Ansible' is not in the page content
-    fail:
+    debug:
       msg: "FAILED: Webpage is not having correct content"
     when: "'has been customized using Ansible' not in webpage.results[0].content"
     
