@@ -22,14 +22,14 @@
     register: webpage
     ignore_errors: yes
  
-  # - debug: var=webpage.content
+  - debug: var=webpage.content
   - name:  fail
     debug: 
       msg: "FAIL : Webpage does not have correct content."
-    when:  ("'Example web content' == webpage.content") 
+    when:  "'Example web content' == webpage.content"
        
   - name: set grade to pass
     debug: 
       msg: "PASS : {{ webpage.content }}"
-    when:  ("'Example web content' in webpage.content") 
+    when:  "'Example web content' == webpage.content"
   
