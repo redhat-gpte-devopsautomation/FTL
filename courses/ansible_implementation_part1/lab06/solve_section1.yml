@@ -16,6 +16,6 @@
         chdir: /root/ansible_implementation_part1_solve
     
     - name: Execute remote lab06_webapp-main
-      shell: ansible-playbook lab06_webapp-main.yml
+      shell: ansible-playbook lab06_webapp-main.yml -e GUID={{GUID}}
       args:
         chdir: /root/ansible_implementation_part1_solve
