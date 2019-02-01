@@ -81,7 +81,7 @@
   tasks:
   - name: Check mysqld service status
     service:
-      name: mysqld
+      name: mariadb
     register: mysqld_output   
 
   - debug: var=mysqld_output
