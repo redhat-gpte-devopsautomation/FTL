@@ -18,10 +18,12 @@
   - name: Verify devops user is created
     shell: "grep db_user /etc/passwd | cut -d: -f1"
     register: output
-  - debug:
+  - name: Fail user does not exist
+    debug:
       msg: "FAILED: User db_user not present"
     when: output.stdout != "db_user"
-  - debug:
+  - name: Pass user exists
+    debug:
       msg: "Success: db_user user present"
     when: output.stdout == "db_user"
 
@@ -49,9 +51,11 @@
   - name: Verify mariadb service is started 
     service_facts:
     register: result
-  - debug:
+  - name: Fail service 
+    debug:
       msg: "FAILED: Mariadb service is not running"
     when: result.ansible_facts.services['mariadb.service'].state != "running"
-  - debug:
+  - name: Pass service
+    debug:
       msg: "Success: Mariadb service is running" 
     when: result.ansible_facts.services['mariadb.service'].state == "running"
