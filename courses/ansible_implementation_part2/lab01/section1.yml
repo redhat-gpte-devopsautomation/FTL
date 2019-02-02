@@ -41,7 +41,7 @@
     - debug:
         msg: "Success: File is copied"
       when: shell_output.stdout != "# Ansible file"
-  when: stat_output.stat.exists
+    when: stat_output.stat.exists
 
   - name: Verify mariadb service is started 
     service_facts:
