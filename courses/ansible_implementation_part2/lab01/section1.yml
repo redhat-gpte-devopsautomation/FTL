@@ -31,16 +31,18 @@
     register: stat_output
   - debug: var=stat_output
 
-  - name: Verify correct my.cnf file is created
-    shell: "grep Ansible /etc/my.cnf"
-    register: output
-    when: stat_output.exist
-    
-  - debug:
-      msg: "FAILED: File is not copied"
-    when: output.stdout != "# Ansible file"
-  - debug:
-      msg: "Success: File is copied"
+  block:
+    - name: Verify correct my.cnf file is created
+      shell: "grep Ansible /etc/my.cnf"
+      register: shell_output
+    - debug:
+        msg: "FAILED: File is not copied"
+      when: shell_output.stdout != "# Ansible file"  
+    - debug:
+        msg: "Success: File is copied"
+      when: shell_output.stdout != "# Ansible file"
+  when: stat_output.stat.exists
+
   - name: Verify mariadb service is started 
     service_facts:
     register: result
