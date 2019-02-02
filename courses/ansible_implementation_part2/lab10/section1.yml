@@ -15,7 +15,7 @@
 - hosts: bastions
   tasks:
   - name: Check the file on bastion
-    shell: "grep connection_type /tmp/bastion.${GUID}.internal"
+    shell: "grep connection_type /tmp/bastion.{{GUID}}.internal"
     register: output
   - name: Fail
     debug:
