@@ -12,11 +12,7 @@
   when: solve == "true"
 
 ###############     Play1 for grade     ###############
-- hosts: localhost
-  roles:
-    - inventory
-
-- hosts: db
+- hosts: appdbs
   gather_facts: false
   tasks:
   - name: Verify devops user is created
