@@ -38,10 +38,10 @@
         ignore_errors: yes
       - debug:
           msg: "FAILED: File is not copied"
-        when: shell_output.stdout != "# Ansible file"  
+        when: ( shell_output.rc != 0 ) or ( shell_output.stdout != "# Ansible file" )  
       - debug:
           msg: "Success: File is copied"
-        when: shell_output.stdout != "# Ansible file"
+        when: ( shell_output.rc == 0 ) or (shell_output.stdout != "# Ansible file")
     when: stat_output.stat.exists
 
   - name: Verify mariadb service is started 
