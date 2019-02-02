@@ -18,6 +18,7 @@
   tasks:
   - shell: grep 'clyde@example.com' /etc/motd
     register: result
+    ignore_errors: yes
   - name: Fail
     debug:
       msg: "FAILED: Message of the day is not set correctly"
