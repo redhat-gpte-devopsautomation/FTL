@@ -17,10 +17,12 @@
   - name: Check the file on bastion
     shell: "grep connection_type /tmp/bastion.${GUID}.internal"
     register: output
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: File is not in correct format"
     when: output.stdout != "connection_type = local"
-  - debug:
+  - name: Pass
+    debug:
       msg: "Success: File is in correct format"
 
 - hosts: support
@@ -29,7 +31,8 @@
   - name: Check the file on support1
     shell: "grep connection_type /tmp/{{ inventory_hostname }}"
     register: output
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: File is not in correct format"
     when: output.stdout != "connection_type = ssh"
   - debug:
