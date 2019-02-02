@@ -35,6 +35,7 @@
       - name: Verify correct my.cnf file is created
         shell: "grep Ansible /etc/my.cnf"
         register: shell_output
+        ignore_errors: yes
       - debug:
           msg: "FAILED: File is not copied"
         when: shell_output.stdout != "# Ansible file"  
