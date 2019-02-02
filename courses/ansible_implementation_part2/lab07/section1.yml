@@ -19,9 +19,11 @@
     shell: curl -k https://app1.{{GUID}}.internal
     register: output
   - debug: var=output.stdout
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: Secure webserver is not configured"
     when: "'This is a test page.' not in output.stdout"
-  - debug:
+  - name: Pass
+    debug:
       msg: "Success: Secure webserver is configured" 
     when: "'This is a test page.' in output.stdout"
