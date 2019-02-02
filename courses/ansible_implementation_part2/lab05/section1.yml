@@ -18,6 +18,7 @@
   - name: Cheeck samba package
     shell: rpm -q samba
     register: pkg
+  - debug: var=pkg
   - name: Fail samba package
     debug:
       msg: "FAILED: samba package is not installed"
