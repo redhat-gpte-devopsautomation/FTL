@@ -36,10 +36,12 @@
         shell: "grep Ansible /etc/my.cnf"
         register: shell_output
         ignore_errors: yes
-      - debug:
+      - name: Fail my.cnf content 
+        debug:
           msg: "FAILED: File is not copied"
         when: ( shell_output.rc != 0 ) or ( shell_output.stdout != "# Ansible file" )  
-      - debug:
+      - name: Pass File my.cnf content
+        debug:
           msg: "Success: File is copied"
         when: ( shell_output.rc == 0 ) and (shell_output.stdout != "# Ansible file")
     when: stat_output.stat.exists
