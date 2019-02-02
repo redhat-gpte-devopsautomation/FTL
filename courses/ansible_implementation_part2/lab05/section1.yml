@@ -19,7 +19,7 @@
     shell: rpm -q samba
     register: pkg
     ignore_errors: yes
-  - debug: var=pkg
+  
   - name: Fail samba package
     debug:
       msg: "FAILED: samba package is not installed"
