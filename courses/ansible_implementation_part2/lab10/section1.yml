@@ -25,7 +25,7 @@
     debug:
       msg: "Success: File is in correct format"
 
-- hosts: support
+- hosts: supports
   gather_facts: false
   tasks:
   - name: Check the file on support1
