@@ -31,7 +31,7 @@ instances:
     ansible_ssh_user: ec2-user
     groups: appdbs
 
-  - name: "support1"
+  - name: "support"
     ansible_hostname: support1.{{GUID}}.example.opentlc.com
     ansible_internal: support1.{{GUID}}.internal
     ansible_ssh_user: ec2-user

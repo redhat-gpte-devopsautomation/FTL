@@ -29,7 +29,7 @@
   gather_facts: false
   tasks:
   - name: Check the file on support1
-    shell: "grep connection_type /tmp/{{ inventory_hostname }}"
+    shell: "grep connection_type /tmp/support1.{{GUID}}.internal"
     register: output
   - name: Fail
     debug:
