@@ -13,24 +13,29 @@
 
 ###############     Play1 for grade     ###############
 - hosts: bastion
+  become: yes
   tasks:
   - name: dict_facts playbook
     stat:
       path: /home/devops/ansible_implementation/dict_facts.yml
     register: dict_facts
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: playbook is not present"
     when: dict_facts.stat.exists != true
-  - debug:
+  - name: pass
+    debug:
       msg: "Success: playbook pressent" 
     when: dict_facts.stat.exists == true
   - name: dict_pars playbook
     stat:
       path: /home/devops/ansible_implementation/dict_pars.yml
     register: dict_pars
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: playbook is not present"
     when: dict_pars.stat.exists != true
-  - debug:
+  - name: Pass
+    debug:
       msg: "Success: playbook pressent" 
     when: dict_pars.stat.exists == true
