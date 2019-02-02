@@ -18,9 +18,11 @@
   tasks:
   - shell: grep 'clyde@example.com' /etc/motd
     register: result
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: Message of the day is not set correctly"
     when: result.stdout != "You can ask clyde@example.com for access."
-  - debug:
+  - name: Pass
+    debug:
       msg: "Success: Message of the day is set correctly" 
     when: result.stdout == "You can ask clyde@example.com for access."
