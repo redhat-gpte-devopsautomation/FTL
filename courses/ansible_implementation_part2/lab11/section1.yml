@@ -13,14 +13,17 @@
 
 ###############     Play1 for grade     ###############
 - hosts: bastions
+  become: yes
   tasks:
   - name: serial_play playbook
     stat:
       path: /home/devops/ansible_implementation/serial_play.yml
     register: dict_facts
-  - fail:
+  - name: Fail
+    debug:
       msg: "FAILED: playbook is not present"
     when: dict_facts.stat.exists != true
-  - debug:
+  - name: Pass
+    debug:
       msg: "Success: playbook pressent" 
     when: dict_facts.stat.exists == true
