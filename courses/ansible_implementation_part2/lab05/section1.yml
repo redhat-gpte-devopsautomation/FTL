@@ -18,19 +18,23 @@
   - name: Cheeck samba package
     shell: rpm -q samba
     register: pkg
-  - fail:
+  - name: Fail samba package
+    debug:
       msg: "FAILED: samba package is not installed"
     when: "'samba' not in pkg.stdout"
-  - debug:
+  - name: Pass samba package
+    debug:
       msg: "Success: Samba package is installed" 
     when: "'samba' in pkg.stdout"
   - name: smb.conf file is present
     stat:
       path: /etc/samba/smb.conf
     register: conf
-  - fail:
+  - name: Fail smb.conf
+    debug:
       msg: "FAILED: samba conf file is not present"
     when: conf.stat.exists != true
-  - debug:
+  - name: Pass samba.conf
+    debug:
       msg: "Success: samba conf package is present" 
     when: conf.stat.exists == true
