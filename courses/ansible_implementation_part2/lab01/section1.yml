@@ -24,9 +24,18 @@
   - debug:
       msg: "Success: db_user user present"
     when: output.stdout == "db_user"
+
+  - name: Verify file exist 
+    stat: 
+      path: /etc/my.cnf
+    register: stat_output
+  - debug: var=stat_output
+
   - name: Verify correct my.cnf file is created
     shell: "grep Ansible /etc/my.cnf"
     register: output
+    when: stat_output.exist
+    
   - debug:
       msg: "FAILED: File is not copied"
     when: output.stdout != "# Ansible file"
