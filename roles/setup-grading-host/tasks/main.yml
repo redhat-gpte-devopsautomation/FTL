@@ -1,0 +1,6 @@
+---
+- name: Clone FTL git repo to grading host(s)
+  git:
+    repo: "{{ ftl_git_repo }}"
+    dest: "{{ ftl_grading_host_home }}"
+
