@@ -1,0 +1,44 @@
+== FTL (Finish The Labs) Overview
+
+*FTL* is lab testing framework, including lab tests for validating students have
+sucessfully completed labs. It informs the student, highlighting any failed steps
+within the lab.
+
+== Usage
+
+. Check lab
+----
+ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=false"
+----
+
+. Solve and check lab
+----
+ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=true"
+----
+
+== Typical Deployment and Usage Scenario
+
+FTL would typically run on a designated machine, often `bastion` or equivilent
+in a students lab environment. To protect it from interfering with the students 
+own work FTL runs as a series of `ansible` playbooks executing in a virtualenv.
+(This has the added advantage that instructors creating FTL lab test playbooks 
+can ensure python dependencies are met such as `boto`, `winrm`, `openstacksdk`
+etc).
+
+* FTL installed at deployment time
+** e.g. in post-software stage of agnosticD or similar
+** virtualenv created with `requirements.txt`, including `ansible` itself
+* Student invokes a lab grading following instructions inserted into the lab
+** This would involve invoking a wrapper script and identifying the lab in question
+** e.g. `grade_lab 612345` where `612345` is effectivelya provided pin identifying
+*** Course
+*** Lab Number
+*** Version
+
+
+=== Documentation
+
+Documentation is provided in the `Docs` directory and includes
+
+* Author Guide - Describes how to create structure, inventory etc, and playbooks
+* Deployer Guide - Short overview of how FTL is deployed to target environments

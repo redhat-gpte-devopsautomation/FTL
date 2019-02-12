@@ -1,0 +1,45 @@
+---
+- name: Using roles for test conditions
+  hosts: all
+  gather_facts: false
+  become: false
+  vars:
+    error_message: []
+
+  pre_tasks:
+
+    - name: Set the result_tracker as a local fact
+      set_fact:
+        result_tracker: result_tracker
+      run_once: true
+      delegate_to: localhost
+
+  roles:
+        
+    - name: Section 1.3, Check student has created file 
+      role: opentlc_file_exists
+      vars:
+        path: /etc/foo
+        error_message: ["Section 1.3, /etc/foo does not exist"]
+        result_tracker: result_tracker
+
+    - name: Section 1.4, Check student has created file 
+      role: opentlc_file_exists
+      vars:
+        path: /etc/foo
+        error_message: ["Section 1.4, /etc/foo does not exist"]
+        result_tracker: result_tracker
+
+  post_tasks:
+
+    - name: Output state of result_tracker   
+      debug:
+        var: rc_failure_messages
+      delegate_to: localhost  
+      run_once: true
+
+    - name: Output state of error_message
+      debug:
+        var: error_message
+      delegate_to: localhost  
+      run_once: true

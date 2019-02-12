@@ -1,0 +1,13 @@
+---
+- name: Play with dictionaries
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  roles:
+
+    - role1
+    - role2
+    - role: role3
+      vars:
+        role_var: "I am 3"

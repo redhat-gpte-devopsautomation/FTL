@@ -1,0 +1,17 @@
+---
+- name: Create virtualenv on grading machine e.g. bastion
+  hosts: grading_host
+  gather_facts: false
+  #  become: true
+  vars:
+    #    virtual_env_home: /opt/virtualenvs
+    virtual_env_home: /tmp/virtualenvs
+    virtual_env_name: venv-grading
+
+  tasks:
+
+    - name: "Create virtualenv {{ virtual_env_name }}"
+      pip:
+        requirements: /tmp/requirements.txt
+        virtualenv: "{{ virtual_env_home }}/{{ virtual_env_name }}"
+...

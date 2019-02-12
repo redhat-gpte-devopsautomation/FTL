@@ -1,0 +1,29 @@
+- name: Stub task - your test logic here
+  debug:
+    msg: stub routine - please implement logic
+
+
+
+- name: Set status of your test here
+  set_fact:
+    test_state: failed
+
+#
+#  
+#
+#
+#
+#
+
+- name: Leave the following alone - logging logic
+  block:
+    - name: Capture and log error
+      set_fact:
+        error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
+      delegate_to: localhost
+
+    - name: Log event to log file  
+      import_role:
+        name: log_grade_to_log
+      delegate_to: localhost
+  when: test_state == "failed"

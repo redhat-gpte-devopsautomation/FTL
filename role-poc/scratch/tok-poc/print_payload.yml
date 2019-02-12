@@ -1,0 +1,16 @@
+---
+- name: Print an API variable from Tower
+  hosts: localhost
+  gather_facts: false
+  vars:
+    payload: Hardcoded var
+
+  tasks:
+    
+    - name: Show the value of the payload var sent via Tower API
+      debug:
+        msg: "{{ payload }}"
+
+    - name: Show the value of the payload var sent via Tower API
+      debug:
+        var: payload

@@ -1,0 +1,8 @@
+---
+- name: Create virtualenv on grading machine e.g. bastion
+  hosts: grading_host
+  gather_facts: false
+
+  roles:
+    - create-grading-virtualenv
+...

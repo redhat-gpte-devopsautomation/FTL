@@ -1,0 +1,8 @@
+---
+- name: log to file
+  lineinfile:
+    create: yes
+    insertafter: EOF
+    path: "{{ opentlc_log_file }}"
+    line: "{{ error_message }}"
+  delegate_to: localhost  
