@@ -1,0 +1,2 @@
+[grading_host]
+grader_host ansible_host=localhost ansible_connection=local
