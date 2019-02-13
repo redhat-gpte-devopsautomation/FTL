@@ -1,9 +1,54 @@
-= FTL
+== FTL
 
-== Overview
+=== Overview
 
-FTL, *Finish The Labs*, is ia student invoked grading automated lab grading system designed to allow students 
-to self mark their *OPENTLC* labs to see if they have passed them correctly.
+FTL, *Finish The Labs*, is a student invoked automated lab grading system
+designed to allow students to self mark their *OPENTLC* labs to see if they
+have passed them correctly.
+
+On *failure* it highlights the failed sections via Instructor supplied  error
+messages. Students have unlimited attempts and can run the grading at any time,
+without penalty.
+
+On *success* it:
+
+. Informs the student
+. Updates the LMS (at this point the `grade-update-lms` role is a stub
+
+=== Documentation:
+
+A documentation directory is provided `docs/`
+
+. This README.adoc - A General Overview
+. Lab Grading Author Guide
+
+=== Workflow
+
+Instructors create a series of lab checking playbooks in the correct sub-directory
+of the `courses` directory. Tests are written in `ansible` and test 1 or more
+conditions in the lab. For example:
+
+* Has package `foo` been installed
+* Does user `bar` exist
+* Does a file contain a certain line
+* Does a URI give a certain response e.g. *200* or certain output
+
+Whilst instructors can create these tests some convenience roles have been created
+to both test condition and to track score, these are detailed in the *Lab Grading Author Guide*
+but as an example:
+
+[source,yaml]
+----
+- name: Section 1.5, Check student has installed ansible
+  role: opentlc_package_installed
+  vars:
+    section_number: 1.5
+    student_error_message: Package not installed
+    package: ansible
+----
+
+
+=== Structure
 
 
 == Usage
@@ -26,5 +71,47 @@ ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible
 ** Via button in the LMS
 . Does the check action pull in the playbook(s) or are they already there?
 ** i.e. backed in at lab build time
-. 
+.
 
+.
+├── courses
+│   ├── ansible_implementation_part1
+│   ├── ansible_implementation_part2
+│   ├── ansible_integrations
+│   ├── ansible_tower_implementation
+│   ├── ocp_implementation
+│   └── ocp_operations
+├── playbooks
+├── reports
+├── role-poc
+│   ├── docs
+│   ├── group_vars
+│   ├── library
+│   ├── output
+│   ├── roles
+│   └── scratch
+├── roles
+│   ├── adding_variable_to_localhost
+│   ├── app-tier
+│   ├── assessment_result
+│   ├── create-grading-virtualenv
+│   ├── db-tier
+│   ├── devops_user
+│   ├── finish
+│   ├── grade-report-generation
+│   ├── grade-show-student
+│   ├── grade-update-lms
+│   ├── infra-ec2-wait_for_linux_hosts
+│   ├── infra-ec2-wait_for_windows_hosts
+│   ├── lb-tier
+│   ├── log_grade_to_log
+│   ├── opentlc_file_exists
+│   ├── opentlc_init_scorer
+│   ├── opentlc_package_installed
+│   ├── opentlc_user_exists
+│   ├── service_check
+│   ├── setup-grading-host
+│   └── start
+└── utilities
+
+39 directories
