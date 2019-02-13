@@ -1,5 +1,11 @@
 = FTL
 
+== Overview
+
+FTL, *Finish The Labs*, is ia student invoked grading automated lab grading system designed to allow students 
+to self mark their *OPENTLC* labs to see if they have passed them correctly.
+
+
 == Usage
 
 . Check lab
@@ -11,3 +17,14 @@ ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible
 ----
 ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=true"
 ----
+
+
+== Questions:
+
+. Do students invoke the check via:
+** `CLI` on the lab machine
+** Via button in the LMS
+. Does the check action pull in the playbook(s) or are they already there?
+** i.e. backed in at lab build time
+. 
+
