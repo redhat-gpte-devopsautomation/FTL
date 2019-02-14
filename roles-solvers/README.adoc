@@ -1,0 +1,30 @@
+== Overview
+
+This directory, which is searched by ansible via `roles_path` is for lab solvers
+i.e. these roles are used to solve a lab.
+
+=== Naming Conventions
+
+Role names clearly need to specify what course and lab they solve. In addition 
+they need to include a version. `web-servers` is not meaningful!
+
+
+[source,yaml]
+----
+<course-title>-<version>-<lab-number>
+----
+
+
+.Table Title
+|===
+|Bad Role Names|Good Role Names
+
+|web
+|ansible-impl-1-v1.0-lab01-01
+
+|openshift-foundations
+|ocp-found-v1.0-lab02-01
+
+|user-foo
+|osp-impl-v1.0-lab03-01
+|===
