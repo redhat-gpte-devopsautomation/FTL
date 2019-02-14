@@ -1,12 +1,12 @@
 == Overview
 
-This directory, which is searched by ansible via `roles_path` is for lab solvers
-i.e. these roles are used to solve a lab.
+This directory, which is searched by ansible via `roles_path`, is for lab solvers
+i.e. these roles are used to *solve* a lab, not to *grade* it..
 
 === Naming Conventions
 
-Role names clearly need to specify what course and lab they solve. In addition 
-they need to include a version. `web-servers` is not meaningful!
+Role names clearly need to specify what *course*, *version*, and *lab* they solve.
+`web-servers` is not a meaningful name!
 
 
 [source,yaml]
