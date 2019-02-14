@@ -1,7 +1,0 @@
-Course name: Ansible Implementation 2
-Lab:  2
-
-  Host [db1]: User devops does not exist
-  Host [db1]: 2nd failure: ansible not installed }}
-  Host [db1]: ssh keys missing for devops user
-

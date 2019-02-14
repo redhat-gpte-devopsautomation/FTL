@@ -1,3 +1,0 @@
-- name: Stub routine for updating LMS
-  debug:
-    msg: I'll update the LMS
