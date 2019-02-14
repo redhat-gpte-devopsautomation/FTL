@@ -1,10 +1,8 @@
-== FTL
+=== FTL Overview
 
-=== Overview
-
-FTL, *Finish The Labs*, is a student invoked automated lab grading system
+FTL, *Finish The Labs*, is currently a student invoked automated lab grading system
 designed to allow students to self mark their *OPENTLC* labs to see if they
-have passed them correctly.
+have passed them correctly. Other uses include lab and lab environment validation.
 
 On *failure* it highlights the failed sections via Instructor supplied  error
 messages. Students have unlimited attempts and can run the grading at any time,
@@ -20,7 +18,8 @@ On *success* it:
 A documentation directory is provided `docs/`
 
 . This README.adoc - A General Overview
-. Lab Grading Author Guide
+. link:docs/Lab_Grade_Author_Guide.adoc[Lab Grading Author Guide] - Creating Lab Test Playbooks
+. link:docs/FTL_Deployer_Guide.adoc[Deployer Guide] - Deploying, Installing, and Executing Lab Tests
 
 === Workflow
 
@@ -33,10 +32,11 @@ conditions in the lab. For example:
 * Does a file contain a certain line
 * Does a URI give a certain response e.g. *200* or certain output
 
-Whilst instructors can create these tests some convenience roles have been created
-to both test condition and to track score, these are detailed in the *Lab Grading Author Guide*
-but as an example:
+Whilst instructors can create tests some convenience roles have been created
+to both test condition and to track score, these are detailed in the 
+link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
 
+.Sample of a typical lab test leveraging an existing role
 [source,yaml]
 ----
 - name: Section 1.5, Check student has installed ansible
@@ -47,7 +47,15 @@ but as an example:
     package: ansible
 ----
 
+Instructors can author custom, and more complex, tests as long as these can be 
+executed in an ansible playbook. See the Documnattation for more details.
 
+==== Score Tracking
+
+
+
+
+Additionally as a convenience a lab scoring role has been created, 
 === Structure
 
 
