@@ -1,0 +1,21 @@
+---
+- name: Generate inventory
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "courses/{{ course_name }}/lab_vars.yml"
+  vars:  
+    - tower_job: false
+
+  roles:
+    - generate_guid_lab_inventory  
+
+  tasks: 
+    - name: "Output Tower Job ID {{ tower_job_id }}"
+      debug:
+        msg: "Output Tower Job ID {{ tower_job_id }}"
+      when: tower_job == True
+
+- name: "Test the {{ course_name }} lab {{ lab_number }}"
+  import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/main.yml"
+...  

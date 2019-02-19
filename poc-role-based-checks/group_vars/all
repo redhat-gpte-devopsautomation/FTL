@@ -1,0 +1,7 @@
+result_tracker: {
+  'error_message' : "",
+  'error_count' : 0,
+  'error_host' : ""
+  }
+opentlc_lab_report: /tmp/opentlc_lab_report  
+opentlc_log_file: /tmp/opentlc_log_file

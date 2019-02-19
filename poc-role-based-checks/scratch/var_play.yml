@@ -1,0 +1,59 @@
+---
+- name: Play with dictionaries
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  vars:
+    simple: simple var
+    complex: {
+      'field_1' : 'foo',
+      'field_2' : 'bar'
+      }
+    var_with_list: {
+      'my_list' : ['element0'],
+      'my_int' : 1
+      }
+    my_list_var: ['hello', 'goodbye']  
+
+
+  tasks: 
+
+    - name: Output var
+      debug:
+        var: simple
+
+    - name: Output dictionary
+      debug:
+        var: complex
+
+    - name: Output dictionary field
+      debug:
+        var: complex.field_1
+
+    - name: Output dictionary field with ['notation']
+      debug:
+        var: complex['field_1']
+
+        
+    - name: Output dict with list
+      debug:
+        var: var_with_list.my_list
+
+    - name: set that dict as a fact    
+      set_fact:
+        my_fact: var_with_list
+
+    - name: output fact
+      debug:
+        var: my_fact
+        
+    - name: Set fact by appending to list     
+      set_fact:
+        #        my_appended_list: ("[" 'hello' "]" + "[" 'moo cow' "]")
+        my_list_var: '{{ my_list_var + ["farewell"] }}'
+
+    - name: output appended list
+      debug:
+        var: my_list_var
+

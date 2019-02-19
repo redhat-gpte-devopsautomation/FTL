@@ -1,0 +1,10 @@
+---
+- name: Generate GUID based course inventory
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "courses/{{ course_name }}/lab_vars.yml"
+
+  roles:
+    - generate_guid_lab_inventory
+...  
