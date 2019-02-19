@@ -1,0 +1,32 @@
+== Overview
+
+The role `ftl_run_create_grading_virtualenv` creates a virtualenv on the grading
+host to allow FTL to run in a known good and protected environment irrespective
+of the state of the students machine.
+
+
+=== Variables
+
+It takes 2 variables set in defaults/main.yml
+
+`virtual_env_home: /tmp/virtualenvs`
+
+The home where the virtualenv will be created. /opt is used as /tmp does not
+persist through reboots
+
+`virtual_env_name: venv-ftl-grading`
+
+Name of the virtualenv. *DON'T* override this, the student grading scripts will
+be looking to activate this to run their grading playbooks.
+
+=== Files: requirements.txt
+
+This file is used to configure the virtualenv with:
+
+* ansible
+* All necessary python libraries. e.g.
+** `boto`, `boto3` for AWS
+** `winrm` for windows etc
+
+It can be regenerated automatically. New libraries can be added, don't remove
+existing libraries without validating that they are no longer in use.
