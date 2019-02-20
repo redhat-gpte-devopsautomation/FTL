@@ -2,7 +2,7 @@
 # Git repo for FTL repo
 # Local home on grading host
 
-ftl_git_repo: https://github.com/redhat-gpe/FTL.git
+ftl_git_repo: "https://{{ github_token }}@github.com/redhat-gpe/FTL.git"
 ftl_grading_host_home: /opt/ftl-repo-clone
 ...
 

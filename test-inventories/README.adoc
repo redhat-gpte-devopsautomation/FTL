@@ -1,0 +1,8 @@
+== README
+
+A courtesy directory for test inventory files for use whilst testing etc.
+
+=== Usage
+
+Creat your inventory file `foo` or whatever
+Test you playbooks with `ansible-playbook -i test-inventories/foo main.yml` etc...

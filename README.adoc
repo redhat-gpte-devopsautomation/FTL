@@ -21,7 +21,21 @@ A documentation directory is provided `docs/`
 . link:docs/Lab_Grade_Author_Guide.adoc[Lab Grading Author Guide] - Creating Lab Test Playbooks
 . link:docs/FTL_Deployer_Guide.adoc[Deployer Guide] - Deploying, Installing, and Executing Lab Tests
 
-=== Workflow
+=== Workflow - Deployment
+
+FTL can be deployed via push i.e. inserted into a lab at the deployment
+stage. An obvious example being inserted via Ansible Agnostic Deployer in the 
+Post Software stage of a config.
+
+NOTE: FTL currently clones the entire repo i.e all tests for all labs so no 
+additional meta data needs to be supplied at deployment time.
+
+Alternatively it could be modified to be deployed via pull i.e. the student
+clones the FTL repo locally. This will require either a permissions change on 
+the repo or a API token/login to be provided as FTL is a private repo today.
+
+=== Workflow - Devloping a Lab Test
+
 
 Instructors create a series of lab checking playbooks in the correct sub-directory
 of the `courses` directory. Tests are written in `ansible` and test 1 or more

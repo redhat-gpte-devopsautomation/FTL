@@ -9,6 +9,6 @@ pip_dependencies:
 # Home for the virtualenv
 # Name for the grading virtualenv
 
-virtual_env_home: /tmp/virtualenvs
+virtual_env_home: /opt/virtualenvs
 virtual_env_name: venv-grading
 ...
