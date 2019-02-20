@@ -1,4 +1,11 @@
 ---
+
+python_dependencies:
+  - python-pip
+
+pip_dependencies:
+  - virtualenv
+
 # Home for the virtualenv
 # Name for the grading virtualenv
 

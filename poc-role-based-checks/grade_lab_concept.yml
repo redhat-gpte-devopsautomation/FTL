@@ -10,21 +10,21 @@
 
     - name: Update LMS and Student
       import_role: 
-        name: start
+        name: ftl_run_start
       run_once: true
       delegate_to: localhost
 
   roles:      # All lab tests go here
 
     - name: Section 1.3, Check student has created file foo
-      role: opentlc_file_exists
+      role: ftl_check_file_exists
       vars:
         section_number: 1.3
         student_error_message: /etc/foo does not exist
         file_with_path: /etc/foo
 
     - name: Section 1.4, Check student has created file bar
-      role: opentlc_file_exists
+      role: ftl_check_file_exists
       vars:
         section_number: 1.4
         student_error_message: /etc/bar does not exist
@@ -32,7 +32,7 @@
       when: "'web' in group_names"  # Example of restricting to a group
 
     - name: Section 1.5, Check student has installed ansible 
-      role: opentlc_package_installed
+      role: ftl_check_package_installed
       vars:
         section_number: 1.5
         student_error_message: Package not installed
@@ -41,14 +41,14 @@
 
 
     - name: Section 1.6, Check student has created user tok
-      role: opentlc_user_exists
+      role: ftl_check_user_exists
       vars:
         section_number: 1.6
         student_error_message: User tok has not been created
         user: tok
 
     - name: Section 1.7, Check student has created user sha
-      role: opentlc_user_exists
+      role: ftl_check_user_exists
       vars:
         section_number: 1.6
         student_error_message: User sha has not been created
@@ -58,6 +58,6 @@
 
     - name: Update LMS and Student
       import_role: 
-        name: finish
+        name: ftl_run_finish_grading
       run_once: true
       delegate_to: localhost

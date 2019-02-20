@@ -1,7 +1,8 @@
 ---
-- name: Create virtualenv on grading machine e.g. bastion
+- name: Create virtualenv on grading host and clone FTL locally
   hosts: grading_host
   gather_facts: false
+  become: true
 
   roles:
     - ftl_run_create_grading_virtualenv
