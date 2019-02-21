@@ -1,0 +1,3 @@
+- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab.yml"
+  tags:
+    step001
