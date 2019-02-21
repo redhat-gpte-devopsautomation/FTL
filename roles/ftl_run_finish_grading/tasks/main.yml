@@ -1,12 +1,12 @@
 - name: Generate student grade report
   import_role: 
-    name: grade-report-generation
+    name: ftl_run_grade_report_generation
 
 - name: Show student grade
   import_role: 
-    name: grade-show-student
+    name: ftl_run_grader_show_student
 
 - name: Update LMS
   import_role:
-    name: grade-update-lms
+    name: ftl_run_grader_update_lms
 
