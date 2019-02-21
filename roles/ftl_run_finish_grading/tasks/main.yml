@@ -4,9 +4,9 @@
 
 - name: Show student grade
   import_role: 
-    name: ftl_run_grader_show_student
+    name: ftl_run_show_student_grade
 
 - name: Update LMS
   import_role:
-    name: ftl_run_grader_update_lms
+    name: ftl_run_grade_update_lms
 
