@@ -4,4 +4,6 @@
     repo: "{{ ftl_git_repo }}"
     dest: "{{ ftl_grading_host_home }}"
   no_log: true
+  tags:
+    - clone-ftl-repo
 

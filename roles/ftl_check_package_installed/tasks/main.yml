@@ -2,18 +2,9 @@
   debug:
     msg: stub routine - please implement logic
 
-
-
 - name: Set status of your test here
   set_fact:
     test_state: failed
-
-#
-#  
-#
-#
-#
-#
 
 - name: Leave the following alone - logging logic
   block:
@@ -24,6 +15,6 @@
 
     - name: Log event to log file  
       import_role:
-        name: log_grade_to_log
+        name: ftl_run_log_grade_to_log
       delegate_to: localhost
   when: test_state == "failed"
