@@ -18,4 +18,5 @@
   pip:
     requirements: /tmp/requirements.txt
     virtualenv: "{{ virtual_env_home }}/{{ virtual_env_name }}"
+    virtualenv_site_packages: true
 ...

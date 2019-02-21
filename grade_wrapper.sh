@@ -15,9 +15,10 @@ LAB_NUMBER=03_01
 # 
 
 # Make sure ansible finds the correct roles if it loads a new ansible.cfg
-ANSIBLE_ROLES_PATH=${FTL_REPO_HOME}/roles
 
+export ANSIBLE_ROLES_PATH=${FTL_REPO_HOME}/roles
 export FILE=${FTL_REPO_HOME}/courses/${COURSE_NAME}/ansible.cfg
+
 if [ -f $FILE ]; then
    export ANSIBLE_CONFIG=${FILE}
 fi
