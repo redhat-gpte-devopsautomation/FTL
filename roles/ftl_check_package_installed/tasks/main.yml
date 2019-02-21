@@ -1,7 +1,7 @@
-- name: Stub task - your test logic here
-  debug:
-    msg: stub routine - please implement logic
-
+- name: "Check yum package {{ package }} installed"
+  ftl_yum_package_installed:
+    package: "{{ package }}"
+    
 - name: Set status of your test here
   set_fact:
     test_state: failed

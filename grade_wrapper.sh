@@ -23,11 +23,11 @@ if [ -f $FILE ]; then
    export ANSIBLE_CONFIG=${FILE}
 fi
 
-echo ${ANSIBLE_CONFIG}
-
 source ${VIRTUALENV}/bin/activate
-ansible --version
+
 ansible-playbook grade_course.yml     \
   -e course_name=${COURSE_NAME}       \
-  -e lab_number=${LAB_NUMBER}
+  -e lab_number=${LAB_NUMBER}  # > /tmp/opentlc_grader_log 2>&1
+
+cat /tmp/opentlc_log_file  | sort
 
