@@ -1,0 +1,9 @@
+- name: "Remove existing {{ opentlc_log_file }}"
+  file:
+    path: "{{ opentlc_log_file }}"
+    state: absent
+
+- name: "Create {{ opentlc_log_file }}"
+  file:
+    path: "{{ opentlc_log_file }}"
+    state: touch

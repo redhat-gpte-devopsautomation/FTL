@@ -25,7 +25,7 @@ fi
 
 source ${VIRTUALENV}/bin/activate
 
-ansible-playbook grade_course.yml     \
+ansible-playbook grade_lab.yml        \
   -e course_name=${COURSE_NAME}       \
   -e lab_number=${LAB_NUMBER}  # > /tmp/opentlc_grader_log 2>&1
 

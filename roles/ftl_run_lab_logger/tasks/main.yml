@@ -1,0 +1,8 @@
+---
+
+# Initilizes logging method - currently file based
+# runs at the start of every lab grading
+
+- name: Initilization tasks
+  import_tasks: init.yml
+  when: logger_init
