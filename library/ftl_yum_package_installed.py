@@ -17,8 +17,10 @@ def main():
     # Error handling and JSON return 
 
     if yb.rpmdb.searchNevra(name=package):
+        ret_msg = 'Package Installed'
         module.exit_json(msg=ret_msg) 
     else: 
+        ret_msg = 'Package Not Installed'
         module.fail_json(msg=ret_msg) 
 
 if __name__ == "__main__": 
