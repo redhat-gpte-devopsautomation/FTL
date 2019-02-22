@@ -1,13 +1,16 @@
-- name: "Check yum package {{ package }} installed"
-  ftl_yum_package_installed:
-    package: "{{ package }}"
+#- name: "Check yum package {{ package }} installed"
+#  ftl_yum_package_installed:
+#    package: "{{ package }}"
     
-- name: Set status of your test here
-  set_fact:
-    test_state: failed
+- name: "Check package {{ package }} installed"
+  package: "{{ package }}"
+    state: present
+  check_mode: True
+  register: r_state
 
 - name: Leave the following alone - logging logic
   block:
+
     - name: Capture and log error
       set_fact:
         error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
@@ -16,5 +19,6 @@
     - name: Log event to log file  
       import_role:
         name: ftl_run_log_grade_to_log
-      delegate_to: localhost
-  when: test_state == "failed"
+
+  delegate_to: localhost
+  when: r_state.changed

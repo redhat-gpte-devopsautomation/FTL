@@ -1,7 +1,7 @@
 - name: "Check service {{ service }} enabled"
   service:
     name: "{{ service }}"
-    state: enabled
+    enabled: yes
   check_mode: True
   register: r_state
 
