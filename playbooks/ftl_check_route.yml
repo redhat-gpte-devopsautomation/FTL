@@ -1,0 +1,12 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  vars:
+    route_name: "nodejs-mongo-persistent-smoke-test.apps.0dc2.example.opentlc.com"
+    project_name: "smoke-test"
+    app_name: "nodejs-mongo-persistent"
+
+  tasks:
+  - name: Get a route
+    import_role:
+      name: ftl_check_ocp_route_exists

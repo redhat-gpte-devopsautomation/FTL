@@ -1,0 +1,16 @@
+---
+- name: print out the node we are checking
+  debug:
+    msg: "Checking if node {{ node_name }} exists"
+
+- name: check if the node exists
+  k8s_facts:
+    kind: Node
+    name: "{{ node_name }}"
+  register: node
+
+- name: logging block
+  block:
+    - debug:
+        msg: "The node {{ node_name }} doesn't exist in this cluster"
+  when: node.resources[0].metadata.name != node_name

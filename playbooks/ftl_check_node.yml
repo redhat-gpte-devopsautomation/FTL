@@ -1,0 +1,22 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  vars:
+    guid: "0dc2"
+    nodes:
+      - "master1.{{ guid }}.internal"
+      - "master2.{{ guid }}.internal"
+      - "master3.0dc2.internal"
+      - "infranode1.0dc2.internal"
+      - "infranode2.0dc2.internal"
+      - "node1.0dc2.internal"
+      - "node2.0dc2.internal"
+      - "node3.0dc2.internal"
+
+  tasks:
+  - name: Get nodes
+    vars:
+      node_name: "{{ item }}"
+    include_role:
+      name: ftl_check_ocp_node_exists
+    with_items: "{{ nodes }}"
