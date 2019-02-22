@@ -6,3 +6,10 @@
 - name: Initilization tasks
   import_tasks: init.yml
   when: logger_init
+
+# Generates any reporting
+# runs at the end of every lab grading
+
+- name: Finish reporting tasks
+  import_tasks: run_grading_reporting.yml
+  when: logger_finish
