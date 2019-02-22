@@ -24,17 +24,17 @@
         package: httpd
 
     - name: Section 5.2, Check student has enabled Apache
-      role: ftl_check_service_enabled
+      role: ftl_check_service_started
       vars:
         section_number: 5.2
-        student_error_message: Package httpd not installed
+        student_error_message: Package httpd not started
         service: httpd
 
-    - name: Section 5.3, Check student has enabled Apache
-      role: ftl_check_service_enabled
+    - name: Section 5.3, Check student has started eieio
+      role: ftl_check_service_started
       vars:
         section_number: 5.3
-        student_error_message: Package eieio not installed
+        student_error_message: Package eieio not started
         service: eieio
 
   post_tasks: 
