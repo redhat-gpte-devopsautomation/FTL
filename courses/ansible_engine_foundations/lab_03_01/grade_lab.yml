@@ -23,6 +23,20 @@
         student_error_message: Package httpd not installed
         package: httpd
 
+    - name: Section 5.2, Check student has enabled Apache
+      role: ftl_check_service_enabled
+      vars:
+        section_number: 5.2
+        student_error_message: Package httpd not installed
+        service: httpd
+
+    - name: Section 5.3, Check student has enabled Apache
+      role: ftl_check_service_enabled
+      vars:
+        section_number: 5.3
+        student_error_message: Package eieio not installed
+        service: eieio
+
   post_tasks: 
 
     - name: Update LMS and Student
