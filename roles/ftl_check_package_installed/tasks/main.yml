@@ -3,7 +3,8 @@
 #    package: "{{ package }}"
     
 - name: "Check package {{ package }} installed"
-  package: "{{ package }}"
+  package: 
+    name: "{{ package }}"
     state: present
   check_mode: True
   register: r_state
