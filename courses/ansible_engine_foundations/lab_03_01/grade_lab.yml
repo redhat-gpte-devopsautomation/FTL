@@ -3,16 +3,6 @@
   hosts: web
   gather_facts: false
   become: true
-  vars:
-    course_name: Ansible Engine Foundations
-
-  pre_tasks: 
-
-    - name: Update LMS and Student
-      import_role: 
-        name: ftl_run_start
-      run_once: true
-      delegate_to: localhost
 
   roles:      # All lab tests go here
 
@@ -36,11 +26,4 @@
         section_number: 5.3
         student_error_message: Package eieio not started
         service: eieio
-
-  post_tasks: 
-
-    - name: Update LMS and Student
-      import_role: 
-        name: ftl_run_finish_grading
-      run_once: true
-      delegate_to: localhost
+...

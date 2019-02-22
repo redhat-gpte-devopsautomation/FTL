@@ -1,3 +1,36 @@
-- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab.yml"
+---
+- name: Initialize grading report
+  hosts: localhost
+  gather_facts: false
+  become: true
+  vars:
+    course_name: Ansible Engine Foundations
+
+  tasks: 
+
+    - name: Update LMS and Student
+      import_role: 
+        name: ftl_run_start
+      run_once: true
+
+- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab_v2.yml"
   tags:
     step001
+
+- name: Run grading report
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks: 
+
+    - name: Update LMS and Student
+      import_role: 
+        name: ftl_run_finish_grading
+      run_once: true
+      delegate_to: localhost
+
+
+
+
+
