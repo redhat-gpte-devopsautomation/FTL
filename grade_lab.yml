@@ -3,8 +3,6 @@
   hosts: localhost
   gather_facts: false
   become: true
-  #  vars:
-  #  course_name: Ansible Engine Foundations
 
   tasks: 
 
