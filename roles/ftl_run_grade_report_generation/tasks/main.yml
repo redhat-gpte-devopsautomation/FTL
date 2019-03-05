@@ -4,9 +4,9 @@
   register: r_opentlc_log
   delegate_to: localhost  
 
-- name: Set fact with log
+- name: Iterate through log file appending to fact
   set_fact:
-    opentlc_log: "{{ ( opentlc_log_file | default([])) +  [( item )] }}"
+    opentlc_log_var: "{{ ( opentlc_log_var | default([])) +  [( item )] }}"
   with_items: "{{ r_opentlc_log.stdout_lines | sort }}"
   delegate_to: localhost  
   run_once: true
@@ -18,6 +18,6 @@
 
 - name: output logfile   
   debug:
-    var: opentlc_log_file
+    var: opentlc_log_var
   delegate_to: localhost  
   run_once: true
