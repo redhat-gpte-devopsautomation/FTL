@@ -3,8 +3,8 @@
   hosts: localhost
   gather_facts: false
   become: true
-  vars:
-    course_name: Ansible Engine Foundations
+  #  vars:
+  #  course_name: Ansible Engine Foundations
 
   tasks: 
 
@@ -14,9 +14,17 @@
       vars:
         logger_init: true
 
-- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab.yml"
+    - name: Logging and debug course name and lab number    
+      debug:
+        msg:
+          - "Course name: {{ course_name }}"
+          - "Lab Number: {{ lab_number }}"  
+        verbosity: 2    
+
+- name: Import and run the grading playbook
+  import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab.yml"
   tags:
-    step001
+    - lab_grader
 
 - name: Run grading report
   hosts: localhost

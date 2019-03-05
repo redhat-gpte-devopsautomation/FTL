@@ -26,7 +26,7 @@ source ${VIRTUALENV}/bin/activate
 
 ansible-playbook grade_lab.yml        \
   -e course_name=${COURSE_NAME}       \
-  -e lab_number=${LAB_NUMBER}  # > /tmp/opentlc_grader_log 2>&1
+  -e lab_number=${LAB_NUMBER} -vv   # > /tmp/opentlc_grader_log 2>&1
 
 cat /tmp/opentlc_log_file  | sort
 
