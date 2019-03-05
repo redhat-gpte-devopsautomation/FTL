@@ -6,7 +6,7 @@
 
 - name: Set fact with log
   set_fact:
-    opentlc_log: "{{ ( opentlc_log | default([])) +  [( item )] }}"
+    opentlc_log: "{{ ( opentlc_log_file | default([])) +  [( item )] }}"
   with_items: "{{ r_opentlc_log.stdout_lines | sort }}"
   delegate_to: localhost  
   run_once: true
