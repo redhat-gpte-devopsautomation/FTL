@@ -1,0 +1,33 @@
+---
+- name: Initialize grading report
+  hosts: localhost
+  gather_facts: false
+  become: true
+  vars:
+    course_name: Ansible Engine Foundations
+
+  tasks: 
+
+    - name: Initilize logging
+      import_role: 
+        name: ftl_run_lab_logger
+      vars:
+        logger_init: true
+
+- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/grade_lab.yml"
+  tags:
+    step001
+
+- name: Run grading report
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks: 
+
+    - name: Update LMS and Student
+      import_role: 
+        name: ftl_run_lab_logger
+      vars:
+        logger_finish: true
+...

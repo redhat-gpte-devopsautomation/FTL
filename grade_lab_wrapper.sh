@@ -3,7 +3,6 @@
 # 
 # wrapper script for grading playbook for lab
 #
-#
 
 VIRTUALENV=/opt/virtualenvs/venv-grading
 FTL_REPO_HOME=/opt/ftl-repo-clone/
