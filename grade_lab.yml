@@ -12,16 +12,11 @@
   tags:
     - lab_grader
 
-- name: Run grading report
+- name: Run finish role - generate reports and updates
   hosts: localhost
   gather_facts: false
   become: true
 
-  tasks: 
-
-    - name: Update LMS and Student
-      import_role: 
-        name: ftl_run_lab_logger
-      vars:
-        logger_finish: true
+  roles:
+    - ftl_run_finish
 ...
