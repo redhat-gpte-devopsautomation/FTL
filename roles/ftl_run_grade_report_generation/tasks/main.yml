@@ -18,6 +18,6 @@
 
 - name: output logfile   
   debug:
-    var: opentlc_log
+    var: opentlc_log_file
   delegate_to: localhost  
   run_once: true
