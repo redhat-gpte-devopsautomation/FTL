@@ -11,10 +11,12 @@
   delegate_to: localhost  
   run_once: true
 
-- name:  
+- name:  Generate student error report
   template:
     src: lab_error_report.j2
     dest: /tmp/error_report.txt
+  delegate_to: localhost  
+  run_once: true
 
 - name: output logfile   
   debug:
