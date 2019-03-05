@@ -1,3 +1,11 @@
+---
+- name: Logging and debug course name and lab number
+  debug:
+    msg:
+      - "Course name: {{ course_name }}"
+      - "Lab Number: {{ lab_number }}"
+    verbosity: 2
+
 - name: "Remove existing {{ opentlc_log_file }}"
   file:
     path: "{{ opentlc_log_file }}"
@@ -7,3 +15,4 @@
   file:
     path: "{{ opentlc_log_file }}"
     state: touch
+...    
