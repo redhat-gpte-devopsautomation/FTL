@@ -1,0 +1,4 @@
+# Global vars, 
+# automatically included by wrapper scripts via -e @ for global visibility
+
+opentlc_log_file: /tmp/opentlc_log_file
