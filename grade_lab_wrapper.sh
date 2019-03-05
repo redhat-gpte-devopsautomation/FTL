@@ -16,7 +16,6 @@ LAB_NUMBER=03_01
 # Make sure ansible finds the correct roles if it loads a new ansible.cfg
 
 export ANSIBLE_ROLES_PATH=${FTL_REPO_HOME}/roles:${FTL_REPO_HOME}/roles-ftl-run
-export ANSIBLE_ROLES_PATH=${FTL_REPO_HOME}/roles
 export FILE=${FTL_REPO_HOME}/courses/${COURSE_NAME}/ansible.cfg
 
 if [ -f $FILE ]; then
@@ -30,5 +29,7 @@ ansible-playbook grade_lab.yml        \
   -e course_name=${COURSE_NAME}       \
   -e lab_number=${LAB_NUMBER} -vv   # > /tmp/opentlc_grader_log 2>&1
 
-cat /tmp/opentlc_log_file  | sort
+# Output the error report
+
+cat /tmp/error_report.txt
 
