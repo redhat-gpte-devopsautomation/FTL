@@ -36,7 +36,7 @@
     - name: "Copy existing {{ opentlc_error_log_file }} to previous"
       copy:
         remote_src: yes
-        force: yest
+        force: yes
         src: "{{ opentlc_error_log_file }}"
         dest: "{{ opentlc_error_log_file_previous }}"
 
