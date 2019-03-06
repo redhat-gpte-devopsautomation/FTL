@@ -1,19 +1,25 @@
 ---
-- name: get the file contents
-  command: "cat {{ opentlc_log_file }}"
-  register: r_opentlc_log
+- name: "Check {{ opentlc_log_file }} exists"
+  stat:
+    path: "{{ opentlc_log_file }}"
+  register: r_opentlc_log_file  
 
-- name: Iterate through log file appending to fact
-  set_fact:
-    opentlc_log_content: "{{ ( opentlc_log_content | default([])) +  [( item )] }}"
-  with_items: "{{ r_opentlc_log.stdout_lines | sort }}"
+- name: If log file exists - process errors  
+  block:
 
-- name:  Generate student error report
-  template:
-    src: lab_error_report.j2
-    dest: /tmp/error_report.txt
+    - name: get the file contents
+      command: "cat {{ opentlc_log_file }}"
+      register: r_opentlc_log
 
-- name: output logfile   
-  debug:
-    var: opentlc_log_content
-    
+    - name: Iterate through log file appending to fact
+      set_fact:
+        opentlc_log_content: "{{ ( opentlc_log_content | default([])) +  [( item )] }}"
+      with_items: "{{ r_opentlc_log.stdout_lines | sort }}"
+
+    - name:  Generate student error report
+      template:
+        src: lab_error_report.j2
+        dest: /tmp/error_report.txt
+  when: r_opentlc_log_file.stat.exists
+
+
