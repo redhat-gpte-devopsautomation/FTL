@@ -1,0 +1,11 @@
+#
+# Use to pre-set sample vars that would normally be acquired at run-time
+# e.g. via the wrapping deployer script
+#
+# include via -e @test-data/sample-vars.yml
+# over-ride via -e which has precedence over -e @file
+
+
+opentlc_student:  johndoe-example.com  # CF passes this data as --user
+course_name:      ansible_engine_foundations
+lab_number:       03_01

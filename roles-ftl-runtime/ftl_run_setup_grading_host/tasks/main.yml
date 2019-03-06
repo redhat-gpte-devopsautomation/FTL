@@ -13,9 +13,9 @@
     path: "/etc/ansible/facts.d"
     state: "directory"
 
-- name: "Insert custom fact file"
-  copy:
-     src: opentlc.fact
+- name: "Insert opentlc custom facts e.g. student opentlc name"
+  template:
+     src: opentlc.fact.j2
      dest: /etc/ansible/facts.d/opentlc.fact
-     mode: 0755
+     mode: 0644
 ...
