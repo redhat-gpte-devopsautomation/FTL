@@ -24,4 +24,26 @@
   file:
     path: "{{ opentlc_log_file }}"
     state: touch
+
+- name: "Does {{ opentlc_error_log_file }} exist"
+  stat:
+    path: "{{ opentlc_error_log_file }}"
+  register: r_error_file
+
+- name: Clean up error log files
+  block:
+
+    - name: "Copy existing {{ opentlc_error_log_file }} to previous"
+      copy:
+        remote_src: yes
+        force: yest
+        src: "{{ opentlc_error_log_file }}"
+        dest: "{{ opentlc_error_log_file_previous }}"
+
+    - name: "Move existing {{ opentlc_error_log_file }}"
+      file: 
+        path: "{{ opentlc_error_log_file }}"
+        state: absent
+
+  when: r_error_file.stat.exists
 ...    
