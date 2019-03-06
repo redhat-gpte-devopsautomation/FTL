@@ -21,7 +21,7 @@
 
 - name: Install grade scrip
   copy:
-    file: grade_lab
-    path: /usr/local/bin/grade_lab
+    src: grade_lab
+    dest: /usr/local/bin/grade_lab
     mode: 0555
 ...
