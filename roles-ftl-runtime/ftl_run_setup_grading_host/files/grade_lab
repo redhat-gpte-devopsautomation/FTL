@@ -41,10 +41,12 @@ echo "Starting Grading Process"
 
 source ${VIRTUALENV}/bin/activate
 
-ansible-playbook ${FTL_REPO_HOME}/grade_lab.yml        \
+( cd ${FTL_REPO_HOME};  ansible-playbook grade_lab.yml        \
   -e @vars/global_vars.yml            \
   -e course_name=${COURSE_NAME}       \
-  -e lab_number=${LAB_NUMBER} -vv > /tmp/opentlc_grader_log 2>&1
+  -e lab_number=${LAB_NUMBER} ) 
+  
+#-vv > /tmp/opentlc_grader_log 2>&1
 
 # Output the error report
 
