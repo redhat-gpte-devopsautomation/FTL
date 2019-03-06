@@ -9,6 +9,11 @@ FTL_REPO_HOME=/opt/ftl-repo-clone/
 #COURSE_NAME=ansible_engine_foundations
 #LAB_NUMBER=03_01
 
+if [ -f /tmp/error_report.txt ]; 
+then
+  cp /tmp/error_report.txt /tmp/error_report.txt-previous
+fi
+
 #
 # Setup Ansible 
 # 

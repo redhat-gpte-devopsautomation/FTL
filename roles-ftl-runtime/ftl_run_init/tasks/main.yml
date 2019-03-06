@@ -5,7 +5,7 @@
     gather_subset: local
     
 - name: Set facts for simple access to opentlc metadata
-  set_facts:
+  set_fact:
     opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
 
 - name: Logging and debug course name and lab number
