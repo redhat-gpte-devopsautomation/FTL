@@ -7,3 +7,14 @@
   tags:
     - clone-ftl-repo
 
+- name: "Create custom fact directory for student metadata"
+  file:
+    path: "/etc/ansible/facts.d"
+    state: "directory"
+
+- name: "Insert custom fact file"
+    copy:
+       src: opentlc.fact
+       dest: /etc/ansible/facts.d/opentlc.fact
+       mode: 0755
+...
