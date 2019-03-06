@@ -3,6 +3,7 @@
   git:
     repo: "{{ ftl_git_repo }}"
     dest: "{{ ftl_grading_host_home }}"
+    force: yes
   no_log: true
   tags:
     - clone-ftl-repo
@@ -13,8 +14,8 @@
     state: "directory"
 
 - name: "Insert custom fact file"
-    copy:
-       src: opentlc.fact
-       dest: /etc/ansible/facts.d/opentlc.fact
-       mode: 0755
+  copy:
+     src: opentlc.fact
+     dest: /etc/ansible/facts.d/opentlc.fact
+     mode: 0755
 ...
