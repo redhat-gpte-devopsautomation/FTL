@@ -23,3 +23,8 @@
   when: r_opentlc_log_file.stat.exists
 
 
+- name:  Generate student success report
+  template:
+    src: lab_success.j2
+    dest: /tmp/error_report.txt
+when: not r_opentlc_log_file.stat.exists
