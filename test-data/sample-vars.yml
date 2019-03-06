@@ -5,7 +5,8 @@
 # include via -e @test-data/sample-vars.yml
 # over-ride via -e which has precedence over -e @file
 
-
-opentlc_student:  johndoe-example.com  # CF passes this data as --user
+#
+# Should not need to pass student - set as a local fact
+# opentlc_student:  johndoe-example.com  # CF passes this data as --user
 course_name:      ansible_engine_foundations
 lab_number:       03_01
