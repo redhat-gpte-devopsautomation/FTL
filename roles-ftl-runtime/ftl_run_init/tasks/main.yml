@@ -20,10 +20,10 @@
     path: "{{ opentlc_log_file }}"
     state: absent
 
-- name: "Create {{ opentlc_log_file }}"
-  file:
-    path: "{{ opentlc_log_file }}"
-    state: touch
+#- name: "Create {{ opentlc_log_file }}"
+#  file:
+#    path: "{{ opentlc_log_file }}"
+#    state: touch
 
 - name: "Does {{ opentlc_error_log_file }} exist"
   stat:
