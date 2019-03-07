@@ -19,9 +19,15 @@
      dest: /etc/ansible/facts.d/opentlc.fact
      mode: 0644
 
-- name: Install grade scrip
+- name: Install grade script
   copy:
     src: grade_lab
     dest: /usr/local/bin/grade_lab
+    mode: 0555
+
+- name: Install grade debug script
+  copy:
+    src: grade_lab_debug
+    dest: /usr/local/bin/grade_lab_debug
     mode: 0555
 ...
