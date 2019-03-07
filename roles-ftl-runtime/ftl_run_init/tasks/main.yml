@@ -15,9 +15,9 @@
       - "Lab Number: {{ lab_number }}"
     verbosity: 2
 
-- name: "Remove existing {{ opentlc_log_file }}"
+- name: "Remove existing {{ opentlc_error_log_file }} - clear old errors"
   file:
-    path: "{{ opentlc_log_file }}"
+    path: "{{ opentlc_error_log_file }}"
     state: absent
 
 - name: "Does {{ opentlc_error_log_file }} exist"
