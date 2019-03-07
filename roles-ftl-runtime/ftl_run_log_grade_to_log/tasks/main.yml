@@ -1,8 +1,8 @@
 ---
-- name: log to file
+- name: Appends lab failure message to error log 
   lineinfile:
     create: yes
     insertafter: EOF
-    path: "{{ opentlc_log_file }}"
+    path: "{{ opentlc_student_error_file }}"
     line: "{{ error_message }}"
   delegate_to: localhost  
