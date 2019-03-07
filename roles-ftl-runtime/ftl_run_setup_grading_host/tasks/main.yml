@@ -30,4 +30,10 @@
     src: grade_lab_debug
     dest: /usr/local/bin/grade_lab_debug
     mode: 0555
+
+- name: Install solve script
+  copy:
+    src: solve_lab
+    dest: /usr/local/bin/solve_lab
+    mode: 0555
 ...
