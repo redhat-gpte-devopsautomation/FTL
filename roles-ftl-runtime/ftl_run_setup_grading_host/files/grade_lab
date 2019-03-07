@@ -48,14 +48,13 @@ source ${VIRTUALENV}/bin/activate
 ( cd ${FTL_REPO_HOME};  ansible-playbook grade_lab.yml              \
   -e @vars/global_vars.yml                                          \
   -e course_name=${COURSE_NAME}                                     \
-  -e lab_number=${LAB_NUMBER} -vv > ${LOG_FILE} 2>&1 )
+  -e lab_number=${LAB_NUMBER} > ${LOG_FILE} 2>&1 )
 
 # Output the error report
 
-echo "Finished Grading Process \n"
+echo $'Finished Grading Process \n'
 
 cat ${GRADE_REPORT}
 
-echo "\n"
-echo "Grading Report:        ${GRADE_REPORT}"
-echo "Grading Log (ansible): ${LOG_FILE}"
+echo $'Grading Report:        ${GRADE_REPORT}'
+echo $'Grading Log (ansible): ${LOG_FILE}'

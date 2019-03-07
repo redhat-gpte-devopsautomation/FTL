@@ -17,8 +17,9 @@ LAB_NUMBER=$2
 
 VIRTUALENV=/opt/virtualenvs/venv-grading
 FTL_REPO_HOME=/opt/ftl-repo-clone/
+
 GRADE_REPORT=/tmp/grading_report.txt
-export LOG_FILE=/tmp/opentlc_grader.log
+export LOG_FILE=/tmp/opentlc_ansible.log
 
 #
 # Clean up - next bit is a job for ansible
@@ -51,10 +52,9 @@ source ${VIRTUALENV}/bin/activate
 
 # Output the error report
 
-echo "Finished Grading Process \n"
+echo $'Finished Grading Process \n'
 
 cat ${GRADE_REPORT}
 
-echo "\n"
-echo "Grading Report:        ${GRADE_REPORT}"
-echo "Grading Log (ansible): ${LOG_FILE}"
+echo $'Grading Report:        ${GRADE_REPORT}'
+echo $'Grading Log (ansible): ${LOG_FILE}'
