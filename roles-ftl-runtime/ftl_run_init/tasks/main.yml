@@ -20,11 +20,6 @@
     path: "{{ opentlc_log_file }}"
     state: absent
 
-#- name: "Create {{ opentlc_log_file }}"
-#  file:
-#    path: "{{ opentlc_log_file }}"
-#    state: touch
-
 - name: "Does {{ opentlc_error_log_file }} exist"
   stat:
     path: "{{ opentlc_error_log_file }}"
@@ -39,6 +34,7 @@
         force: yes
         src: "{{ opentlc_error_log_file }}"
         dest: "{{ opentlc_error_log_file_previous }}"
+        mode: 0666
 
     - name: "Move existing {{ opentlc_error_log_file }}"
       file: 
