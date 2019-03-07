@@ -24,6 +24,6 @@
       role: ftl_check_service_started
       vars:
         section_number: 5.3
-        student_error_message: Package eieio not started
+        student_error_message: Started eieio not started
         service: eieio
 ...
