@@ -25,7 +25,7 @@
 
 - name:  Generate student success report
   template:
-    src: lab_success.j2
+    src: lab_success_report.j2
     dest: "{{ opentlc_grading_file }}"
   when: not r_opentlc_student_error_file.stat.exists
 ...
