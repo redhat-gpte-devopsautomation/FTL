@@ -15,31 +15,31 @@
       - "Lab Number: {{ lab_number }}"
     verbosity: 2
 
-- name: "Remove existing {{ opentlc_error_log_file }} - clear old errors"
+- name: "Remove existing {{ opentlc_student_error_file  }} - clear old error"
   file:
-    path: "{{ opentlc_error_log_file }}"
+    path: "{{ opentlc_student_error_file }}"
     state: absent
 
-- name: "Does {{ opentlc_error_log_file }} exist"
+- name: "Does {{ opentlc_grading_file }} exist"
   stat:
-    path: "{{ opentlc_error_log_file }}"
-  register: r_error_file
+    path: "{{ opentlc_grading_file }}"
+  register: r_grading_file
 
-- name: Clean up error log files
+- name: Preserve old grading file as previous and delete original
   block:
 
-    - name: "Copy existing {{ opentlc_error_log_file }} to previous"
+    - name: "Copy existing {{ opentlc_grading_file }} to previous"
       copy:
         remote_src: yes
         force: yes
-        src: "{{ opentlc_error_log_file }}"
-        dest: "{{ opentlc_error_log_file_previous }}"
+        src: "{{ opentlc_grading_file }}"
+        dest: "{{ opentlc_grading_file_previous }}"
         mode: 0666
 
-    - name: "Delete existing {{ opentlc_error_log_file }}"
+    - name: "Delete existing {{ opentlc_grading_file }}"
       file: 
-        path: "{{ opentlc_error_log_file }}"
+        path: "{{ opentlc_grading_file }}"
         state: absent
 
-  when: r_error_file.stat.exists
+  when: r_grading_file.stat.exists
 ...    
