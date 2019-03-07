@@ -52,9 +52,11 @@ source ${VIRTUALENV}/bin/activate
 
 # Output the error report
 
-echo $'Finished Grading Process \n'
+echo "Finished Grading Process"
+echo
 
 cat ${GRADE_REPORT}
 
-echo $'Grading Report:        ${GRADE_REPORT}'
-echo $'Grading Log (ansible): ${LOG_FILE}'
+echo
+echo "Grading Report:        ${GRADE_REPORT}"
+echo "Grading Log (ansible): ${LOG_FILE}"

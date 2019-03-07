@@ -50,11 +50,11 @@ source ${VIRTUALENV}/bin/activate
   -e course_name=${COURSE_NAME}                                     \
   -e lab_number=${LAB_NUMBER} | tee ${LOG_FILE} 2>&1 )
 
-# Output the error report
-
-echo $'Finished Grading Process \n'
+echo "Finished Grading Process"
+echo
 
 cat ${GRADE_REPORT}
 
-echo $'Grading Report:        ${GRADE_REPORT}'
-echo $'Grading Log (ansible): ${LOG_FILE}'
+echo
+echo "Grading Report:        ${GRADE_REPORT}"
+echo "Grading Log (ansible): ${LOG_FILE}"
