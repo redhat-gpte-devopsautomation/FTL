@@ -9,21 +9,24 @@ then
   exit 1
 fi  
 
+COURSE_NAME=$1
+LAB_NUMBER=$2
+
 # wrapper script for grading playbook for lab
 #
 
 VIRTUALENV=/opt/virtualenvs/venv-grading
 FTL_REPO_HOME=/opt/ftl-repo-clone/
-COURSE_NAME=$1
-LAB_NUMBER=$2
+GRADE_REPORT=/tmp/grading_report.txt
+export LOG_FILE=/tmp/opentlc_grader.log
 
 #
 # Clean up - next bit is a job for ansible
 # 
 
-if [ -f /tmp/error_report.txt ]; 
+if [ -f ${GRADE_REPORT} ]; 
 then
-  cp /tmp/error_report.txt /tmp/error_report.txt-previous
+  cp  ${GRADE_REPORT} ${GRADE_REPORT}-previous
 fi
 
 # Make sure ansible finds the correct roles if it loads a new ansible.cfg
@@ -41,14 +44,17 @@ echo "Starting Grading Process"
 
 source ${VIRTUALENV}/bin/activate
 
-( cd ${FTL_REPO_HOME};  ansible-playbook grade_lab.yml        \
-  -e @vars/global_vars.yml            \
-  -e course_name=${COURSE_NAME}       \
-  -e lab_number=${LAB_NUMBER} ) 
-  
-#-vv > /tmp/opentlc_grader_log 2>&1
+( cd ${FTL_REPO_HOME};  ansible-playbook grade_lab.yml              \
+  -e @vars/global_vars.yml                                          \
+  -e course_name=${COURSE_NAME}                                     \
+  -e lab_number=${LAB_NUMBER} | tee ${LOG_FILE} 2>&1 )
 
 # Output the error report
 
-cat /tmp/error_report.txt
+echo "Finished Grading Process \n"
 
+cat ${GRADE_REPORT}
+
+echo "\n"
+echo "Grading Report:        ${GRADE_REPORT}"
+echo "Grading Log (ansible): ${LOG_FILE}"

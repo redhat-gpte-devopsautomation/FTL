@@ -1,7 +1,9 @@
 # Global vars, 
 # automatically included by wrapper scripts via -e @ for global visibility
 
-opentlc_log_file:                 /tmp/opentlc_log_file
-opentlc_error_log_file:           /tmp/error_report.txt
-opentlc_error_log_file_previous:  /tmp/error_report.txt-previous
+opentlc_log_file:                 /tmp/grading_report.txt
+opentlc_error_log_file:           /tmp/opentlc_grader.log
+opentlc_error_log_file_previous:  /tmp/grading_report.txt-previous
 
+# ^^^ Above variables are also used in grade_lab and grade_lab_debug scripts
+# These need to resolve to the same file names. NOT DRY
