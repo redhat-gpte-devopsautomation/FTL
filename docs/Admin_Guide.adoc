@@ -1,0 +1,42 @@
+== Overview
+
+The `Admin_Guide.adoc`, this document, exists for administrators and developers for the underlying FTL logic. 
+
+NOTE: This guide does not deal with the creation of `grader` or `solver` playbooks. Instructors should not modify any of these roles and any request to extend them can be made via opening a github issue.
+
+
+FTL is implemented in a series of roles that can be broken up into 4 main area
+
+* Setup Roles - Responsible for setting up a grader host prior to using FTL
+* Initilization Roles - Run at the start of *every* grading run 
+* Logging Roles - Called by conveneice roles to log grading events 
+* Finish Roles - Generate grading report for students and update the LMS
+
+=== Setup roles
+
+* ftl_run_create_grading_virtualenv   # Creates a virtualenv on grading host
+* ftl_run_setup_grading_host
+
+=== Initilization role
+
+Prior to every grading run this role performs housekeeping, saving the last error report, initilizing data structures for error capture etc and obtaining any student meta data such as student id from ansible local facts
+* ftl_run_init
+
+=== End of grading run roles
+
+*ftl_run_finish                     # Meta roles - calls the following 
+** ftl_run_grade_report_generation  # Generates the student report
+** ftl_run_show_student_grade
+** ftl_run_grade_update_lms         # Empty stub role, to update LMS (future)
+
+=== Logging roles
+
+These roles are called behind the scenes via connveience roles to log test events. 0
+
+ftl_run_log_grader_event            # Logs the result of each test
+ftl_run_log_grade_to_logi           # Write the log event to a file (Get rid of?)
+
+=== To delete
+ftl_run_finish_grading
+ftl_run_log_error_event
+ftl_run_reporting
