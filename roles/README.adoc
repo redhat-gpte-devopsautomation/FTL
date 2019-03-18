@@ -1,0 +1,3 @@
+== Roles Directory
+
+FTL uses a customized roles path allowing it for find roles in several different locations
