@@ -24,8 +24,9 @@ A documentation directory is provided `docs/`
 
 === Terminology
 
-A small number of terms are defined below 
+A small number of terms are defined below
 
+* *grader host* - Host that the student works from, typically bastion or workstation
 * *graders* - Graders are playbooks that grade a lab, they are typically invoked via the `grade_lab` command which is installed at deployment time.
 * *solvers* - Solvers are playbooks that solver labs i.e. they apply all the necessary ansible tasks to move complete a lab.
 * *convenience roles* - Convenience roles, in the `roles` directory provide pre-built roles for testing specfic, and common, scenarios e.g.
@@ -39,17 +40,17 @@ A small number of terms are defined below
 === Workflow - Deployment
 
 FTL can be deployed via push i.e. inserted into a lab at the deployment
-stage. An obvious example being inserted via Ansible Agnostic Deployer in the 
+stage. An obvious example being inserted via Ansible Agnostic Deployer in the
 Post Software stage of a config.
 
-NOTE: FTL currently clones the entire repo i.e all tests for all labs so no 
+NOTE: FTL currently clones the entire repo i.e all tests for all labs so no
 additional meta data needs to be supplied at deployment time.
 
 Alternatively it could be modified to be deployed via pull i.e. the student
-clones the FTL repo locally. This will require either a permissions change on 
+clones the FTL repo locally. This will require either a permissions change on
 the repo or a API token/login to be provided as FTL is a private repo today.
 
-=== Workflow - Devloping a Lab Test
+=== Workflow - Developing a Lab Test
 
 
 Instructors create a series of lab checking playbooks in the correct sub-directory
@@ -62,7 +63,7 @@ conditions in the lab. For example:
 * Does a URI give a certain response e.g. *200* or a certain output
 
 Whilst instructors can create tests some convenience roles have been created
-to both test condition and to track score, these are detailed in the 
+to both test condition and to track score, these are detailed in the
 link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
 
 .Sample of a typical lab test leveraging an existing role
@@ -76,22 +77,15 @@ link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
     package: ansible
 ----
 
-Instructors can author custom, and more complex, tests as long as these can be 
-executed in an ansible playbook. See the Documnattation for more details.
-
+Instructors can author custom, and more complex, tests as long as these can be
+executed in an ansible playbook. See the Documentation for more details.
 
 == Usage
 
-. Check lab
-----
-ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=false"
-----
+Students are supplied with `grade_lab` and `solve_lab` wrappers that _typically_ take 2 arguments, course name and lab number:
 
-. Solve and check lab
-----
-ansible-playbook main.yml -e"GUID=d4b4" -e"lab_number=01" -e"course_name=ansible_implementation_part1" -e"solve=true"
-----
 
+`$ grade_lab ansible_engine_foundations 03_01`
 
 == Questions:
 
