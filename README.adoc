@@ -64,14 +64,6 @@ link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
 Instructors can author custom, and more complex, tests as long as these can be 
 executed in an ansible playbook. See the Documnattation for more details.
 
-==== Score Tracking
-
-
-
-
-Additionally as a convenience a lab scoring role has been created, 
-=== Structure
-
 
 == Usage
 
