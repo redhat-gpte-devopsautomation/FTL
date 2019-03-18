@@ -21,6 +21,21 @@ A documentation directory is provided `docs/`
 . link:docs/Lab_Grade_Author_Guide.adoc[Lab Grading Author Guide] - Creating Lab Test Playbooks
 . link:docs/FTL_Deployer_Guide.adoc[Deployer Guide] - Deploying, Installing, and Executing Lab Tests
 
+
+=== Terminology
+
+A small number of terms are defined below 
+
+* *graders* - Graders are playbooks that grade a lab, they are typically invoked via the `grade_lab` command which is installed at deployment time.
+* *solvers* - Solvers are playbooks that solver labs i.e. they apply all the necessary ansible tasks to move complete a lab.
+* *convenience roles* - Convenience roles, in the `roles` directory provide pre-built roles for testing specfic, and common, scenarios e.g.
+** ftl_check_command_output
+** ftl_check_file_exists
+** ftl_check_ocp_svc_exists
+** ftl_check_service_enabled
+** ftl_check_service_started
+** ftl_check_user_exists
+
 === Workflow - Deployment
 
 FTL can be deployed via push i.e. inserted into a lab at the deployment
@@ -44,7 +59,7 @@ conditions in the lab. For example:
 * Has package `foo` been installed
 * Does user `bar` exist
 * Does a file contain a certain line
-* Does a URI give a certain response e.g. *200* or certain output
+* Does a URI give a certain response e.g. *200* or a certain output
 
 Whilst instructors can create tests some convenience roles have been created
 to both test condition and to track score, these are detailed in the 
