@@ -16,5 +16,5 @@
   become: true
 
   roles:
-    - { role: ftl_run_finsih, when: purpose == "grade" }
+    - { role: ftl_run_finish, when: purpose == "grade" }
 ...
