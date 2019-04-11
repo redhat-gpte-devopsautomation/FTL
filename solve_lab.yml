@@ -1,3 +1,0 @@
----
-- import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/solve_lab.yml"
-...

@@ -24,9 +24,9 @@ On *success* it:
 ├── ansible.cfg                 # Default ansible.cfg - can be over-riddden
 ├── courses/                    # Directory containing course and their graders and solvers
 ├── docs/                       # Documentation - see below for overview
-├── grade_lab.yml               # Main entry point to grade a lab
+├── main.yml                    # Main entry point to grade or solve a lab
 ├── roles/                      # Top level roles directory, can be supplemented at a course/lab level 
-├── solve_lab.yml               # Main entry point to solve a lab
+├── vars/                       # Set global *common* vars reports etc
 └── utilities
 ----
 
@@ -99,7 +99,7 @@ executed in an ansible playbook. See the Documentation for more details.
 
 == Usage
 
-Students are supplied with `grade_lab` and `solve_lab` wrappers that _typically_ take 2 arguments, course name and lab number:
+Students are supplied with `grade_lab` and `solve_lab` wrapper scripts, in /usr/local/bin that _typically_ take 2 arguments, course name and lab number:
 
 
 `$ grade_lab ansible_engine_foundations 03_01`
@@ -112,5 +112,3 @@ Students are supplied with `grade_lab` and `solve_lab` wrappers that _typically_
 . Does the check action pull in the playbook(s) or are they already there?
 ** i.e. backed in at lab build time
 
-
-4 directories, 4 files
