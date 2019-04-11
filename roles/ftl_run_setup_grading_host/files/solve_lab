@@ -36,4 +36,5 @@ source ${VIRTUALENV}/bin/activate
 ( cd ${FTL_REPO_HOME};  ansible-playbook solve_lab.yml              \
   -e @vars/global_vars.yml                                          \
   -e course_name=${COURSE_NAME}                                     \
+  -e purpose=solve                                                  \
   -e lab_number=${LAB_NUMBER}  )
