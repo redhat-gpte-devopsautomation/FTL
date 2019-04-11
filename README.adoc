@@ -1,4 +1,6 @@
-=== FTL Overview
+:toc2:
+
+== FTL Overview
 
 FTL, *Finish The Labs*, is currently a student invoked automated lab grading system
 designed to allow students to self mark their *OPENTLC* labs to see if they
@@ -12,6 +14,21 @@ On *success* it:
 
 . Informs the student
 . Updates the LMS (at this point the `grade-update-lms` role is a stub
+
+== Structure 
+
+.
+[source,bash]
+----
+├── README.adoc                 # This document
+├── ansible.cfg                 # Default ansible.cfg - can be over-riddden
+├── courses/                    # Directory containing course and their graders and solvers
+├── docs/                       # Documentation - see below for overview
+├── grade_lab.yml               # Main entry point to grade a lab
+├── roles/                      # Top level roles directory, can be supplemented at a course/lab level 
+├── solve_lab.yml               # Main entry point to solve a lab
+└── utilities
+----
 
 === Documentation:
 
@@ -94,4 +111,6 @@ Students are supplied with `grade_lab` and `solve_lab` wrappers that _typically_
 ** Via button in the LMS
 . Does the check action pull in the playbook(s) or are they already there?
 ** i.e. backed in at lab build time
-.
+
+
+4 directories, 4 files

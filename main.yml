@@ -1,0 +1,20 @@
+---
+- name: Initialize grading report
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  roles:
+    - { role: ftl_run_init, when: purpose == "grade" }
+
+- name: "Import and run the {{ purpose }} playbooks"
+  import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/{{ purpose }}_lab.yml"
+
+- name: Run finish role - generate reports and updates
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  roles:
+    - { role: ftl_run_finsih, when: purpose == "grade" }
+...
