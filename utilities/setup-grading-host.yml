@@ -1,5 +1,5 @@
 ---
-- name: Create virtualenv on grading host and clone FTL locally
+- name: Create virtualenv on grading host and clone FTL to it
   hosts: grading_host
   gather_facts: false
   become: true

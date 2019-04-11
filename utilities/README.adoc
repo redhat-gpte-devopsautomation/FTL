@@ -1,0 +1,37 @@
+:toc:
+
+== Overview
+
+
+
+=== Pushing your development code
+
+
+[source,bash]
+----
+$ ansible-playbook utilities/setup-grading-host.yml \     <1>
+  -i utilities/inventories/ansible-foundations-test \     <2>
+  -e @utilities/test-data/sample-vars.yml           \     <3>
+  -e @~/secret.yml                                        <4>
+----
+
+. PLaybook calling the roles to:
+* Setup the virtualenv on the grading host `ftl_run_create_grading_virtualenv`
+* Setup the FTL repo and utilitis on grading host `ftl_run_setup_grading_host`
+. Your test *inventory*, for example
++
+[source,bash]
+----
+[grading_host]
+grader_host
+
+[grading_host:vars]
+ansible_host                    = 3.213.167.74
+ansible_user                    = student1
+ansible_ssh_pass                = ansible
+
+
+iyyyy
+----
+. hello
+
