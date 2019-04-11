@@ -33,7 +33,7 @@ echo "Starting Grading Process"
 
 source ${VIRTUALENV}/bin/activate
 
-( cd ${FTL_REPO_HOME};  ansible-playbook solve_lab.yml              \
+( cd ${FTL_REPO_HOME};  ansible-playbook main.yml                  \
   -e @vars/global_vars.yml                                          \
   -e course_name=${COURSE_NAME}                                     \
   -e purpose=solve                                                  \
