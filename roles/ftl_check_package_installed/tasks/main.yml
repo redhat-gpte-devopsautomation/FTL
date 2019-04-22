@@ -1,9 +1,6 @@
-#- name: "Check yum package {{ package }} installed"
-#  ftl_yum_package_installed:
-#    package: "{{ package }}"
-    
+---
 - name: "Check package {{ package }} installed"
-  package: 
+  package:
     name: "{{ package }}"
     state: present
   check_mode: True
@@ -17,9 +14,10 @@
         error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
       delegate_to: localhost
 
-    - name: Log event to log file  
+    - name: Log event to log file
       import_role:
         name: ftl_run_log_grade_to_log
 
   delegate_to: localhost
   when: r_state.changed
+...
