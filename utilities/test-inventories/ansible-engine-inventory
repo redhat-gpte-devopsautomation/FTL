@@ -2,7 +2,7 @@
 grader_host
 
 [grading_host:vars]
-ansible_host                    = 35.170.126.35
+ansible_host                    = 3.212.133.244
 ansible_user                    = student1
 ansible_ssh_pass                = ansible
 
