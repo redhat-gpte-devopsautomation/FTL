@@ -1,10 +1,15 @@
-:toc2:
+:toc:
+:toc-placement!:
 
 == FTL Overview
 
 FTL, *Finish The Labs*, is currently a student invoked automated lab grading system
 designed to allow students to self mark their *OPENTLC* labs to see if they
 have passed them correctly. Other uses include lab and lab environment validation.
+
+toc::[]
+
+
 
 On *failure* it highlights the failed sections via Instructor supplied  error
 messages. Students have unlimited attempts and can run the grading at any time,
