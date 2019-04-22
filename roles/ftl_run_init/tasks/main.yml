@@ -3,7 +3,7 @@
 - name: Gather local facts for simple access to opentlc metadata
   setup:
     gather_subset: local
-    
+
 - name: Set facts for simple access to opentlc metadata
   set_fact:
     opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
@@ -37,9 +37,9 @@
         mode: 0666
 
     - name: "Delete existing {{ opentlc_grading_file }}"
-      file: 
+      file:
         path: "{{ opentlc_grading_file }}"
         state: absent
 
   when: r_grading_file.stat.exists
-...    
+...
