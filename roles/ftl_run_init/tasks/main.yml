@@ -6,7 +6,8 @@
 
 - name: Set facts for simple access to opentlc metadata
   set_fact:
-    opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
+    #    opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
+    opentlc_student: "{{ ansible_local.opentlc.ftl.opentlc_student }}"
 
 - name: Logging and debug course name and lab number
   debug:

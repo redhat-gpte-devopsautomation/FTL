@@ -5,7 +5,7 @@
     dest: "{{ ftl_grading_host_home }}"
     version: "{{ ftl_git_branch | default('master') }}"
     force: yes
-  no_log: true
+    # no_log: true
   tags:
     - clone-ftl-repo
 
