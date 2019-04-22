@@ -1,0 +1,25 @@
+:toc:
+
+== FTL Docs Overview
+
+The *FTL* Documnetation is logically split into 2 categories
+. Admin Docs
+. Developer Docs
+
+=== Admin Docs
+
+Documnetation aimed at administrators and others who need to:
+
+* Insert FTL into new lab environments
+* Modify or extend FTL *Infrastructure* e.g.
+<F5>
+. Admin Docs
+* Target Audience: Admins and others who setup inserting FTL into lab e
+. Lab Developers
+
+=== Developer Docs
+
+Documentation aimed at Developers and others who need to:
+
+* Write lab graders i.e. grade a student's work
+* Write lab solvers i.e. grade a student's work
