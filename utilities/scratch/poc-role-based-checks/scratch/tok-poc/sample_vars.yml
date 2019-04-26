@@ -1,5 +1,0 @@
-GUID: 992d
-course_name: ansible_implementation_2
-lab_number: '02'                      # This is a string
-log_path: ./log
-
