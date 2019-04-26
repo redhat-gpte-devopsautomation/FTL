@@ -1,7 +1,0 @@
----
-# handlers file for roles/lb-tier
-- name: restart_haproxy
-  service:
-   name: "{{ haproxy_srv }}"
-   enabled: true
-   state: started

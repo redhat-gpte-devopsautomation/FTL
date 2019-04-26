@@ -1,8 +1,0 @@
-galaxy_info:
-  author: GPTE
-  description: Devops user and settings
-  company: Redhat India Pvt ltd
-  
-  license: license (GPL)
-
-  min_ansible_version: 2.7

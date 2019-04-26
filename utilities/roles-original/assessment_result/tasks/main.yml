@@ -1,8 +1,0 @@
----
-# tasks file for assessment_result
-- name: Create concatenated assessment_result list
-  set_fact:
-    assessment_result:  "{{ assessment_result }} + [ 'Result for ' + '{{ item.0 }}' + ', Summary ===> at ' + '{{ item.1 }}' ]"
-  with_together:
-    - "{{ result }}"
-    - "{{ reason }}"

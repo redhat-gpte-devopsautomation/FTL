@@ -1,8 +1,0 @@
----
-# defaults file for devops_user
-
-user_name: devops
-primary_server: bastions
-user_password: r3dh4t1!
-copy_ssh_pubkey: yes
-user_is_sudoer: yes
