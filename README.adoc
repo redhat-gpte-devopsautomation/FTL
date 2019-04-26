@@ -7,8 +7,6 @@ FTL, *Finish The Labs*, is currently a student invoked automated lab grading sys
 designed to allow students to self mark their *OPENTLC* labs to see if they
 have passed them correctly. Other uses include lab and lab environment validation.
 
-toc::[]
-
 
 
 On *failure* it highlights the failed sections via Instructor supplied  error
@@ -19,8 +17,13 @@ On *success* it:
 
 . Informs the student
 . Updates the LMS (at this point the `grade-update-lms` role is a stub
+toc::[]
 
-== Structure 
+=== Changelog
+
+A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to date 
+
+=== Structure 
 
 .
 [source,bash]
