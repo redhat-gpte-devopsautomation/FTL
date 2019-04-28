@@ -6,23 +6,35 @@ Before we look at creating *grading* playbooks it is valuable to understand the 
 
 === Student Workflow
 
-On completion of a lab the student will copy and paste the lab checking command which will wrap the `lab_grading` playbook which will:
-
+. Student provisions lab as instructed via http:labs.opentlc.com
+** *FTL* is inserted automatically at provisioing time
+** *FTL* is fully provisioned with necessary meta-data and utilities
+. Student works through lab
+. Student is prompted at end of lab to grade the lab via a simple copy and paste in terminal window e.g.
++
 [source,bash]
 ----
-$ grade ansible_engine_foundations lab_03_01
+$ grade_lab ansible_foundations 03_01
 ----
++
+NOTE:  syntax: `<grade_lab command> <course_name> <lab_and_sub-lab_number`
+e.g. Grade the first lab in *Ansible Foundations Module 3 
+. On success:
+** Student informed
+** *LMS* Updated (As of 2019-04-26 roles is called but API logic incomplete"
+. On failure:
+** Student is informed
+** *LMS* Updated (As of 2019-04-26 roles is called but API logic incomplete"
++
+NOTE: Student can try repeatedly until success is achieved.
 
-. Initialize any reporting data structures it needs to
-. Execute the instructor created grading playbook(s) and associated roles (if any)
-. Report the students progress highlighting failed steps
-. Updates the LMS in the case of the student passing the lab
+On completion of a lab the student will copy and paste the lab checking command which will wrap the `lab_grading` playbook which will:
 
-Only Step 2 requires
+=== Notes
 
 NOTE: In version 1.0 no attempt is made to generate a score. A student either passes or fails.
 
-This guide focusses on Step 2 and how to successfully create grading and solving playbooks
+This guide focusses on Step 3 above and how to successfully create grading (and solving) playbooks
 
 * *grading* playbooks: checks a students work by validating key steps have been completed
 * *solver* playbooks: solves an entire lab

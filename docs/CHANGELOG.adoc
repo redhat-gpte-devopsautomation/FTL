@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 === Added
 - This Changelog in the docs directory
+- Updated README to link and reference Changelog
 - Cleaner structure to the utilities directory
 - 
 

@@ -25,7 +25,6 @@ A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to
 
 === Structure 
 
-.
 [source,bash]
 ----
 ├── README.adoc                 # This document
