@@ -34,7 +34,7 @@ A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to
 ├── main.yml                    # Main entry point to grade or solve a lab
 ├── roles/                      # Top level roles directory, can be supplemented at a course/lab level 
 ├── vars/                       # Set global *common* vars reports etc
-└── utilities
+└── devel                       # developer tools, data, scripts, playbooks
 ----
 
 === Documentation:
