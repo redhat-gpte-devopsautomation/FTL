@@ -1,5 +1,5 @@
 ---
-- name: Run FTL Init role to initialize grading report structures etc
+- name: Run FTL Init role - initialize grading report data structures 
   hosts: localhost
   gather_facts: false
   become: true
