@@ -1,3 +1,0 @@
-== README
-
-Used to hold sample vars for testing. see `sample_vars.yml` as an example
