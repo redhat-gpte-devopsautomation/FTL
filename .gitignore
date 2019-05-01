@@ -1,4 +1,4 @@
 *.retry
 *.swp
-.pre-commit-config.yaml 
-.yamllint
+#.pre-commit-config.yaml 
+#.yamllint
