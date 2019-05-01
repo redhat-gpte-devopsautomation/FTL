@@ -10,7 +10,7 @@ Before starting to code it is worthwhile to understand the nature of the environ
 
 You need to consider where *FTL* will be installed. Typically this would be on the `bastion` or `workstation` machine where the student does most of their work. This machine will be the *grader host*
 
-s we go through the walkthrough we will discuss issues like inventory etc and student and lab metadata e.g. opentlc user name and GUID.
+As we go through the walkthrough we will discuss issues like inventory etc and student and lab metadata e.g. opentlc user name and GUID.
 
 
 === Setup
@@ -38,7 +38,7 @@ Come back here if any other dependencies need to be added - like boto
 
 === Setup your lab grader branch and environment
 
-Avoid working directly on `master`, each lab grader should be *developed* on it's own branch and finally merged via a PR. During development you will be able to install and test your branch on your targer labs.
+Avoid working directly on `master`, each lab grader should be *developed* on it's own branch and finally merged via a PR. During development you will be able to install and test your branch on your target labs.
 
 . Create a, meaningful, branch name e.g.: `grader_course_name` (or for solvers solver_course_name)
 +
@@ -49,8 +49,27 @@ git checkout grader-ansible-implementation
 ----
 . Create your course directory
 +
-All graders and solvers live in the courses directory. If you are familair with `agnosticd` this is similar to the pattern used by `configs`
-From your repos homw directory `FTL` create your course sub-directory: e.g.
+All graders and solvers live in the courses directory. If you are familiar with `agnosticd` this is similar to the pattern used by `configs`
+From your repos homw directory `FTL` create your course sub-directory by copying one of the convenience skeletons provided.
+
+NOTE: The `courses` sub-directory has, currently, 1 connivence course skeleton. course-skeleton-infrstructure-course`, this contains:
+[source,bash]
+----
+.
+├── README.adoc
+├── ansible.cfg
+├── grader-inventory
+└── lab_01_01
+    ├── grade_lab.yml
+    ├── roles
+    └── solve_lab.yml
+----
+
+
+* foo
+* bar
++
+* course-skeleton-infrstructure-course
 
 +
 [source,bash]
@@ -59,13 +78,10 @@ cd FTL/courses
 mkdir ansible_implementation_part1
 cd ansible_implementation_part1
 ----
-
-=== Stage 1: Create your Inventory and `ansible.cfg`
-
-This particualr course *Ansible Implementation Part1* is an infrastructure based course, i.e. it works with instances, or VMs, typically deployed on *AWS*.
+o
 
 
 
+=== Stage 1: Create your Inventory and `ansible.cfg` - if necessary.
 
-
-
+This particular course *Ansible Implementation Part1* is an infrastructure based course, i.e. it works with instances, or VMs, typically deployed on *AWS*. So we need an *inventory* and an `ansible.cfg` in the root directory of the *course* i.e.`FTL/courses/ansible_implementation_part1`.
