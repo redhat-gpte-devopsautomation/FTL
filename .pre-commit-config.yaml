@@ -1,6 +1,6 @@
 ---
 - repo: https://github.com/adrienverge/yamllint.git
-  sha: v1.10.0
+  sha: v1.15.0
   hooks:
     - id: yamllint
 
