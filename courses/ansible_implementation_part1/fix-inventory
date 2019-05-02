@@ -1,0 +1,27 @@
+[frontends]
+frontend1.da4a.internal ansible_host=frontend1.da4a.example.opentlc.com
+
+[apps]
+app1.da4a.internal ansible_host=app1.da4a.example.opentlc.com
+app2.da4a.internal ansible_host=app2.da4a.example.opentlc.com
+
+[appdbs]
+appdb1.da4a.internal ansible_host=appdb1.da4a.example.opentlc.com
+
+[support]
+support1.da4a.internal ansible_host=support1.da4a.example.opentlc.com
+
+[3tierapp:children]
+frontends
+apps
+appdbs
+support
+
+# Inventory vars for all host
+
+[all:vars]
+timeout=60
+ansible_become=yes
+ansible_user=ec2-user
+ansible_private_key_file="~/.ssh/da4akey.pem"
+ansible_common_args="-o StrictHostKeyChecking=no"

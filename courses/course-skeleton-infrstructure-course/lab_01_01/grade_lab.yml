@@ -1,0 +1,15 @@
+---
+- name: Grade lab <LAB_NUMBER> <SECTION_NUMBER> of <COURSE_NAME>
+  hosts: <INVENTORY_GROUP>
+  gather_facts: false
+  become: true
+
+  roles:      # All lab tests go here
+
+    - name: <MEANINGFUL_NAME>
+      role: ftl_check_package_installed
+      vars:
+        section_number: 6.4.1
+        student_error_message: Package httpd not installed
+        package: httpd
+...
