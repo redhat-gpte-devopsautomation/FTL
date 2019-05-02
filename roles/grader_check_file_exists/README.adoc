@@ -1,0 +1,30 @@
+== README ftl_check_file_exists
+
+Checks is a file exists
+
+=== Arguments:
+
+* `file_with_path` - file with full path e.g. `/etc/ansible/ansible.cfg`
+* `error_message` - message to return to student on failure
+* `section` - Lab section or stage
+
+
+=== Usage Example
+
+[source,yaml]
+----
+- name: Section 6.4.1, Check student has installed Apache
+  role: ftl_check_file_exists
+  vars:
+    section_number: 6.4.1
+    student_error_message: ansible.cfg does not exist
+    file_with_path: /etc/ansible.cfg
+----
+
+=== Sample Output
+
+[source,bash]
+----
+  Section: 6.4.1, node1, ansible.cfg does not exist
+  Section: 6.4.1, node2, ansible.cfg does not exist
+----

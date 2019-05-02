@@ -1,0 +1,57 @@
+- name: just print the var from callling playbook
+  debug:
+    msg: "Calling var is {{ file_with_path }} on host {{ ansible_host }}"
+
+- name: Capture and log error
+  set_fact:
+    error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
+  delegate_to: localhost
+
+- name: Log event to log file
+  import_role:
+    name: log_grade_to_log
+  delegate_to: localhost
+
+- name: Role printing value of error_message
+  debug:
+    var: error_message
+  delegate_to: localhost
+
+  #- name: Capture and log error
+#  set_fact:
+#    error_message: '{{ error_message + [ (inventory_hostname + ", " + student_error_message )] }}'
+#  delegate_to: localhost
+#- name: Call scoring module
+#  opentlc_lab_score:
+#    failure_messages: "{{ error_message}}"
+#    reason: "ssh keys missing for devops user"
+#    hostname: "{{ inventory_hostname }}"
+#  register: r_return
+#  delegate_to: localhost
+#
+#- name: Call return_facts module second time
+#  opentlc_lab_score_class:
+#    failure_messages: "{{ error_message}}"
+#    reason: "ssh keys missing for devops user"
+#    hostname: "{{ inventory_hostname }}"
+#  register: r_return
+#  delegate_to: localhost
+#
+#- name: set the scoring fact
+#  set_fact:
+#    result_tracker: {
+#      'error_message': "( {{ result_tracker.error_message }} + {{ path }} )",
+#
+#      'error_count' : 7,
+#      'error_host' : "{{ ansible_host }}"
+#      }
+#
+#      'error_list' : "("["
+#      'rc_failure_messages': ( result_tracker.error_list +module.params['failure_messages'] +                   [failure_message] ) }
+#
+
+#- name: Record score for this test    
+#  set_fact: 
+#    result_tracker: foo: {{ foo }} 
+#   failure_message = ("[" + module.params['hostname']  + "]: "  + module.params['reason'])
+

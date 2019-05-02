@@ -1,0 +1,23 @@
+---
+- name: "Check package {{ package }} installed"
+  package:
+    name: "{{ package }}"
+    state: present
+  check_mode: True
+  register: r_state
+
+- name: Leave the following alone - logging logic
+  block:
+
+    - name: Capture and log error
+      set_fact:
+        error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
+      delegate_to: localhost
+
+    - name: Log event to log file
+      import_role:
+        name: ftl_run_log_grade_to_log
+
+  delegate_to: localhost
+  when: r_state.changed
+...
