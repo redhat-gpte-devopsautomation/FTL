@@ -7,14 +7,14 @@
   roles:      # All lab tests go here
 
     - name: Section 6.4.1, Check student has installed Apache
-      role: ftl_check_package_installed
+      role: grader_check_package_installed
       vars:
         section_number: 6.4.1
         student_error_message: Package httpd not installed
         package: httpd
 
     - name: Section 6.4.2, Check student has enabled Apache
-      role: ftl_check_service_started
+      role: grader_check_service_started
       vars:
         section_number: 6.4.2
         student_error_message: Package httpd not started
