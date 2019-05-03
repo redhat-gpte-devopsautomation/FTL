@@ -12,7 +12,7 @@
 
 - when: r_state.changed
   name: Import logging tasks
-  include_role:
+  import_role:
     name:  grader_logging
   vars:
     foo: "bar"
