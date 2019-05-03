@@ -8,6 +8,7 @@
     # no_log: true
   tags:
     - clone-ftl-repo
+    - clone
 
 - name: "Create custom fact directory for student metadata"
   file:

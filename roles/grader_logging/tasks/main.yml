@@ -10,6 +10,8 @@
     - name: Log event to log file
       import_role:
         name: ftl_run_log_grade_to_log
+      vars:
+        foo: "{{ foo }}"  
 
   delegate_to: localhost
   when: r_state.changed
