@@ -18,7 +18,7 @@ Runs a comaand and checks if the response contains the specifies string
   role: ftl_check_command_output
   vars:
     section_number: 6.4.1
-    student_message: Incorrect hostname set
+    task_description_message: Incorrect hostname set
     command: hostname
     command_response: control_node
 ----

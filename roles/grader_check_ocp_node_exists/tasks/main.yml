@@ -16,10 +16,11 @@
 #                                                    #
 ######################################################
 
+
 - name: Create logging message fact
   set_fact:
-    grader_output_message: "{{ 'Section: ' + inventory_hostname + ', '\
-    + student_message }}"
+    grader_output_message: "{{ inventory_hostname + ', '\
+    + task_description_message }}"
   delegate_to: localhost
 
 - when: r_node.resources[0].metadata.name != node_name

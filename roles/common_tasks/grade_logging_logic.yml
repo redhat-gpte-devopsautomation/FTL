@@ -4,7 +4,7 @@
 
     - name: Capture and log error
       set_fact:
-        grader_output_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_message }}'
+        grader_output_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + task_description_message }}'
       delegate_to: localhost
 
     - name: Log event to log file
