@@ -4,7 +4,7 @@
 
 - name: Capture and log error
   set_fact:
-    error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_message }}'
+    grader_output_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_message }}'
   delegate_to: localhost
 
 - name: Log event to log file
@@ -12,18 +12,18 @@
     name: log_grade_to_log
   delegate_to: localhost
 
-- name: Role printing value of error_message
+- name: Role printing value of grader_output_message
   debug:
-    var: error_message
+    var: grader_output_message
   delegate_to: localhost
 
   #- name: Capture and log error
 #  set_fact:
-#    error_message: '{{ error_message + [ (inventory_hostname + ", " + student_message )] }}'
+#    grader_output_message: '{{ error_message + [ (inventory_hostname + ", " + student_message )] }}'
 #  delegate_to: localhost
 #- name: Call scoring module
 #  opentlc_lab_score:
-#    failure_messages: "{{ error_message}}"
+#    failure_messages: "{{ grader_output_message}}"
 #    reason: "ssh keys missing for devops user"
 #    hostname: "{{ inventory_hostname }}"
 #  register: r_return
@@ -31,7 +31,7 @@
 #
 #- name: Call return_facts module second time
 #  opentlc_lab_score_class:
-#    failure_messages: "{{ error_message}}"
+#    failure_messages: "{{ grader_output_message}}"
 #    reason: "ssh keys missing for devops user"
 #    hostname: "{{ inventory_hostname }}"
 #  register: r_return
@@ -40,7 +40,7 @@
 #- name: set the scoring fact
 #  set_fact:
 #    result_tracker: {
-#      'error_message': "( {{ result_tracker.error_message }} + {{ path }} )",
+#      'grader_output_message': "( {{ result_tracker.error_message }} + {{ path }} )",
 #
 #      'error_count' : 7,
 #      'error_host' : "{{ ansible_host }}"

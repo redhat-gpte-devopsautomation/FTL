@@ -5,7 +5,7 @@ Checks is a file exists
 === Arguments:
 
 * `file_with_path` - file with full path e.g. `/etc/ansible/ansible.cfg`
-* `error_message` - message to return to student on failure
+* `grader_output_message` - message to return to student on failure
 * `section` - Lab section or stage
 
 

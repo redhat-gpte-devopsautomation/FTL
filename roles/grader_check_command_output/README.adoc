@@ -6,7 +6,7 @@ Runs a comaand and checks if the response contains the specifies string
 
 * `command` - name of the command to execute e.g. `python --version`
 * `command_response` - string to search for in command response e.g `3.7`
-* `error_message` - message to return to student on failure
+* `grader_output_message` - message to return to student on failure
 * `section` - Lab section or stage
 
 

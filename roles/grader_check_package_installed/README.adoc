@@ -5,7 +5,7 @@ Checks if a package is installed, if not logs a failure message for student
 === Arguments:
 
 * `package` - name of the package e.g. `httpd`
-* `error_message` - message to return to student on failure 
+* `grader_output_message` - message to return to student on failure 
 * `section` - Lab section or stage
 
 

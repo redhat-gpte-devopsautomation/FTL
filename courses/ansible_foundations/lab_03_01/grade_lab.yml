@@ -9,12 +9,12 @@
     - name: Section 6.4.1, Check student has installed Apache
       role: grader_check_package_installed
       vars:
-        student_message: Package httpd not installed
+        task_description_message: Package httpd not installed
         package: httpd
 
-    - name: Section 6.4.2, Check student has enabled Apache
+    - name: Section 6.4.2, Check student has running Apache
       role: grader_check_service_started
       vars:
-        student_message: Package httpd not started
+        task_description_message: Package httpd not running
         service: httpd
 ...
