@@ -6,11 +6,13 @@
   check_mode: True
   register: r_state
 
-#  
-# Common logging logic - leave
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
 
-
-- name: Capture and log error
+- name: Create logging message fact
   set_fact:
     error_message: "{{ 'Section: ' + ( section_number | string)  + ', '\
     + inventory_hostname + ', ' + student_error_message }}"
