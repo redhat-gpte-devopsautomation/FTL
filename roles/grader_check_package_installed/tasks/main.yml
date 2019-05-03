@@ -8,35 +8,16 @@
 
 #  
 # Common logging logic - leave
-#
+
 
 - name: Capture and log error
   set_fact:
-    error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
+    error_message: '{{ "Section: " + ( section_number | string)  + ", "\
+    + inventory_hostname + ", " + student_error_message }}'
   delegate_to: localhost
 
 - when: r_state.changed
   name: Import logging tasks
   import_role:
-         name: ftl_run_log_grade_to_log
-
-
-  #import_tasks: ../../common_tasks/grade_logging_logic.yml
-  #  import_role:
-  #  name: grader_logging
-
-#- name: Leave the following alone - logging logic
-#  block:
-#
-#    - name: Capture and log error
-#      set_fact:
-#        error_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + student_error_message }}'
-#      delegate_to: localhost
-#
-#    - name: Log event to log file
-#      import_role:
-#        name: ftl_run_log_grade_to_log
-#
-#  delegate_to: localhost
-#  when: r_state.changed
+    name: ftl_run_log_grade_to_log
 ...
