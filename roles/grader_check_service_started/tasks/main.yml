@@ -14,8 +14,6 @@
   name: Import logging tasks
   import_role:
     name:  grader_logging
-  vars:
-    foo: "bar"
 
     #import_tasks: ../../common_tasks/grade_logging_logic.yml
 
