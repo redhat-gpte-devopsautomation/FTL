@@ -17,11 +17,11 @@
 
 - when: r_state.changed
   name: Import logging tasks
-  #import_tasks: ../../common_tasks/grade_logging_logic.yml
   import_role:
          name: ftl_run_log_grade_to_log
 
 
+  #import_tasks: ../../common_tasks/grade_logging_logic.yml
   #  import_role:
   #  name: grader_logging
 
