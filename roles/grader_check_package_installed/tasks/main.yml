@@ -12,12 +12,9 @@
 
 - when: r_state.changed
   name: Import logging tasks
+  #  import_tasks: ../../common_tasks/grade_logging_logic.yml
   import_role:
-    name:  grader_logging
-  vars:
-    foo: "apple"
-
-    #import_tasks: ../../common_tasks/grade_logging_logic.yml
+    name: grader_logging
 
 #- name: Leave the following alone - logging logic
 #  block:
