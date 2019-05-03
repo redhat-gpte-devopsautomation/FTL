@@ -14,8 +14,8 @@
 
 - name: Create logging message fact
   set_fact:
-    error_message: "{{ 'Section: ' + ( section_number | string)  + ', '\
-    + inventory_hostname + ', ' + student_error_message }}"
+    grader_student_message: "{{ 'Section: ' + ( section_number | string) \
+     + ', ' + inventory_hostname + ', ' + student_error_message }}"
   delegate_to: localhost
 
 - when: r_state.changed

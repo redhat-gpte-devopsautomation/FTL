@@ -10,21 +10,20 @@
     var: r_command
     verbosity: 2
 
-# Stage 2: Set if error or not - often register.failed == true
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
 
-- name: Set if last task indicated the student SUCCEEDED in that test
-  set_fact: 
-    last_test_failed: false
-  when: command_response in r_command.stdout
-
-- name: Set if last task indicated the student FAILED that test
+- name: Create logging message fact
   set_fact:
-    last_test_failed: true
-  when: command_response not in r_command.stdout
+    grader_student_message: "{{ 'Section: ' + ( section_number | string) \
+     + ', ' + inventory_hostname + ', ' + student_error_message }}"
+  delegate_to: localhost
 
-# Stage 3: Call the event logger
-
-- name: Call the error event logging role
+- when: r_state.changed
+  name: Import logging tasks
   import_role:
-    name: ftl_run_log_grader_event
+    name: ftl_run_log_grade_to_log
 ...

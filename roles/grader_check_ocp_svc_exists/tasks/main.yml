@@ -9,10 +9,22 @@
     namespace: "{{ project_name }}"
     label_selectors:
       - app = {{ app_name }}
-  register: route_namespace
+  register: r_route_namespace
 
-- name: logging block
-  block:
-    - debug:
-        msg: "The route {{ route_name }} doesn't exist in project {{ project_name }}"
-  when: route_namespace.resources[0].spec.host != route_name
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create logging message fact
+  set_fact:
+    grader_student_message: "{{ 'Section: ' + ( section_number | string) \
+     + ', ' + inventory_hostname + ', ' + student_error_message }}"
+  delegate_to: localhost
+
+- when: r_route_namespace.resources[0].spec.host != route_name
+  name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+...
