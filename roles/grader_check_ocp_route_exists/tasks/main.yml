@@ -20,8 +20,8 @@
 
 - name: Create logging message fact
   set_fact:
-    grader_student_message: "{{ 'Section: ' + ( section_number | string) \
-     + ', ' + inventory_hostname + ', ' + student_error_message }}"
+    grader_output_message: "{{ 'Section: ' + ( section_number | string) \
+     + ', ' + inventory_hostname + ', ' + student_message }}"
   delegate_to: localhost
 
 - when: r_route_namespace.resources[0].spec.host != route_name

@@ -17,7 +17,7 @@ Checks is a file exists
   role: ftl_check_file_exists
   vars:
     section_number: 6.4.1
-    student_error_message: ansible.cfg does not exist
+    student_message: ansible.cfg does not exist
     file_with_path: /etc/ansible.cfg
 ----
 
