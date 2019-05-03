@@ -53,13 +53,17 @@ A small number of terms are defined below
 * *grader host* - Host that the student works from, typically bastion or workstation
 * *graders* - Graders are playbooks that grade a lab, they are typically invoked via the `grade_lab` command which is installed at deployment time.
 * *solvers* - Solvers are playbooks that solver labs i.e. they apply all the necessary ansible tasks to move complete a lab.
-* *convenience roles* - Convenience roles, in the `roles` directory provide pre-built roles for testing specfic, and common, scenarios e.g.
-** ftl_check_command_output
-** ftl_check_file_exists
-** ftl_check_ocp_svc_exists
-** ftl_check_service_enabled
-** ftl_check_service_started
-** ftl_check_user_exists
+* *grader roles* - grader roles, in the `roles` directory provide pre-built roles for testing specfic, and common, scenarios e.g.
+
+** grader_check_command_output
+** grader_check_file_exists
+** grader_check_ocp_node_exists
+** grader_check_ocp_route_exists
+** grader_check_ocp_svc_exists
+** grader_check_package_installed
+** grader_check_service_enabled
+** grader_check_service_started
+** grader_check_user_exists
 
 === Workflow - Deployment
 
@@ -94,7 +98,7 @@ link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
 [source,yaml]
 ----
 - name: Section 1.5, Check student has installed ansible
-  role: opentlc_package_installed
+  role: grader_check_package_installed
   vars:
     section_number: 1.5
     student_error_message: Package not installed
