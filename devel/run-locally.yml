@@ -1,0 +1,49 @@
+---
+- name: Execute grader on local host - for development purposes
+  hosts: localhost
+  connection: local
+  gather_facts: falsef
+  become: false
+  vars:
+    purpose: grade
+    opentlc_student:  johndoe-example.com  # CF passes this data as --user
+    course_name:      Local execution testing
+    lab_number:       "03_01"
+
+  vars_files:
+    - local-vars.yml
+    - ../vars/global-vars.yml
+
+  roles:
+
+    #    - ftl_run_setup_grading_host
+    - when: purpose == "grade"
+      name: ftl_run_init
+
+  post_tasks:
+
+    - when: purpose == "grade"
+      name: Run report generator
+      import_role:
+        name: ftl_run_finish
+  tasks:
+
+    - name: verify playbook
+      debug:
+        msg: "Running locally"
+        verbosity: 2
+
+    - name: Check user exists
+      import_role:
+         name: grader_check_user_exists
+      vars:
+        task_description_message: User tok exists
+        user: tok
+
+    - name: Check user does not exists
+      import_role:
+         name: grader_check_user_does_not_exist
+      vars:
+        task_description_message: User tok exists
+        user: tok
+...

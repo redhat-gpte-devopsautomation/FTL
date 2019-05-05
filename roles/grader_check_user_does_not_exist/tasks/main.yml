@@ -1,0 +1,26 @@
+- name: Check a user exists
+  user:
+    name: "{{ user }}"
+    state: absent
+  check_mode: true
+  register: r_state
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create logging message fact
+  set_fact:
+    grader_output_message: "{{ inventory_hostname + ', '\
+    + task_description_message }}"
+  delegate_to: localhost
+
+- when: r_state.changed
+  name: Import logging tasks
+  include_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "Test message from role"
+...
