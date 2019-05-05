@@ -8,10 +8,9 @@
     purpose: grade
     opentlc_student:  johndoe-example.com  # CF passes this data as --user
     course_name:      Local execution testing
-    lab_number:       "03_01"
+    lab_number:       "0xxx_xxx1"
 
   vars_files:
-    - local-vars.yml
     - ../vars/global-vars.yml
 
   roles:
