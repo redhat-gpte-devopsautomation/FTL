@@ -1,8 +1,9 @@
-- name: Test user exists
-  user_exists:
-    user: "{{ user }}"
-  ignore_errors: true
-  register: r_user
+- name: Check a user exists
+  user:
+    name: "{{ user }}"
+    state: present
+  check_mode: true
+  register: r_state
 
 ######################################################
 #                                                    #
