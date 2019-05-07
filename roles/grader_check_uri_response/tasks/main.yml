@@ -1,8 +1,8 @@
-- name: "Check file {{ file }} a user exists"
-  stat:
-    path: "{{ file }}"
-  check_mode: true
-  register: r_stat
+- name: "Check URI {{ url }} responds"
+  uri:
+    url: "{{ url }}"
+  ignore_errors: true
+  register: r_uri
 
 ######################################################
 #                                                    #
@@ -10,7 +10,11 @@
 #                                                    #
 ######################################################
 
-- when: r_stat.stat.exists
+- name: Debug the return code
+  debug:
+    var: r_uri
+
+- when: r_uri.status < 400
   name: Call logging
   include_role:
     name: ftl_run_log_grade_to_log

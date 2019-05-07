@@ -45,4 +45,20 @@
       vars:
         task_description_message: User tok exists
         user: tok
+
+    - name: Check user does not exists
+      import_role:
+         name: grader_check_file_exists
+      vars:
+        task_description_message: File tok exists
+        file: /tok
+
+    - name: Check user does not exists
+      import_role:
+         name: grader_check_uri_response
+      vars:
+        task_description_message: Under 400
+        url: "http://localhost:1413"
+      tags:
+        - check_uri
 ...
