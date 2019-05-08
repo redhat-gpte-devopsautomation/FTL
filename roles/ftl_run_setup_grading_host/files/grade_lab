@@ -13,7 +13,6 @@ COURSE_NAME=$1
 LAB_NUMBER=$2
 
 # wrapper script for grading playbook for lab
-#
 
 VIRTUALENV=/opt/virtualenvs/venv-grading
 FTL_REPO_HOME=/opt/ftl-repo-clone/
@@ -21,9 +20,7 @@ FTL_REPO_HOME=/opt/ftl-repo-clone/
 GRADE_REPORT=/tmp/grading_report.txt
 export LOG_FILE=/tmp/opentlc_ansible.log
 
-#
 # Clean up - next bit is a job for ansible
-# 
 
 if [ -f ${GRADE_REPORT} ]; 
 then
@@ -56,7 +53,7 @@ source ${VIRTUALENV}/bin/activate
 echo "Finished ${PURPOSE} Process"
 echo
 
-if [ ${PURPOSE} -eq "grade_lab" ] 
+if [ ${PURPOSE} == "grade_lab" ] 
 then  
   cat ${GRADE_REPORT}
 
