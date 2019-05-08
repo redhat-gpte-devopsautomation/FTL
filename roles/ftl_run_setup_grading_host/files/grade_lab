@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 if [ $# -ne 2 ];
 then  
   echo "Usage: $0 course-name lab-number"
@@ -9,6 +8,7 @@ then
   exit 1
 fi  
 
+PURPOSE=$0
 COURSE_NAME=$1
 LAB_NUMBER=$2
 
@@ -45,18 +45,18 @@ echo "Starting $0 Process"
 
 source ${VIRTUALENV}/bin/activate
 
-( cd ${FTL_REPO_HOME};  ansible-playbook main.yml                   \
-  -e @vars/global_vars.yml                                          \
-  -e course_name=${COURSE_NAME}                                     \
-  -e purpose=${0}
+( cd ${FTL_REPO_HOME};  ansible-playbook main.yml         \
+  -e @vars/global_vars.yml                                \
+  -e course_name=${COURSE_NAME}                           \
+  -e purpose=${PURPOSE}                                   \
   -e lab_number=${LAB_NUMBER} > ${LOG_FILE} 2>&1 )
 
 # Output the error report
 
-echo "Finished $0 Process"
+echo "Finished ${PURPOSE} Process"
 echo
 
-if [ $0 -eq "grade_lab" ] 
+if [ ${PURPOSE} -eq "grade_lab" ] 
 then  
   cat ${GRADE_REPORT}
 
