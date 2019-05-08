@@ -1,0 +1,13 @@
+---
+- name: Reset lab 03 01 of Ansible Engine Foundations
+  hosts: web
+  gather_facts: false
+  become: true
+
+  tasks:
+
+    - name: Remove Apache from webservers
+      package:
+        name: httpd
+        state: present
+...
