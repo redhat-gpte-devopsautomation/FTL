@@ -6,7 +6,7 @@
 
   roles:
 
-    - when: purpose == "grade"
+    - when: purpose == "grade_lab"
       name: ftl_run_init
 
 - name: "Import and run the {{ purpose }} playbooks"
@@ -18,6 +18,6 @@
   become: true
 
   roles:
-    - when: purpose == "grade"
+    - when: purpose == "grade_lab"
       name: ftl_run_finish
 ...
