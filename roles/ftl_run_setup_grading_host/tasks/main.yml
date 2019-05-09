@@ -26,27 +26,15 @@
     dest: /usr/local/bin/grade_lab
     mode: 0555
 
-- name: Link to solve_lab
+- name: Setup script link to for solve_lab functionality
   file:
     src: /usr/local/bin/grade_lab
     dest: /usr/local/bin/solve_lab
     state: link
 
-- name: Link to solve_lab
+- name: Setup script link to for reset_lab functionality
   file:
     src: /usr/local/bin/grade_lab
     dest: /usr/local/bin/reset_lab
     state: link
-
-- name: Install grade debug script
-  copy:
-    src: grade_lab_debug
-    dest: /usr/local/bin/grade_lab_debug
-    mode: 0555
-
-- name: Install solve script
-  copy:
-    src: solve_lab
-    dest: /usr/local/bin/solve_lab
-    mode: 0555
 ...
