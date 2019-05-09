@@ -1,0 +1,40 @@
+---
+- name: Clone FTL git repo to grading host group
+  git:
+    repo: "{{ ftl_git_repo }}"
+    dest: "{{ ftl_grading_host_home }}"
+    version: "{{ ftl_git_branch | default('master') }}"
+    force: yes
+    # no_log: true
+  tags:
+    - clone
+
+- name: "Create custom fact directory for student metadata"
+  file:
+    path: "/etc/ansible/facts.d"
+    state: "directory"
+
+- name: "Insert opentlc custom facts e.g. student opentlc name"
+  template:
+     src: opentlc.fact.j2
+     dest: /etc/ansible/facts.d/opentlc.fact
+     mode: 0644
+
+- name: Install grade script
+  copy:
+    src: grade_lab
+    dest: /usr/local/bin/grade_lab
+    mode: 0555
+
+- name: Setup script link to for solve_lab functionality
+  file:
+    src: /usr/local/bin/grade_lab
+    dest: /usr/local/bin/solve_lab
+    state: link
+
+- name: Setup script link to for reset_lab functionality
+  file:
+    src: /usr/local/bin/grade_lab
+    dest: /usr/local/bin/reset_lab
+    state: link
+...
