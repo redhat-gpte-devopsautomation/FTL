@@ -1,5 +1,5 @@
 ---
-- name: Clone FTL git repo to grading host(s)
+- name: Clone FTL git repo to grading host group
   git:
     repo: "{{ ftl_git_repo }}"
     dest: "{{ ftl_grading_host_home }}"
@@ -26,6 +26,18 @@
     src: grade_lab
     dest: /usr/local/bin/grade_lab
     mode: 0555
+
+- name: Link to solve_lab
+  file:
+    src: /usr/local/bin/grade_lab
+    dest: /usr/local/bin/solve_lab
+    state: link
+
+- name: Link to solve_lab
+  file:
+    src: /usr/local/bin/grade_lab
+    dest: /usr/local/bin/reset_lab
+    state: link
 
 - name: Install grade debug script
   copy:
