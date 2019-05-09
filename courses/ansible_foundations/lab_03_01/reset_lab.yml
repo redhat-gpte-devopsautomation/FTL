@@ -9,5 +9,5 @@
     - name: Remove Apache from webservers
       package:
         name: httpd
-        state: present
+        state: absent
 ...
