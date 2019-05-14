@@ -1,6 +1,0 @@
-== Overview
-
-Clones the FTL repo into the grading hosts /opt
-
-TODO: Add logic to create the gradering scrip that will wrap the playbook and
-execute it within the virtualenv.
