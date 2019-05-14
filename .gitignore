@@ -1,4 +1,5 @@
 *.retry
 *.swp
+roles/ftl-injector/
 #.pre-commit-config.yaml 
 #.yamllint
