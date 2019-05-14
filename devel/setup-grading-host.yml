@@ -5,6 +5,5 @@
   become: true
 
   roles:
-    - ftl_run_create_grading_virtualenv
-    - ftl_run_setup_grading_host
+    - ftl-injector
 ...
