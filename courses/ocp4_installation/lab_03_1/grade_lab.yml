@@ -6,10 +6,25 @@
 
   # All lab tests go here
   tasks:
-  - name: Check the OpenShift Web Console Route exists
-    include_role:
-      name: grader_check_ocp_route_exists
-    vars:
-      task_description_message: Check that the Web Console route exists
-      route_name: "console"
-      project_name: "openshift-console"
+  # oc get machines -l machine.openshift.io/cluster-api-machine-type=worker -n openshift-machine-api
+  - name: Get Machines
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: Machine
+      namespace: openshift-machine-api
+      label_selectors:
+      - machine.openshift.io/cluster-api-machine-type=worker
+    register: r_machines
+  - name: Set variable to not_found
+    set_fact:
+      machineset_found: false
+  - name: Check machine types
+    set_fact:
+      machineset_found: true
+    when:
+    - item.spec.providerSpec.value.instanceType is match('m5.2xlarge')
+    loop: "{{ r_machines.resources }}"
+  - name: Print success if machine found
+    debug:
+      msg: "Success"
+    when: machineset_found|bool
