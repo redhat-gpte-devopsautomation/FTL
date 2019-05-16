@@ -1,7 +1,7 @@
 ---
 - name: print out the route and namespace we are checking
   debug:
-    msg: "Checking if route {{ route_name }} for application {{ app_name }} exists in project {{ project_name }}"
+    msg: "Checking if route {{ route_name }} exists in project {{ project_name }}"
     verbosity: 2
 
 - name: check if the route exists
