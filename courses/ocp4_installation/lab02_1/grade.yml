@@ -1,0 +1,14 @@
+---
+- name: Grade lab 02_1 of OpenShift 4 Installation
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  roles:
+    - name: Check the OpenShift Web Console Route exists
+      role: grader_check_ocp_route_exists
+      vars:
+        task_description_message: Check that the Web Console route exists
+        route_name: "console"
+        project_name: "openshift-console"
