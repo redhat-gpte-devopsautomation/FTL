@@ -4,12 +4,22 @@
     msg: "Checking if route {{ route_name }} exists in project {{ project_name }}"
     verbosity: 2
 
-- name: check if the route exists
+- name: Look up route
   k8s_facts:
     kind: Route
     namespace: "{{ project_name }}"
     name: "{{ route_name }}"
   register: r_route_namespace
+
+- name: Check that the route exists
+  debug:
+    msg: "Success"
+  when: r_route_namespace.resources|length = 1
+
+- name: Fail if the route does not exist
+  fail:
+    msg: "Fail: Route {{ route_name }} not found in project {{ project_name }}"
+  when: not r_route_namespace.resources|length = 1
 
 ######################################################
 #                                                    #
