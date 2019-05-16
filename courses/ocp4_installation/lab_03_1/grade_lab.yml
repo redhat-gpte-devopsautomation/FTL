@@ -28,3 +28,7 @@
     debug:
       msg: "Success"
     when: machineset_found|bool
+  - name: Fail if machine not found
+    fail:
+      msg: Machine of type m5.2xlarge not found
+    when: not machineset_found|bool
