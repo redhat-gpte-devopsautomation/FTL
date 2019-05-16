@@ -8,8 +8,7 @@
   k8s_facts:
     kind: Route
     namespace: "{{ project_name }}"
-    label_selectors:
-      - app = {{ app_name }}
+    name: "{{ route_name }}"
   register: r_route_namespace
 
 ######################################################
