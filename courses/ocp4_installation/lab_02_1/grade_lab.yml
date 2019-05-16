@@ -9,7 +9,7 @@
   - name: Check the OpenShift Web Console Route exists
     include_role:
       name: grader_check_ocp_route_exists
-      vars:
-        task_description_message: Check that the Web Console route exists
-        route_name: "console"
-        project_name: "openshift-console"
+    vars:
+      task_description_message: Check that the Web Console route exists
+      route_name: "console"
+      project_name: "openshift-console"
