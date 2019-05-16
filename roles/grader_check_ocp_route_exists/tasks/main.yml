@@ -14,12 +14,13 @@
 - name: Check that the route exists
   debug:
     msg: "Success"
-  when: r_route_namespace.resources|length = 1
-
+  when:
+  - r_route_namespace.resources|length == 1
+  - r_route_namespace.resources[0].metadata.name is match( route_name)
 - name: Fail if the route does not exist
   fail:
     msg: "Fail: Route {{ route_name }} not found in project {{ project_name }}"
-  when: not r_route_namespace.resources|length = 1
+  when: not r_route_namespace.resources|length == 1
 
 ######################################################
 #                                                    #
