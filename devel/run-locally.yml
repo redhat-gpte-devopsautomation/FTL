@@ -11,7 +11,7 @@
     lab_number:       "0xxx_xxx1"
 
   vars_files:
-    - ../vars/global-vars.yml
+    - ../vars/global_vars.yml
 
   roles:
 
@@ -25,9 +25,10 @@
       name: Run report generator
       import_role:
         name: ftl_run_finish
+
   tasks:
 
-    - name: verify playbook
+    - name: Verify playbook
       debug:
         msg: "Running locally"
         verbosity: 2
@@ -46,14 +47,14 @@
         task_description_message: User tok exists
         user: tok
 
-    - name: Check user does not exists
+    - name: Check file exists
       import_role:
          name: grader_check_file_exists
       vars:
         task_description_message: File tok exists
         file: /tok
 
-    - name: Check user does not exists
+    - name: Check uri does responds
       import_role:
          name: grader_check_uri_response
       vars:

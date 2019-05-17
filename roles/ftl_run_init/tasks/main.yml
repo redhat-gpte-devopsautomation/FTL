@@ -26,21 +26,20 @@
     path: "{{ opentlc_grading_file }}"
   register: r_grading_file
 
-- name: Preserve old grading file as previous and delete original
+- when: r_grading_file.stat.exists
+  name: Preserve old grading file as previous and delete original
   block:
 
     - name: "Copy existing {{ opentlc_grading_file }} to previous"
       copy:
-        remote_src: yes
-        force: yes
-        src: "{{ opentlc_grading_file }}"
-        dest: "{{ opentlc_grading_file_previous }}"
-        mode: 0666
+        remote_src:   yes
+        force:        yes
+        src:          "{{ opentlc_grading_file }}"
+        dest:         "{{ opentlc_grading_file_previous }}"
+        mode:         0666
 
     - name: "Delete existing {{ opentlc_grading_file }}"
       file:
-        path: "{{ opentlc_grading_file }}"
-        state: absent
-
-  when: r_grading_file.stat.exists
+        path:         "{{ opentlc_grading_file }}"
+        state:          absent
 ...
