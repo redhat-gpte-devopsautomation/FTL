@@ -32,18 +32,46 @@
         msg: "Running locally"
         verbosity: 2
 
-    - name: Check user tok exists
+    - name: Check user sha does not exists
       import_role:
          name: grader_test_role
       vars:
-        task_description_message: User tok exists
+        task_description_message: User Sha exists 0
+        user: sha
+
+    - name: Check user tok exists 
+      import_role:
+         name: grader_test_role
+      vars:
+        task_description_message: User tok exists 1
         user: tok
 
     - name: Check user sha does not exists
       import_role:
          name: grader_test_role
       vars:
-        task_description_message: User Sha exists
+        task_description_message: User Sha exists 2
+        user: sha
+
+    - name: Check user tok exists
+      import_role:
+         name: grader_test_role
+      vars:
+        task_description_message: User tok exists 3
+        user: tok
+
+    - name: Check user tok exists
+      import_role:
+         name: grader_test_role
+      vars:
+        task_description_message: User tok exists 4
+        user: tok
+
+    - name: Check user sha does not exists
+      import_role:
+         name: grader_test_role
+      vars:
+        task_description_message: User Sha exists 5
         user: sha
 
 #    - name: Check file exists

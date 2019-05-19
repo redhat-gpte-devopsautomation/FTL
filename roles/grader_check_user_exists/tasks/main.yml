@@ -11,13 +11,20 @@
 #                                                    #
 ######################################################
 
-- when: r_state.changed
-  name: Success or failure?
+- name: Default to PASSED
   set_fact:
-    grader_test_failed: "FAILED"
-    grader_output_message: "{{ grader_test_failed + ', ' + \
-                            task_description_message +\
-                            ', (' + inventory_hostname + ')'  }}"
+    grader_test_result: PASSED
+
+- when: r_state.changed | bool
+  name: Test Failed
+  set_fact:
+    grader_test_result: FAILED
+
+- name: Set message     
+  set_fact:
+    grader_output_message: "{{ grader_test_result + ', ' + \
+                               task_description_message + ', (' + \
+                               inventory_hostname + ')'  }}"
   delegate_to: localhost
 
 - name: Log grader task result
