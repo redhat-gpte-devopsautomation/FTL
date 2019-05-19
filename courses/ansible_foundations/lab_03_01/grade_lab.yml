@@ -12,11 +12,17 @@
         task_description_message: Install Apache, httpd, package
         package: httpd
 
+    - name: Pause execution
+      prompt:
+
     - name: Section 6.4.2, Check student has running Apache
       role: grader_check_service_started
       vars:
         task_description_message: Start Apache, httpd, Service
         service: httpd
+
+    - name: Pause execution
+      prompt:
 
     - name: Section 6.4.3, Check student has enabled Apache
       role: grader_check_service_enabled
