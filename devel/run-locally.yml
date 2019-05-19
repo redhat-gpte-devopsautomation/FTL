@@ -15,7 +15,6 @@
 
   roles:
 
-    #    - ftl_run_setup_grading_host
     - when: purpose == "grade"
       name: ftl_run_init
 
@@ -33,33 +32,33 @@
         msg: "Running locally"
         verbosity: 2
 
-    - name: Check user exists
+    - name: Check user tok exists
       import_role:
-         name: grader_check_user_exists
+         name: grader_test_role
       vars:
         task_description_message: User tok exists
         user: tok
 
-    - name: Check user does not exists
+    - name: Check user sha does not exists
       import_role:
-         name: grader_check_user_does_not_exist
+         name: grader_test_role
       vars:
-        task_description_message: User tok exists
-        user: tok
+        task_description_message: User Sha exists
+        user: sha
 
-    - name: Check file exists
-      import_role:
-         name: grader_check_file_exists
-      vars:
-        task_description_message: File tok exists
-        file: /tok
-
-    - name: Check uri does responds
-      import_role:
-         name: grader_check_uri_response
-      vars:
-        task_description_message: Under 400
-        url: "http://localhost:1413"
-      tags:
-        - check_uri
+#    - name: Check file exists
+#      import_role:
+#         name: grader_check_file_exists
+#      vars:
+#        task_description_message: File tok exists
+#        file: /tok
+#
+#    - name: Check uri does responds
+#      import_role:
+#         name: grader_check_uri_response
+#      vars:
+#        task_description_message: Under 400
+#        url: "http://localhost:1413"
+#      tags:
+#        - check_uri
 ...

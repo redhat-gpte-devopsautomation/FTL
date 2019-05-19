@@ -2,7 +2,7 @@ Course name: {{ course_name }}
 Lab number: {{ lab_number }}
 Student id: {{ opentlc_student }}
 
-{% for error in opentlc_log_content %}
-  {{ error }}
+{% for message in opentlc_log_content %}
+  {{ message }}
 {% endfor %}
 
