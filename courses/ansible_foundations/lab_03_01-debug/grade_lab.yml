@@ -4,7 +4,7 @@
   gather_facts: false
   become: true
 
-  roles:      # All lab tests go here
+  tasks:      # All lab tests go here
 
     - name: Check user student2 does not exists
       import_role:
