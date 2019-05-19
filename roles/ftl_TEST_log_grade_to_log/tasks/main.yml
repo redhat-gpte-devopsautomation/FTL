@@ -1,0 +1,9 @@
+---
+- name: Appends lab failure message to error log
+  lineinfile:
+    create: yes
+    insertafter: EOF
+    path: "{{ opentlc_student_error_file }}"
+    line: "{{ grader_output_message }}"
+  delegate_to: localhost
+...
