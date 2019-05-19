@@ -12,6 +12,15 @@
 #                                                    #
 ######################################################
 
+- name: Send summary mail
+  local_action:
+    module: import_role
+    name: ftl_TEST_log_grade_to_log
+    grader_test_failed: "FAILED - import"
+    grader_output_message: "{{ grader_test_failed + ', ' + \
+                            task_description_message +\
+                            ', (' + inventory_hostname + ')'  }}"
+
 - when: r_state.changed
   name: Success or failure?
   set_fact:
