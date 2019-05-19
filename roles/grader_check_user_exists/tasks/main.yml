@@ -15,12 +15,12 @@
   set_fact:
     grader_test_result: PASSED
 
-- when: r_state.changed | bool
+- when: r_state.changed
   name: Test Failed
   set_fact:
     grader_test_result: FAILED
 
-- name: Set message     
+- name: Set message
   set_fact:
     grader_output_message: "{{ grader_test_result + ', ' + \
                                task_description_message + ', (' + \

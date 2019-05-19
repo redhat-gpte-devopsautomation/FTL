@@ -6,24 +6,45 @@
 
   roles:      # All lab tests go here
 
-    - name: Section 6.4, Check student has installed Apache
-      role: ftl_check_package_installed
+    - name: Check user student2 does not exists
+      import_role:
+         name: grader_check_user_exists
       vars:
-        section_number: 6.4
-        student_error_message: Package httpd not installed
-        package: httpd
+        task_description_message: User Student2 exists 0
+        user: student2
 
-    - name: Section 6.4, Check student has enabled Apache
-      role: ftl_check_service_started
+    - name: Check user student1 exists
+      import_role:
+         name: grader_check_user_exists
       vars:
-        section_number: 6.4
-        student_error_message: Package httpd not started
-        service: httpd
+        task_description_message: User student1 exists 1
+        user: student1
 
-    - name: Section 5.3, Check student has started eieio
-      role: ftl_check_service_started
+    - name: Check user student2 does not exists
+      import_role:
+         name: grader_check_user_exists
       vars:
-        section_number: 5.3
-        student_error_message: Started eieio not started
-        service: eieio
+        task_description_message: User Student2 exists 2
+        user: student2
+
+    - name: Check user student1 exists
+      import_role:
+         name: grader_check_user_exists
+      vars:
+        task_description_message: User student1 exists 3
+        user: student1
+
+    - name: Check user student1 exists
+      import_role:
+         name: grader_check_user_exists
+      vars:
+        task_description_message: User student1 exists 4
+        user: student1
+
+    - name: Check user student2 does not exists
+      import_role:
+         name: grader_check_user_exists
+      vars:
+        task_description_message: User Student2 exists 5
+        user: student2
 ...
