@@ -22,12 +22,9 @@
 
 - name: Set message
   set_fact:
-    f_grader_test_result: "{{ f_grader_test_result }}"
-    f_task_description_message: "{{ task_description_message }}"
-    f_inventory_hostname: "{{ inventory_hostname }}"
-#    grader_output_message: "{{ grader_test_result + ', ' + \
-#                               task_description_message + ', (' + \
-#                               inventory_hostname + ')'  }}"
+    f_grader_test_result:         "{{ f_grader_test_result }}"
+    f_task_description_message:   "{{ task_description_message }}"
+    f_inventory_hostname:         "{{ inventory_hostname }}"
   delegate_to: localhost
 
 - name: Log grader task result
