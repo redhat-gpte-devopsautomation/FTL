@@ -17,4 +17,10 @@
       vars:
         task_description_message: Start Apache, httpd, Service
         service: httpd
+
+    - name: Section 6.4.3, Check student has enabled Apache
+      role: grader_check_service_enabled
+      vars:
+        task_description_message: Enable Apache, httpd, at boot
+        service: httpd
 ...
