@@ -23,4 +23,16 @@
       vars:
         task_description_message: Enable Apache, httpd, at boot
         service: httpd
+
+    - name: Section 6.4.3, Check user exists student1
+      role: grader_check_user_exists
+      vars:
+        task_description_message: Create user student1
+        user: student1
+
+    - name: Section 6.4.3, Check user exists student1
+      role: grader_check_user_exists
+      vars:
+        task_description_message: Create user john_snow
+        user: john_snow
 ...
