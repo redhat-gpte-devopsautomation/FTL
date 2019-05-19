@@ -12,6 +12,12 @@
 #                                                    #
 ######################################################
 
+- when: r_state.changed
+  name: Success or failure?
+  set_fact:
+    grader_test_failed: "FAILED"
+  delegate_to: localhost
+
 - name: Include grader tasks
   include_tasks: ../../common_tasks/grade_logging_logic.yml
 ...

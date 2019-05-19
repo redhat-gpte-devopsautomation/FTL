@@ -1,10 +1,4 @@
 ---
-- when: r_state.changed
-  name: Success or failure?
-  set_fact:
-    grader_test_failed: "FAILED"
-  delegate_to: localhost
-
 - name: Log grader task result
   include_role:
     name: ftl_TEST_log_grade_to_log
