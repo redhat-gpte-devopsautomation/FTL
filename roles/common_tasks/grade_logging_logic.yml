@@ -1,8 +1,7 @@
 ---
 - name: Log grader task result
-  import_role::
+  import_role:
     name: ftl_TEST_log_grade_to_log
-    #name: ftl_run_log_grade_to_log
   vars:
     grader_output_message: "{{ grader_test_failed + ', ' + \
                             task_description_message +\
