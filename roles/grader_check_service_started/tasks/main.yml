@@ -18,6 +18,11 @@
     grader_test_failed: "FAILED"
   delegate_to: localhost
 
-- name: Include grader tasks
-  include_tasks: ../../common_tasks/grade_logging_logic.yml
+- name: Log grader task result
+  import_role:
+    name: ftl_TEST_log_grade_to_log
+  vars:
+    grader_output_message: "{{ grader_test_failed + ', ' + \
+                            task_description_message +\
+                            ', (' + inventory_hostname + ')'  }}"
 ...
