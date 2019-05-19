@@ -11,18 +11,21 @@
 #                                                    #
 ######################################################
 
-- when: r_state.changed
-  name: Success or failure?
-  set_fact:
-    grader_test_failed: "FAILED"
+#- when: r_state.changed
+#  name: Success or failure?
+#  set_fact:
+#    grader_test_failed: "FAILED"
 
-- name: Log grader task result
-  include_role:
-    name: ftl_TEST_log_grade_to_log
-  vars:
-    grader_output_message: "{{ grader_test_failed + ', ' + \
-    task_description_message +\
-    ', (' + inventory_hostname + ')'  }}"
+- name: Include grader tasks
+  include_tasks: ../../common_tasks/grade_logging_logic.yml
+
+#- name: Log grader task result
+#  include_role:
+#    name: ftl_TEST_log_grade_to_log
+#  vars:
+#    grader_output_message: "{{ grader_test_failed + ', ' + \
+#    task_description_message +\
+#    ', (' + inventory_hostname + ')'  }}"
 
 #- name: Create logging message fact
 #  set_fact:

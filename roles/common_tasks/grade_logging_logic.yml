@@ -1,16 +1,30 @@
 ---
-- name: Leave the following alone - logging logic
-  block:
+- when: r_state.changed
+  name: Success or failure?
+  set_fact:
+    grader_test_failed: "FAILED"
 
-    - name: Capture and log error
-      set_fact:
-        grader_output_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + task_description_message }}'
-      delegate_to: localhost
+- name: Log grader task result
+  include_role:
+    name: ftl_TEST_log_grade_to_log
+  vars:
+    grader_output_message: "{{ grader_test_failed + ', ' + \
+                            task_description_message +\
+                            ', (' + inventory_hostname + ')'  }}"
 
-    - name: Log event to log file
-      import_role:
-        name: ftl_run_log_grade_to_log
 
-  delegate_to: localhost
-  when: r_state.changed
+#- name: Leave the followinVg alone - logging logic
+#  block:
+#
+#    - name: Capture and log error
+#      set_fact:
+#        grader_output_message: '{{ "Section: " + ( section_number | string)  + ", " + inventory_hostname + ", " + task_description_message }}'
+#      delegate_to: localhost
+#
+#    - name: Log event to log file
+#      import_role:
+#        name: ftl_run_log_grade_to_log
+#
+#  delegate_to: localhost
+#  when: r_state.changed
 ...
