@@ -8,8 +8,13 @@
   tasks:
     - name: Get deployments
       k8s_facts:
-        apiVersion: 
+        api_version: apps/v1
+        kind: Deployment
+        name: example
+        namespace: resourcemanagement
       register: r_deployment
     
     - name: Check for example deployment
+      debug:
+        msg: "Success"
       
