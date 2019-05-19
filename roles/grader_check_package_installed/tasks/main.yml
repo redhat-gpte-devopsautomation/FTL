@@ -6,7 +6,6 @@
   check_mode: True
   register: r_state
 
-
 ######################################################
 #                                                    #
 # Common boiler plate logging logic - Do not modify  #
