@@ -3,36 +3,35 @@
 
 == FTL Overview
 
-FTL, *Finish The Labs*, is currently a student invoked automated lab grading system
-designed to allow students to self mark their *OPENTLC* labs to see if they
-have passed them correctly. Other uses include lab and lab environment validation.
+FTL, *Finish The Labs*, is currently a student invoked automated lab grading system designed to allow students to self mark their *OPENTLC* labs to see if they have passed them correctly. Other uses include lab and lab environment validation.
 
 
 
-On *failure* it highlights the failed sections via Instructor supplied  error
-messages. Students have unlimited attempts and can run the grading at any time,
-without penalty.
+On *failure* it highlights the failed sections via Instructor supplied  error messages. Students have unlimited attempts and can run the grading at any time, without penalty.
 
 On *success* it:
 
 . Informs the student
-. Updates the LMS (at this point the `grade-update-lms` role is a stub
+. Updates the LMS (at this point the `grade-update-lms` role is a stub role)<
 toc::[]
 
+
+////
 === Changelog
 
-A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to date 
+A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to date
+////
 
-=== Structure 
+=== Structure
 
 [source,bash]
 ----
 ├── README.adoc                 # This document
-├── ansible.cfg                 # Default ansible.cfg - can be over-riddden
+├── ansible.cfg                 # Default ansible.cfg - can be over-ridden
 ├── courses/                    # Directory containing course and their graders and solvers
 ├── docs/                       # Documentation - see below for overview
 ├── main.yml                    # Main entry point to grade or solve a lab
-├── roles/                      # Top level roles directory, can be supplemented at a course/lab level 
+├── roles/                      # Top level roles directory, can be supplemented at a course/lab level
 ├── vars/                       # Set global *common* vars reports etc
 └── devel                       # developer tools, data, scripts, playbooks
 ----
@@ -53,7 +52,7 @@ A small number of terms are defined below
 * *grader host* - Host that the student works from, typically bastion or workstation
 * *graders* - Graders are playbooks that grade a lab, they are typically invoked via the `grade_lab` command which is installed at deployment time.
 * *solvers* - Solvers are playbooks that solver labs i.e. they apply all the necessary ansible tasks to move complete a lab.
-* *grader roles* - grader roles, in the `roles` directory provide pre-built roles for testing specfic, and common, scenarios e.g.
+* *grader roles* - grader roles, in the `roles` directory provide pre-built roles for testing specific, and common, scenarios e.g.
 
 ** grader_check_command_output
 ** grader_check_file_exists
@@ -75,8 +74,7 @@ NOTE: FTL currently clones the entire repo i.e all tests for all labs so no
 additional meta data needs to be supplied at deployment time.
 
 Alternatively it could be modified to be deployed via pull i.e. the student
-clones the FTL repo locally. This will require either a permissions change on
-the repo or a API token/login to be provided as FTL is a private repo today.
+clones the FTL repo locally.
 
 === Workflow - Developing a Lab Test
 
@@ -100,8 +98,7 @@ link:docs/FTL_Deployer_Guide.adoc[Lab Grading Author Guide*]
 - name: Section 1.5, Check student has installed ansible
   role: grader_check_package_installed
   vars:
-    section_number: 1.5
-    student_error_message: Package not installed
+    task_description_message: Install Ansible
     package: ansible
 ----
 
@@ -115,6 +112,7 @@ Students are supplied with `grade_lab` and `solve_lab` wrapper scripts, in /usr/
 
 `$ grade_lab ansible_engine_foundations 03_01`
 
+////
 == Questions:
 
 . Do students invoke the check via:
@@ -122,4 +120,4 @@ Students are supplied with `grade_lab` and `solve_lab` wrapper scripts, in /usr/
 ** Via button in the LMS
 . Does the check action pull in the playbook(s) or are they already there?
 ** i.e. backed in at lab build time
-
+////
