@@ -1,0 +1,40 @@
+---
+- name: Print out the ConfigMap and Namespace we are checking
+  debug:
+    msg: "Checking if ConfigMap {{ configmap_name }} exists in Project {{ project_name }}"
+    verbosity: 2
+
+- name: Look up ConfigMap
+  k8s_facts:
+    kind: ConfigMap
+    namespace: "{{ project_name }}"
+    name: "{{ configmap_name }}"
+  register: r_configmap_namespace
+
+- name: Check that the ConfigMap exists
+  debug:
+    msg: "Success"
+  when:
+  - r_configmap_namespace.resources|length == 1
+  - r_configmap_namespace.resources[0].metadata.name is match( route_name)
+- name: Fail if the ConfigMap does not exist
+  fail:
+    msg: "Fail: ConfigMap {{ configmap_name }} not found in project {{ project_name }}"
+  when: not r_configmap_namespace.resources|length == 1
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create logging message fact
+  set_fact:
+    grader_output_message: "{{ inventory_hostname + ', '\
+    + task_description_message }}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  when: r_route_namespace.resources[0].metadata.name != route_name
+  import_role:
+    name: ftl_run_log_grade_to_log
