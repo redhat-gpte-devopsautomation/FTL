@@ -1,3 +1,36 @@
 == Roles Directory
 
-FTL uses a customized roles path allowing it for find roles in several different locations
+The main roles directory at the root level houses 2 different types of roles:
+
+* Run-time roles for FTL itself setting up grading, logging, and other infrastructure tasks. All of these roles are prefixed `ftl_run`. For example:
+
++
+[source,bash]
+----
+ftl_run_finish
+ftl_run_finish_grading
+ftl_run_reporting
+ftl_run_show_student_grade
+----
+
+* *Grader roles*, these exist to provide simple wrappers to simplify the writing of lab graders. Each grader roles tests one condition and logs success or failure depending on the result. For example below a lab grader calls a grader role to evaluate if a package (httpd) is installed. The lab grader takes care of all logging and reporting.
++
+[source,bash]
+----
+- name: Grade lab 03 01 of Ansible Engine Foundations
+  hosts: web
+  gather_facts: false
+  become: true
+
+  roles:      # All lab tests go here
+
+    - name: Section 6.4.1, Check student has installed Apache
+      role: grader_check_package_installed
+      vars:
+        task_description_message: Install Apache, httpd, package
+        package: httpd
+----
+
+Each grader role has its own README.
+
+NOTE: The role `ftl-injector` is an external role which is loaded by `../devel/bin/setup-development-environment.sh` and consumes the `requirements.yml`. This allows developer to inject their changes directly into running labs without re-deploying. e.g.:
