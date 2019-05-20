@@ -1,10 +1,8 @@
-- name: "Check file {{ file }} a user exists"
+- name: "Check file {{ file }} exists"
   stat:
     path: "{{ file }}"
   check_mode: true
   register: r_stat
-
-  # work on this logic   r_stat.stat.exists
 
 ######################################################
 #                                                    #
@@ -16,7 +14,7 @@
   set_fact:
     f_grader_test_result: PASSED
 
-- when: r_state.changed
+- when: not r_stat.stat.exists
   name: Test Failed
   set_fact:
     f_grader_test_result: FAILED
