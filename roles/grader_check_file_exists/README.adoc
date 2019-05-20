@@ -1,30 +1,19 @@
-== README ftl_check_package_installed
+== README 
 
-Checks if a package is installed, if not logs a failure message for student
+Checks if a file exists. 
 
 === Arguments:
 
-* `package` - name of the package e.g. `httpd`
-* `grader_output_message` - message to return to student on failure 
-* `section` - Lab section or stage
-
+* `file` - name of the package e.g. `httpd`
+* `task_description_message` - Neutral message to return to student 
 
 === Usage Example
 
 [source,yaml]
 ----
-- name: Section 6.4.1, Check student has installed Apache
-  role: ftl_check_package_installed
+- name: Section 6, Check /etc/ansible/hosts exists
+  role: grader_check_file_exists
   vars:
-    section_number: 6.4.1
-    task_description_message: Package httpd not installed
-    package: httpd
-----
-
-=== Sample Output
-
-[source,bash]
-----
-  Section: 6.4.1, node1, Package httpd not installed
-  Section: 6.4.1, node2, Package httpd not installed
+    task_description_message: /etc/ansible/hosts exists
+    file: /etc/ansible/hosts
 ----
