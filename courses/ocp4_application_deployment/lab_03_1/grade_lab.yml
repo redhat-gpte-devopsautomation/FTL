@@ -7,7 +7,7 @@
  # All lab tests go here
   tasks:
   - name: Determine current project
-    command: oc project|awk '{print $3}'|tr -d '"'
+    shell: "oc project|awk '{print $3}'|tr -d '\"'"
     register: r_project
   - name: Check that the Gogs Config Map exists
     include_role:
@@ -15,11 +15,11 @@
     vars:
       task_description_message: Check that the Gogs ConfigMap exists
       configmap_name: gogs
-      project_name: "{{ r_project.result }}"
+      project_name: "{{ r_project.stdout }}"
   - name: Check the Gogs Route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
       task_description_message: Check that the Gogs route exists
       route_name: "gogs"
-      project_name: "{{ r_project.result }}"
+      project_name: "{{ r_project.stdout }}"

@@ -16,7 +16,7 @@
     msg: "Success"
   when:
   - r_configmap_namespace.resources|length == 1
-  - r_configmap_namespace.resources[0].metadata.name is match( route_name)
+  - r_configmap_namespace.resources[0].metadata.name is match( configmap_name )
 - name: Fail if the ConfigMap does not exist
   fail:
     msg: "Fail: ConfigMap {{ configmap_name }} not found in project {{ project_name }}"
@@ -35,6 +35,6 @@
   delegate_to: localhost
 
 - name: Import logging tasks
-  when: r_route_namespace.resources[0].metadata.name != route_name
+  when: r_configmap_namespace.resources[0].metadata.name != configmap_name
   import_role:
     name: ftl_run_log_grade_to_log
