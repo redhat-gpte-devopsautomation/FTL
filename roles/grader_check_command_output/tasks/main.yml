@@ -16,14 +16,23 @@
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
+- name: Default to PASSED
   set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
-  delegate_to: localhost
+    f_grader_test_result: PASSED
 
 - when: r_state.changed
-  name: Import logging tasks
+  name: Test Failed
+  set_fact:
+    f_grader_test_result: FAILED
+
+- name: Set message
+  set_fact:
+    f_grader_test_result:         "{{ f_grader_test_result }}"
+    f_task_description_message:   "{{ task_description_message }}"
+    f_inventory_hostname:         "{{ inventory_hostname }}"
+  delegate_to: localhost
+
+- name: Log grader task result
   import_role:
     name: ftl_run_log_grade_to_log
 ...
