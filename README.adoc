@@ -16,12 +16,6 @@ On *success* it:
 toc::[]
 
 
-////
-=== Changelog
-
-A detailed link:docs/CHANGELOG.adoc[Changelog can be found here] - keep it up to date
-////
-
 === Structure
 
 [source,bash]
