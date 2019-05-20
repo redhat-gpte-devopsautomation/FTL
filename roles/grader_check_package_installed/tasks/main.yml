@@ -30,5 +30,5 @@
 
 - name: Log grader task result
   import_role:
-    name: ftl_TEST_log_grade_to_log
+    name: ftl_run_log_grade_to_log
 ...
