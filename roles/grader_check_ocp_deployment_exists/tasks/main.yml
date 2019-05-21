@@ -28,7 +28,7 @@
   when: deployment_exists|bool
 
 - name: Fail if the deployment does not exist
-  fail:
+  debug:
     msg: "Fail: Deployment '{{ deployment_name }}' not found in project '{{ project_name }}'"
   when: not deployment_exists|bool
 

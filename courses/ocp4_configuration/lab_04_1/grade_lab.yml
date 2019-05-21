@@ -11,7 +11,7 @@
         name: grader_check_ocp_deployment_exists
       vars:
         task_description_message: Check that the 'example' deployment exists
-        deployment_name: "example"
+        deployment_name: "myexample"
         project_name: "resourcemanagement"
 
 - name: 
@@ -42,6 +42,6 @@
       when: f_grader_test_result == "PASSED"
           
     - name: Print Failure
-      fail:
+      debug:
         msg: "Failure: Project request template not found."
       when: f_grader_test_result == "FAILED"
