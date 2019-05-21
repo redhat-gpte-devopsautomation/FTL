@@ -1,18 +1,20 @@
 == Overview: Grader Roles
 
-In the FTL root `roles` directory a number of *check roles* or convneneice roles have been created. This enablegrader developers to easily check the particualr state of lab
+In the FTL root `roles` directory a number of *grader roles * have been provided. These test common scenarios and are designed to allow grader playbooks for labs to be written easily and simply.
 
+Grader roles include their own logging so a simple lab grader can simply call 1 or more grader roles in sequence to grade a lab.
 
-They simply
-
-* Check a particualr state
-** Does user admin exist
-** Is package httpd installed
-** Does command x generate output y
-* Log success or failure
-
-
-
+=== Example grader roles
+grader_check_file_exists
+grader_check_ocp_node_exists
+grader_check_ocp_route_exists
+grader_check_ocp_svc_exists
+grader_check_package_installed
+grader_check_service_enabled
+grader_check_service_started
+grader_check_uri_response
+grader_check_user_does_not_exist
+grader_check_user_exists
 
 === Simple Walk Through
 
@@ -20,6 +22,7 @@ In the sample below 2 convenience roles are called using a common pattern
 
 [source,yaml,linenums]
 ----
+
 ---
 - name: Grade lab 03 01 of Ansible Engine Foundations
   hosts: web
@@ -28,150 +31,20 @@ In the sample below 2 convenience roles are called using a common pattern
 
   roles:      # All lab tests go here
 
-    - name: Section 6.4, Check student has installed Apache
-      role: ftl_check_package_installed
+    - name: Section 6.4.1, Check student has installed Apache
+      role: grader_check_package_installed
       vars:
-        section_number: 6.4
-        student_error_message: Package httpd not installed
+        task_description_message: Install Apache, httpd, package
         package: httpd
 
-    - name: Section 6.4, Check student has enabled Apache
-      role: ftl_check_service_started
+    - name: Section 6.4.2, Check student has running Apache
+      role: grader_check_service_started
       vars:
-        section_number: 6.4
-        student_error_message: Package httpd not started
+        task_description_message: Start Apache, httpd, Service
         service: httpd
+
+    - name: Section 6.4.3, Check student has enabled Apache
+      role: grader_check_service_enabled
+      vars:
+        task_description_message: Enable Apache, httpd, at boot
 ...
-
-----
-
-[NOTE]
-====
-Many but not all, conveneice roles take 3 vars:
-
-* section_number: 6.4
-* student_error_message: Package httpd not started
-* a role specfic variable e.g. `user`, `package`, `file`, `service`
-
-However a numbe rof roles expect an additional argument. For example if executing a command typically you would be expected to supply
-* the command itself
-* the expected response
-
-or checking a URI:
-* URI
-* Expected output
-
-e.g.
-
-
-*
-
-====
-
-
-
-
--
-
-
-Consuming Check Roles
-
-To see a simple example of check roles in
-
-
-
-
-== Overview
-
-FTL (Finish the Labs) provides a platform to both grade and solve student labs. In addition it provides hooks to update the students results to the LMS. This guide covers the topic of how to create a series of lab grading playbooks for a course.
-
-Before we look at creating *grading* playbooks it is valuable to understand the typical workflow of a student grading a lab.
-
-=== Student Workflow
-
-On completion of a lab the student will copy and paste the lab checking command which will wrap the `lab_grading` playbook which will:
-
-[source,bash]
-----
-$ grade ansible_engine_foundations lab_03_01
-----
-
-. Initialize any reporting data structures it needs to
-. Execute the instructor created grading playbook(s) and associated roles (if any)
-. Report the students progress highlighting failed steps
-. Updates the LMS in the case of the student passing the lab
-
-Only Step 2 requires
-
-NOTE: In version 1.0 no attempt is made to generate a score. A student either passes or fails.
-
-This guide focusses on Step 2 and how to successfully create grading and solving playbooks
-
-* *grading* playbooks: checks a students work by validating key steps have been completed
-* *solver* playbooks: solves an entire lab
-** Can be called sequentially i.e. each lab in a course, to validate a lab infrastructure is valid
-
-=== Instructor Workflow
-.Creating grading and solving playbooks
-
-
-Identify the key tasks to validate in a student lab. In a lab of any complexity it can be considered a good practice to check at multiple stages the students progress. Just testing the final stage or end result, for example testing a URI for an expected response doesn't allow detailed feedback to the student.
-
-Test critical stages.
-
-
-
-TIP: Whilst a complex lab may be easy to test by the response for say the final application, upon student failure
-o
-=== Structure
-
-At the root level of the FTL repo the directory `courses/` is used to hold each course in a course directory. *All* course grading content including lab specific roles should be encapsulated in your course directory which you can create here.. _(For those familair with link:https://github.com/redhat-cop/agnosticd/tree/development/ansible[Ansible Agnostic Deployer] this pattern is similar to its `configs`)_
-
-[source,bash]
-----
-courses
-├── ansible_engine_foundations
-├── ansible_implementation_part1
-├── ansible_implementation_part2
-├── ansible_integrations
-├── ansible_tower_implementation
-├── ocp_implementation
-├── ...
-----
-
-Each *course* directory e.g. `courses/ansible_engine_foundations/` contains all playbooks, metadata (e.g. inventory files, lab sepocfic roles etc), and sub directories for each lab.
-
-[source,bash]
-----
-courses/ansible_engine_foundations
-├── ansible.cfg
-├── lab_03_01
-│   ├── grade_lab.yml
-│   └── solve_lab.yml
-├── lab_04_01
-│   ├── grade_lab.yml
-│   └── solve_lab.yml
-└── lab_05_01
-    ├── grade_lab.yml
-    └── solve_lab.yml
-----
-
-==== `ansible.cfg`
-
-A root level `ansible.cfg` is provided and should not be modified. At runtime if the relevant course directory
-
-==== Precedence of `ansible.cfg`
-
-| Highest
-| lab directory
-| `courses/ansible_engine_foundations/lab_03_01/ansible.cfg`
-
-|
-| course directory
-| `courses/ansible_engine_foundations/ansible.cfg`
-
-
-all playbooks, metadata, and lab specific roles.
-=== Dealing with Inventory
-
-Each

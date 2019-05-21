@@ -1,0 +1,278 @@
+:toc:
+
+== Overview
+
+FTL (Finish the Labs) provides a platform to both grade and solve student labs. In addition it provides hooks to update the students results to the LMS. This guide covers the topic of how to create a series of lab grading playbooks for a course.
+
+== Terminoligy
+
+=== grader
+
+A grader, or lab grader, is a playbook containing 1 or more plays that test that a student has correctly completed a lab. For example if the nature of the lab is to install and configure Apache the grader could:
+
+* Simply test the URI endpoint i.e. a single test
+* If desired, multiple tests can be be included
+** Is apache installed
+** Is apache enabled
+** Does the configuration file exist
+** Is apache running etc.
+
+=== grader roles
+
+At the root level of the FTL repo is a roles directory containmiong a number of *grader roles*. These provide a simple way to both test a condition e.g. is apache installed *and* keep track of the student results. It is strongly recommended that lab scoring is done this way and creating new grader roles as needed. 
+
+=== solver
+
+A solver is a playbook that _solves_ a lab. In completes all the tasks necessary to sucessfully complete a lab. Solvers can be used to validate a lab functions as expected and can test upgrades and new infrastucture.
+
+
+=== Student Workflow
+
+Before we look at creating *grading* playbooks it is valuable to understand the typical workflow of a student grading a lab.
+
+. Student provisions lab as instructed via http:labs.opentlc.com
+** *FTL* is inserted automatically at provisioing time
+** *FTL* is fully provisioned with necessary meta-data and utilities
+. Student works through lab
+. Student is prompted at end of lab to grade the lab via a simple copy and paste in terminal window e.g.
++
+[source,bash]
+----
+$ grade_lab ansible_foundations 03_01
+----
++
+NOTE:  syntax: `<grade_lab command> <course_name> <lab_and_sub-lab_number`
+e.g. Grade the first lab in *Ansible Foundations Module 3 
+. On success:
+** Student informed
+** *LMS* Updated (As of 2019-04-26 roles is called but API logic incomplete"
+. On failure:
+** Student is informed
+** *LMS* Updated (As of 2019-04-26 roles is called but API logic incomplete"
++
+NOTE: Student can try repeatedly until success is achieved.
+
+On completion of a lab the student will copy and paste the lab checking command which will wrap the `lab_grading` playbook which will:
+
+=== Notes
+
+NOTE: In version 1.0 no attempt is made to generate a score. A student either passes or fails.
+
+This guide focusses on Step 3 above and how to successfully create grading (and solving) playbooks
+
+* *grading* playbooks: checks a students work by validating key steps have been completed
+* *solver* playbooks: solves an entire lab
+** Can be called sequentially i.e. each lab in a course, to validate a lab infrastructure is valid
+
+=== Instructor Workflow
+.Creating grading and solving playbooks
+
+
+Identify the key tasks to validate in a student lab. In a lab of any complexity it can be considered a good practice to check at multiple stages the students progress. Just testing the final stage or end result, for example testing a URI for an expected response doesn't allow detailed feedback to the student.
+
+Test critical stages.
+
+TIP: Whilst a complex lab may be easy to test by the response for say the final application, upon student failure
+o
+=== Structure
+
+At the root level of the FTL repo the directory `courses/` is used to hold each course in a course directory. *All* course grading content including lab specific roles should be encapsulated in your course directory which you can create here.. _(For those familiar with link:https://github.com/redhat-cop/agnosticd/tree/development/ansible[Ansible Agnostic Deployer] this pattern is similar to its `configs`)_
+
+[source,bash]
+----
+courses
+├── ansible_engine_foundations
+├── ansible_implementation_part1
+├── ansible_implementation_part2
+├── ansible_integrations
+├── ansible_tower_implementation
+├── ocp_implementation
+├── ...
+----
+
+Each *course* directory e.g. `courses/ansible_engine_foundations/` contains all playbooks, metadata (e.g. inventory files, lab specific roles etc), and sub directories for each lab.
+
+[source,bash]
+----
+courses/ansible_engine_foundations
+├── ansible.cfg
+├── lab_03_01
+│   ├── grade_lab.yml
+│   └── solve_lab.yml
+├── lab_04_01
+│   ├── grade_lab.yml
+│   └── solve_lab.yml
+└── lab_05_01
+    ├── grade_lab.yml
+    └── solve_lab.yml
+----
+
+==== `ansible.cfg`
+
+A root level `ansible.cfg` is provided and should not be modified. At runtime if the relevant course directory can be provided and is consumed by the grader and solver playbook. This allows the author of graders fine grained control of their environment if necessary. 
+
+NOTE: In addition it allows the reuse of existing inventory files on the the grader host
+
+==== Precedence of `ansible.cfg` 
+
+Highest to lowest
+
+. lab directory: `courses/ansible_engine_foundations/lab_03_01/ansible.cfg`
+. course directory:  `courses/ansible_engine_foundations/ansible.cfg`
+. root FTL directory `ansible.cfg`
+
+=== Dealing with Inventory
+
+grader and solver playbooks 
+:toc:
+
+== Overview
+
+This document takes a developer through the entire series of steps to create the *grader* for the course *Ansible Implementation* including testing and merging back into the master branch.
+
+=== Planning Stage
+
+Before starting to code it is worthwhile to understand the nature of the environment you are grading. In the case of our example *Ansible Implementation* this is a traditional infrastructure type course with a `bastion` host and a number of instances which it will run the graders against e.g. "do the web servers have apache running".
+
+You need to consider where *FTL* will be installed. Typically this would be on the `bastion` or `workstation` machine where the student does most of their work. This machine will be the *grader host*
+
+As we go through the walkthrough we will discuss issues like *inventory* etc and student and lab metadata e.g. opentlc user name and GUID.
+
+=== Setup
+
+Setup your development machine if you haven't already done so.
+
+. Clone FTL to your local machine
++
+[source,bash]
+----
+git clone https://github.com/redhat-gpe/FTL.git
+----
+. Install Ansible using your tool of choice `yum`, `brew`, `pip`
++
+[source,bash]
+----
+pip install ansible
+----
+
+////
+
+Come back here if any other dependencies need to be added - like boto
+
+////
+
+=== Setup your lab grader branch and environment
+
+Avoid working directly on `master`, each lab grader should be *developed* on it's own branch and finally merged via a PR. During development you will be able to install and test your branch on your target labs.
+
+. Create a, meaningful, branch name e.g.: `grader_course_name` (or for solvers solver_course_name)
++
+[source,bash]
+----
+git branch grader-ansible-implementation
+git checkout grader-ansible-implementation
+----
+. Create your course directory 
++
+All graders and solvers live in the *courses* directory. If you are familiar with `agnosticd` this is similar to the pattern used by `configs`
+From your repos home `FTL` directory create your course sub-directory by copying the sample skeletos provided.
+
++
+[source,bash]
+----
+.
+├── README.adoc
+├── ansible.cfg
+├── courses                     <1>
+├── devel
+├── docs
+├── main.yml
+├── roles
+└── vars
+----
++
+1. All courses and their graders, solvers etc live in the `courses` sub-directory
+** External courses can be supported and a `ftl_run_load_external_course` role is *planned*
+
++
+NOTE: The `courses` sub-directory has, currently, 1 example course skeleton.`EXAMPLE_COURSE_SKELETON`
+
++
+[source,bash]
+----
+courses
+├── EXAMPLE_COURSE_SKELETON
+├── ansible_foundations
+├── ansible_implementation_part1
+├── archive
+├── ocp_implementation
+└── ocp_operations
+----
+
+`EXAMPLE_COURSE_SKELETON`, this contains a simple sample course :
+[source,bash]
+----
+.
+├── README.adoc
+├── ansible.cfg
+├── grader-inventory
+└── lab_01_01
+    ├── grade_lab.yml
+    ├── roles
+    └── solve_lab.yml
+----
+
+
+
+=== Creating your First Grader
+
+. If you have not already done so clone the FTL repo to your development machine
++
+[source,bash]
+----
+git clone https://github.com/redhat-gpte-devopsautomation/FTL.git
+----
+
+. Create your developer branch
+
++
+[source,bash]
+----
+git checkout -d grader_ansible_implementation_part1
+----
+
+. Create the basic structure for the course
++
+[source,bash]
+----
+cd FTL/courses
+cp -R EXAMPLE_COURSE_SKELETON ansible_implementation_part1
+----
+
+. Explore your basic course skeleton
+
+[source,bash]
+----
+$ cd ansible_implementation_part1
+$ tree
+.
+├── ansible.cfg                       <1>
+├── grader_inventory                  <2>
+└── lab_01_01                         <3>
+    ├── grade_lab.yml                 <4>
+    ├── roles
+    └── solve_lab.yml
+
+----
++
+. My file
+
+
+=== Stage 1: Create your Inventory and `ansible.cfg` - if necessary.
+
+This particular course *Ansible Implementation Part1* is an infrastructure based course, i.e. it works with instances, or VMs, typically deployed on *AWS*. So we need an *inventory* and an `ansible.cfg` in the root directory of the *course* i.e.`FTL/courses/ansible_implementation_part1`.
+
+
+. The default `ansible.cfg` from the 
+
+
