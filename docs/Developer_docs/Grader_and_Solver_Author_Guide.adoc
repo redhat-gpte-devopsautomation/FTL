@@ -4,7 +4,7 @@
 
 FTL (Finish the Labs) provides a platform to both grade and solve student labs. In addition it provides hooks to update the students results to the LMS. This guide covers the topic of how to create a series of lab grading playbooks for a course.
 
-== Terminoligy
+== Terminology
 
 === grader
 
@@ -19,11 +19,11 @@ A grader, or lab grader, is a playbook containing 1 or more plays that test that
 
 === grader roles
 
-At the root level of the FTL repo is a roles directory containmiong a number of *grader roles*. These provide a simple way to both test a condition e.g. is apache installed *and* keep track of the student results. It is strongly recommended that lab scoring is done this way and creating new grader roles as needed. 
+At the root level of the FTL repo is a roles directory containing a number of *grader roles*. These provide a simple way to both test a condition e.g. is apache installed *and* keep track of the student results. It is strongly recommended that lab scoring is done this way and creating new grader roles as needed.
 
 === solver
 
-A solver is a playbook that _solves_ a lab. In completes all the tasks necessary to sucessfully complete a lab. Solvers can be used to validate a lab functions as expected and can test upgrades and new infrastucture.
+A solver is a playbook that _solves_ a lab. In completes all the tasks necessary to successfully complete a lab. Solvers can be used to validate a lab functions as expected and can test upgrades and new infrastructure.
 
 
 === Student Workflow
@@ -31,7 +31,7 @@ A solver is a playbook that _solves_ a lab. In completes all the tasks necessary
 Before we look at creating *grading* playbooks it is valuable to understand the typical workflow of a student grading a lab.
 
 . Student provisions lab as instructed via http:labs.opentlc.com
-** *FTL* is inserted automatically at provisioing time
+** *FTL* is inserted automatically at provisioning time
 ** *FTL* is fully provisioned with necessary meta-data and utilities
 . Student works through lab
 . Student is prompted at end of lab to grade the lab via a simple copy and paste in terminal window e.g.
@@ -42,7 +42,7 @@ $ grade_lab ansible_foundations 03_01
 ----
 +
 NOTE:  syntax: `<grade_lab command> <course_name> <lab_and_sub-lab_number`
-e.g. Grade the first lab in *Ansible Foundations Module 3 
+e.g. Grade the first lab in *Ansible Foundations Module 3
 . On success:
 ** Student informed
 ** *LMS* Updated (As of 2019-04-26 roles is called but API logic incomplete"
@@ -109,11 +109,11 @@ courses/ansible_engine_foundations
 
 ==== `ansible.cfg`
 
-A root level `ansible.cfg` is provided and should not be modified. At runtime if the relevant course directory can be provided and is consumed by the grader and solver playbook. This allows the author of graders fine grained control of their environment if necessary. 
+A root level `ansible.cfg` is provided and should not be modified. At runtime if the relevant course directory can be provided and is consumed by the grader and solver playbook. This allows the author of graders fine grained control of their environment if necessary.
 
 NOTE: In addition it allows the reuse of existing inventory files on the the grader host
 
-==== Precedence of `ansible.cfg` 
+==== Precedence of `ansible.cfg`
 
 Highest to lowest
 
@@ -123,7 +123,7 @@ Highest to lowest
 
 === Dealing with Inventory
 
-grader and solver playbooks 
+grader and solver playbooks
 :toc:
 
 == Overview
@@ -172,10 +172,10 @@ Avoid working directly on `master`, each lab grader should be *developed* on it'
 git branch grader-ansible-implementation
 git checkout grader-ansible-implementation
 ----
-. Create your course directory 
+. Create your course directory
 +
 All graders and solvers live in the *courses* directory. If you are familiar with `agnosticd` this is similar to the pattern used by `configs`
-From your repos home `FTL` directory create your course sub-directory by copying the sample skeletos provided.
+From your repos home `FTL` directory create your course sub-directory by copying the sample skeletons provided.
 
 +
 [source,bash]
@@ -273,6 +273,4 @@ $ tree
 This particular course *Ansible Implementation Part1* is an infrastructure based course, i.e. it works with instances, or VMs, typically deployed on *AWS*. So we need an *inventory* and an `ansible.cfg` in the root directory of the *course* i.e.`FTL/courses/ansible_implementation_part1`.
 
 
-. The default `ansible.cfg` from the 
-
-
+. The default `ansible.cfg` from the
