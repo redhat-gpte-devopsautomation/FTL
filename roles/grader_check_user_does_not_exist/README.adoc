@@ -1,6 +1,7 @@
-== README ftl_check_package_installed
+== README
 
-Checks if a package is installed, if not logs a failure message for student
+Checks if a user does not exist on a host.
+package is installed, if not logs a failure message for student
 
 === Arguments:
 

@@ -1,11 +1,11 @@
 == README 
 
-Checks if a file exists. 
+Checks if a file exists, logging the result.
 
 === Arguments:
 
-* `file` - name of the package e.g. `httpd`
-* `task_description_message` - Neutral message to return to student 
+* `file` - full path to file 
+* `task_description_message` - Description of the student task being tested
 
 === Usage Example
 
@@ -14,6 +14,6 @@ Checks if a file exists.
 - name: Section 6, Check /etc/ansible/hosts exists
   role: grader_check_file_exists
   vars:
-    task_description_message: /etc/ansible/hosts exists
+    task_description_message: Create /etc/ansible/hosts inventory
     file: /etc/ansible/hosts
 ----
