@@ -1,45 +1,36 @@
 ---
-- name: eval deployment
-  hosts: localhost
-  become: false
-  gather_facts: false
-  vars:
-    - deployment_name: nottherightname
-    - project_name: resourcemanagement
+- name: Show the namespace and deployment being evaluated
+  debug:
+    msg: "Checking if deployment '{{ deployment_name }}' exists in project '{{ project_name }}'"
 
-  tasks:
-    - name: Show the namespace and deployment being evaluated
-      debug:
-        msg: "Checking if deployment '{{ deployment_name }}' exists in project '{{ project_name }}'"
+- name: Get facts on deployment
+  k8s_facts:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ project_name }}"
+    name: "{{ deployment_name }}"
+  register: r_deployment
 
-    - name: Get facts on deployment
-      k8s_facts:
-        api_version: apps/v1
-        kind: Deployment
-        namespace: "{{ project_name }}"
-        name: "{{ deployment_name }}"
-      register: r_deployment
+- name: Check that the deployment exists
+  set_fact:
+    deployment_exists: false
 
-    - name: Check that the deployment exists
-      set_fact:
-        deployment_exists: false
+- name: Check that the deployment exists
+  set_fact:
+    deployment_exists: true
+  when:
+    - item.metadata.name is match( deployment_name )
+  loop: "{{ r_deployment.resources }}"
 
-    - name: Check that the deployment exists
-      set_fact:
-        deployment_exists: true
-      when:
-        - item.metadata.name is match( deployment_name )
-      loop: "{{ r_deployment.resources }}"
+- name: Print success if deployment deployment exists
+  debug:
+    msg: "Success"
+  when: deployment_exists|bool
 
-    - name: Print success if deployment deployment exists
-      debug:
-        msg: "Success"
-      when: deployment_exists|bool
-
-    - name: Fail if the deployment does not exist
-      fail:
-        msg: "Fail: Deployment {{ deployment_name }} not found in project {{ project_name }}"
-      when: not deployment_exists|bool
+- name: Fail if the deployment does not exist
+  fail:
+    msg: "Fail: Deployment {{ deployment_name }} not found in project {{ project_name }}"
+  when: not deployment_exists|bool
 
 ######################################################
 #                                                    #
