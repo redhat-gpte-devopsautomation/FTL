@@ -1,38 +1,26 @@
 ---
-- name: Grade lab 03 01 of Ansible Engine Foundations
+- name: Grade lab 03 01 of Ansible Foundations
   hosts: web
   gather_facts: false
   become: true
 
   roles:      # All lab tests go here
 
-    - name: Section 6.4.1, Check student has installed Apache
+    - name: Section 6, Check student has installed Apache
       role: grader_check_package_installed
       vars:
         task_description_message: Install Apache, httpd, package
         package: httpd
 
-    - name: Section 6.4.2, Check student has running Apache
+    - name: Section 6, Check student has running Apache
       role: grader_check_service_started
       vars:
         task_description_message: Start Apache, httpd, Service
         service: httpd
 
-    - name: Section 6.4.3, Check student has enabled Apache
+    - name: Section 6, Check student has enabled Apache
       role: grader_check_service_enabled
       vars:
         task_description_message: Enable Apache, httpd, at boot
         service: httpd
-
-    - name: Section 6.4.3, Check user exists student1
-      role: grader_check_user_exists
-      vars:
-        task_description_message: Create user student1
-        user: student1
-
-    - name: Section 6.4.3, Check user exists student1
-      role: grader_check_user_exists
-      vars:
-        task_description_message: Create user john_snow
-        user: john_snow
 ...
