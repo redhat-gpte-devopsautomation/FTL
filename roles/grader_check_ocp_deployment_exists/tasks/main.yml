@@ -1,8 +1,4 @@
 ---
-- name: Show the namespace and deployment being evaluated
-  debug:
-    msg: "Checking if deployment '{{ deployment_name }}' exists in project '{{ project_name }}'"
-
 - name: Get facts on deployment
   k8s_facts:
     api_version: apps/v1
@@ -13,11 +9,11 @@
 
 - name: Check that the deployment exists
   set_fact:
-    deployment_exists: false
+    f_grader_test_result: FAILED
 
 - name: Check that the deployment exists
   set_fact:
-    deployment_exists: true
+    f_grader_test_result: PASSED
   when:
     - item.metadata.name is match( deployment_name )
   loop: "{{ r_deployment.resources }}"
@@ -25,13 +21,12 @@
 - name: Print success if deployment deployment exists
   debug:
     msg: "Success: Deployment '{{ deployment_name }}' found in project '{{ project_name }}'"
-  when: deployment_exists|bool
+  when: f_grader_test_result == "PASSED"
 
 - name: Fail if the deployment does not exist
-  fail:
+  debug:
     msg: "Fail: Deployment '{{ deployment_name }}' not found in project '{{ project_name }}'"
-  when: not deployment_exists|bool
-  ignore_errors: true
+  when: f_grader_test_result == "FAILED"
 
 ######################################################
 #                                                    #
@@ -39,11 +34,13 @@
 #                                                    #
 ######################################################
 
-- name: Default to PASSED
+- name: Set message
   set_fact:
-    f_grader_test_result: PASSED
+    f_grader_test_result:         "{{ f_grader_test_result }}"
+    f_task_description_message:   "{{ task_description_message }}"
+    f_inventory_hostname:         "{{ inventory_hostname }}"
+  delegate_to: localhost
 
-- when: not deployment_exists|bool
-  name: Test Failed
-  set_fact:
-    f_grader_test_result: FAILED
+- name: Log grader task result
+  import_role:
+    name: ftl_run_log_grade_to_log

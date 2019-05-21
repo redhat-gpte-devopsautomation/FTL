@@ -42,7 +42,17 @@
       when: f_grader_test_result == "PASSED"
           
     - name: Print Failure
-      fail:
+      debug:
         msg: "Failure: Project request template not found."
       when: f_grader_test_result == "FAILED"
-      ignore_errors: true
+    
+    - name: Set message
+      set_fact:
+        f_grader_test_result:         "{{ f_grader_test_result }}"
+        f_task_description_message:   "{{ task_description_message }}"
+        f_inventory_hostname:         "{{ inventory_hostname }}"
+      delegate_to: localhost
+
+    - name: Log grader task result
+      import_role:
+        name: ftl_run_log_grade_to_log
