@@ -1,0 +1,43 @@
+== Overview
+
+It is simple to deploy FTL directly from your laptop into a grader host. There is no
+pre-requisite for the grader host to already have any FTL support in agnosticd or any
+other deployer.
+
+You will need:
+
+* An inventory file:
+** The `group` `grading_host`
+** At least one member of that group - you can configure multiple
+** Suitable ssh configuration if necessary - ansible will parse your `~/.ssh/config` by default
+.Sample Inventory File
++
+[source,bash]
+----
+[grading_host]
+grader_host
+
+[grading_host:vars]
+ansible_host                    = 3.217.15.76
+ansible_user                    = student1
+ansible_ssh_pass                = ansible
+----
+
+=== Steps
+
+Assuming you are in the root directory of your FTL repo:
+
+. Load the `ftl-injector` role into your repo
+** A utility exists to do this: `devel/bin/setup-development-environment.sh`
+. Push your commits (https://github.com/redhat-gpte-devopsautomation/FTL)
+** To the branch of your choice
+. Run the `setup-grading-host.yml` playbook:
++
+[source,bash]
+----
+FTL $ ansible-playbook devel/setup-grading-host.yml \
+  -i ../../ansible-engine-inventory \
+  -e @devel/sample-vars.yml  \
+  -e ftl_git_branch=my-branch
+----
+
