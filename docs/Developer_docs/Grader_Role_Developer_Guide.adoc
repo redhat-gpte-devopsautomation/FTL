@@ -1,6 +1,6 @@
-== Overview: Check Roles aka convnenisnce roles
+== Overview: Grader Roles
 
-In the FTL root `roles` directory a number of *check roles* or convneneice roles have been created. This enablegrader developers to easily check the particualr state of lab 
+In the FTL root `roles` directory a number of *check roles* or convneneice roles have been created. This enablegrader developers to easily check the particualr state of lab
 
 
 They simply
@@ -53,7 +53,7 @@ Many but not all, conveneice roles take 3 vars:
 * student_error_message: Package httpd not started
 * a role specfic variable e.g. `user`, `package`, `file`, `service`
 
-However a numbe rof roles expect an additional argument. For example if executing a command typically you would be expected to supply 
+However a numbe rof roles expect an additional argument. For example if executing a command typically you would be expected to supply
 * the command itself
 * the expected response
 
@@ -64,7 +64,7 @@ or checking a URI:
 e.g.
 
 
-* 
+*
 
 ====
 
@@ -76,7 +76,7 @@ e.g.
 
 Consuming Check Roles
 
-To see a simple example of check roles in 
+To see a simple example of check roles in
 
 
 
