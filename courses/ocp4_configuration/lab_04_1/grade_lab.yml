@@ -42,6 +42,7 @@
       when: f_grader_test_result == "PASSED"
           
     - name: Print Failure
-      debug:
+      fail:
         msg: "Failure: Project request template not found."
       when: f_grader_test_result == "FAILED"
+      ignore_errors: true
