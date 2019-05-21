@@ -24,12 +24,12 @@
 
 - name: Print success if deployment deployment exists
   debug:
-    msg: "Success: Deployment {{ deployment_name }} found in project {{ project_name }}"
+    msg: "Success: Deployment '{{ deployment_name }}' found in project '{{ project_name }}'"
   when: deployment_exists|bool
 
 - name: Fail if the deployment does not exist
   fail:
-    msg: "Fail: Deployment {{ deployment_name }} not found in project {{ project_name }}"
+    msg: "Fail: Deployment '{{ deployment_name }}' not found in project '{{ project_name }}'"
   when: not deployment_exists|bool
 
 ######################################################
@@ -37,17 +37,6 @@
 # Common boiler plate logging logic - Do not modify  #
 #                                                    #
 ######################################################
-
-- name: Create logging message fact
-  set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
-  delegate_to: localhost
-
-- name: Import logging tasks
-  when: r_route_namespace.resources[0].metadata.name != route_name
-  import_role:
-    name: ftl_run_log_grade_to_log
 
 - name: Default to PASSED
   set_fact:
