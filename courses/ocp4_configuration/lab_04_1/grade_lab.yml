@@ -32,7 +32,7 @@
         f_grader_test_result: FAILED
     
     - name: Project request template present
-      when: r_project_template.resources[0].spec.ProjectRequestTemplate.name is match( project-request )
+      when: r_project_template.resources[0].spec.projectRequestTemplate.name is match( project-request )
       set_fact:
         f_grader_test_result: PASSED
       
