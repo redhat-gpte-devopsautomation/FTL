@@ -24,7 +24,7 @@
 
 - name: Print success if deployment deployment exists
   debug:
-    msg: "Success"
+    msg: "Success: Deployment {{ deployment_name }} found in project {{ project_name }}"
   when: deployment_exists|bool
 
 - name: Fail if the deployment does not exist
@@ -48,3 +48,12 @@
   when: r_route_namespace.resources[0].metadata.name != route_name
   import_role:
     name: ftl_run_log_grade_to_log
+
+- name: Default to PASSED
+  set_fact:
+    f_grader_test_result: PASSED
+
+- when: not deployment_exists|bool
+  name: Test Failed
+  set_fact:
+    f_grader_test_result: FAILED

@@ -14,17 +14,34 @@
         deployment_name: "example"
         project_name: "resourcemanagement"
 
-# - name: 
-#   hosts: localhost
-#   gather_facts: false
-#   become: false
+- name: 
+  hosts: localhost
+  gather_facts: false
+  become: false
 
-#   tasks:
-#     - name: Check for project request template
-#       k8s_facts:
-#         kind: project
-#         api_version: config.openshift.io/v1
-#         name: cluster
-#       register: r_project_template
+  tasks:
+    - name: Check for project request template
+      k8s_facts:
+        kind: project
+        api_version: config.openshift.io/v1
+        name: cluster
+      register: r_project_template
+
+    - name: Project request template missing
+      set_fact:
+        f_grader_test_result: FAILED
     
-#     - name: 
+    - name: Project request template present
+      when: r_project_template.resources.spec.ProjectRequstTemplate.name is match( project-request )
+      set_fact:
+        f_grader_test_result: PASSED
+      
+    - name: Print Success
+      debug:
+        msg: "Success: Project request template found!"
+      when: template_exists|bool
+          
+    - name: Print Failure
+      fail:
+        msg: "Failure: Project request template not found."
+      when: not template_exists|bool
