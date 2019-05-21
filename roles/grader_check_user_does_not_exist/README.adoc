@@ -1,31 +1,19 @@
 == README
 
-Checks if a user does not exist on a host.
-package is installed, if not logs a failure message for student
-
+Checks if a user does not exist on a host, logging the result
+.
 === Arguments:
 
-* `package` - name of the package e.g. `httpd`
-* `grader_output_message` - message to return to student on failure 
-* `section` - Lab section or stage
-
+* `user` - name of the user e.g. `devops`
+* `task_description_message` User devops should be deleted
 
 === Usage Example
 
 [source,yaml]
 ----
-- name: Section 6.4.1, Check student has installed Apache
-  role: ftl_check_package_installed
+- name: Section 6, Check student has removed devops user
+  role: grader_check_user_does_not_exist
   vars:
-    section_number: 6.4.1
-    task_description_message: Package httpd not installed
-    package: httpd
-----
-
-=== Sample Output
-
-[source,bash]
-----
-  Section: 6.4.1, node1, Package httpd not installed
-  Section: 6.4.1, node2, Package httpd not installed
+    user: devops
+    task_description_message: Delete the devops user
 ----
