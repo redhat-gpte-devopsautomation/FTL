@@ -1,15 +1,25 @@
 ---
-- name: print out the route and namespace we are checking
+- name: Print out the Service and Project we are checking
   debug:
-    msg: "Checking if route {{ route_name }} for application {{ app_name }} exists in project {{ project_name }}"
+    msg: "Checking if Service {{ service_name }} exists in project {{ project_name }}"
 
-- name: check if the route exists
+- name: Look up Service
   k8s_facts:
-    kind: Route
+    kind: Service
     namespace: "{{ project_name }}"
-    label_selectors:
-      - app = {{ app_name }}
-  register: r_route_namespace
+    name: "{{ service_name }}"
+  register: r_service
+
+- name: Check that the Service exists
+  debug:
+    msg: "Success"
+  when:
+  - r_service.resources|length == 1
+  - r_service.resources[0].metadata.name is match( service_name)
+- name: Fail if the Service does not exist
+  fail:
+    msg: "Fail: Service {{ service_name }} not found in project {{ project_name }}"
+  when: not r_service.resources|length == 1
 
 ######################################################
 #                                                    #

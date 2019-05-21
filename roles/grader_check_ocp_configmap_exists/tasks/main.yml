@@ -9,18 +9,18 @@
     kind: ConfigMap
     namespace: "{{ project_name }}"
     name: "{{ configmap_name }}"
-  register: r_configmap_namespace
+  register: r_configmap
 
 - name: Check that the ConfigMap exists
   debug:
     msg: "Success"
   when:
-  - r_configmap_namespace.resources|length == 1
-  - r_configmap_namespace.resources[0].metadata.name is match( configmap_name )
+  - r_configmap.resources|length == 1
+  - r_configmap.resources[0].metadata.name is match( configmap_name )
 - name: Fail if the ConfigMap does not exist
   fail:
     msg: "Fail: ConfigMap {{ configmap_name }} not found in project {{ project_name }}"
-  when: not r_configmap_namespace.resources|length == 1
+  when: not r_configmap.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -35,6 +35,6 @@
   delegate_to: localhost
 
 - name: Import logging tasks
-  when: r_configmap_namespace.resources[0].metadata.name != configmap_name
+  when: r_configmap.resources[0].metadata.name != configmap_name
   import_role:
     name: ftl_run_log_grade_to_log

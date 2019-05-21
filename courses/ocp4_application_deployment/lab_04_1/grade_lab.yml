@@ -6,10 +6,20 @@
 
  # All lab tests go here
   tasks:
-  - name: Check the OpenShift Web Console Route exists
+  - name: Determine current project
+    shell: "oc project|awk '{print $3}'|tr -d '\"'"
+    register: r_project
+  - name: Check the openshift-tasks Route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
-      task_description_message: Check that the Web Console route exists
-      route_name: "console"
-      project_name: "openshift-console"
+      task_description_message: Check that the OpenShift Tasks route exists
+      route_name: "openshift-tasks"
+      project_name: "{{ r_project.stdout }}"
+  - name: Check that the build has been executed three times
+    include_role:
+      name: grader_check_ocp_pod_exists
+    vars:
+      task_description_message: Check that the build has been executed three times
+      pod_name: "openshift-tasks-3-build"
+      project_name: "{{ r_project.stdout }}"
