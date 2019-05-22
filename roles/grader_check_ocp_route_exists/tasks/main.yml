@@ -1,16 +1,26 @@
 ---
 - name: print out the route and namespace we are checking
   debug:
-    msg: "Checking if route {{ route_name }} for application {{ app_name }} exists in project {{ project_name }}"
+    msg: "Checking if route {{ route_name }} exists in project {{ project_name }}"
     verbosity: 2
 
-- name: check if the route exists
+- name: Look up route
   k8s_facts:
     kind: Route
     namespace: "{{ project_name }}"
-    label_selectors:
-      - app = {{ app_name }}
+    name: "{{ route_name }}"
   register: r_route_namespace
+
+- name: Check that the route exists
+  debug:
+    msg: "Success"
+  when:
+  - r_route_namespace.resources|length == 1
+  - r_route_namespace.resources[0].metadata.name is match( route_name)
+- name: Fail if the route does not exist
+  fail:
+    msg: "Fail: Route {{ route_name }} not found in project {{ project_name }}"
+  when: not r_route_namespace.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -24,8 +34,7 @@
     + task_description_message }}"
   delegate_to: localhost
 
-- when: r_route_namespace.resources[0].spec.host != route_name
-  name: Import logging tasks
+- name: Import logging tasks
+  when: r_route_namespace.resources[0].metadata.name != route_name
   import_role:
     name: ftl_run_log_grade_to_log
-...

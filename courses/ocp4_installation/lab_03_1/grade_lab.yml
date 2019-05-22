@@ -1,0 +1,34 @@
+---
+- name: Grade lab 03_1 of OpenShift 4 Installation
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  # oc get machines -l machine.openshift.io/cluster-api-machine-type=worker -n openshift-machine-api
+  - name: Get Machines
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: Machine
+      namespace: openshift-machine-api
+      label_selectors:
+      - machine.openshift.io/cluster-api-machine-type=worker
+    register: r_machines
+  - name: Set variable to not_found
+    set_fact:
+      machineset_found: false
+  - name: Check machine types
+    set_fact:
+      machineset_found: true
+    when:
+    - item.spec.providerSpec.value.instanceType is match('m5.2xlarge')
+    loop: "{{ r_machines.resources }}"
+  - name: Print success if machine found
+    debug:
+      msg: "Success"
+    when: machineset_found|bool
+  - name: Fail if machine not found
+    fail:
+      msg: Machine of type m5.2xlarge not found
+    when: not machineset_found|bool

@@ -1,0 +1,58 @@
+---
+- name: Grade lab 04_1 of OpenShift 4 Configuration
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+    - name: Check for the example deployment
+      include_role:
+        name: grader_check_ocp_deployment_exists
+      vars:
+        task_description_message: Check that the 'example' deployment exists
+        deployment_name: "myexample"
+        project_name: "resourcemanagement"
+
+- name: 
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Check for project request template
+      k8s_facts:
+        kind: project
+        api_version: config.openshift.io/v1
+        name: cluster
+      register: r_project_template
+
+    - name: Project request template missing
+      set_fact:
+        f_grader_test_result: FAILED
+    
+    - name: Project request template present
+      when: r_project_template.resources[0].spec.projectRequestTemplate.name is match( "project-request" )
+      set_fact:
+        f_grader_test_result: PASSED
+      
+    - name: Print Success
+      debug:
+        msg: "Success: Project request template found!"
+      when: f_grader_test_result == "PASSED"
+          
+    - name: Print Failure
+      debug:
+        msg: "Failure: Project request template not found."
+      when: f_grader_test_result == "FAILED"
+    
+    - name: Set message
+      set_fact:
+        f_grader_test_result:         "{{ f_grader_test_result }}"
+        f_task_description_message:   "{{ task_description_message }}"
+        f_inventory_hostname:         "{{ inventory_hostname }}"
+      delegate_to: localhost
+
+    - name: Log grader task result
+      import_role:
+        name: ftl_run_log_grade_to_log
