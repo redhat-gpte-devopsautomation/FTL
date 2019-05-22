@@ -6,7 +6,7 @@
 
  # All lab tests go here
   tasks:
-  - name: Check the openshift-tasks Route exists
+  - name: Check the Template mlbparks exists
     include_role:
       name: grader_check_ocp_template_exists
     vars:

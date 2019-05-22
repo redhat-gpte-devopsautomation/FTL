@@ -7,7 +7,7 @@
 - name: Look up template
   k8s_facts:
     apiVersion: template.openshift.io/v1
-    kind: Templates
+    kind: Template
     namespace: "{{ project_name }}"
     name: "{{ template_name }}"
   register: r_template
@@ -17,7 +17,7 @@
     msg: "Success"
   when:
   - r_template.resources|length == 1
-  - r_template.resources[0].metadata.name is match( template_name)
+  - r_template.resources[0].metadata.name is match( template_name )
 - name: Fail if the template does not exist
   fail:
     msg: "Fail: Template {{ template_name }} not found in project {{ project_name }}"
