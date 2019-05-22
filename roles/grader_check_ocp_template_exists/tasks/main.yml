@@ -7,7 +7,7 @@
 - name: Look up template
   k8s_facts:
     api_version: template.openshift.io/v1
-    kind: Template
+    kind: templates
     namespace: "{{ project_name }}"
     name: "{{ template_name }}"
   register: r_template

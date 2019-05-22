@@ -6,7 +6,7 @@
 
  # All lab tests go here
   tasks:
-  - name: Check the Template mlbparks exists
+  - name: Check the Template mlbparks-eap exists
     include_role:
       name: grader_check_ocp_template_exists
     vars:
