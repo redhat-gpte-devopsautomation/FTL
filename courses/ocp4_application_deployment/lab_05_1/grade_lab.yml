@@ -6,10 +6,24 @@
 
  # All lab tests go here
   tasks:
-  - name: Check the OpenShift Web Console Route exists
+  - name: Check the openshift-tasks Route exists
+    include_role:
+      name: grader_check_ocp_template_exists
+    vars:
+      task_description_message: Check that the mlbparks template exists
+      template_name: "mlbparks-eap"
+      project_name: "{{ lookup('env','GUID')-templates }} }}"
+  - name: Check that the first route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
-      task_description_message: Check that the Web Console route exists
-      route_name: "console"
-      project_name: "openshift-console"
+      task_description_message: Check that the first route exists
+      route_name: "mlbparks"
+      project_name: "{{ lookup('env','GUID')-instant-app }}"
+  - name: Check that the second route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check that the second route exists
+      route_name: "openshift4mlbparks"
+      project_name: "{{ lookup('env','GUID')-test-templates }}"
