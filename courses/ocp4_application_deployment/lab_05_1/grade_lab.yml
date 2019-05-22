@@ -12,18 +12,18 @@
     vars:
       task_description_message: Check that the mlbparks template exists
       template_name: "mlbparks-eap"
-      project_name: "{{ lookup('env','GUID')-templates }} }}"
+      project_name: "{{ lookup('env','GUID') }}-templates"
   - name: Check that the first route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
       task_description_message: Check that the first route exists
       route_name: "mlbparks"
-      project_name: "{{ lookup('env','GUID')-instant-app }}"
+      project_name: "{{ lookup('env','GUID') }}-instant-app"
   - name: Check that the second route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
       task_description_message: Check that the second route exists
       route_name: "openshift4mlbparks"
-      project_name: "{{ lookup('env','GUID')-test-templates }}"
+      project_name: "{{ lookup('env','GUID') }}-test-templates"
