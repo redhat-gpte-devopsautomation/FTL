@@ -20,12 +20,12 @@
 
 - name: Print success if deployment deployment exists
   debug:
-    msg: "Success: Deployment '{{ deployment_name }}' found in project '{{ project_name }}'"
+    msg: "Success: Deployment {{ deployment_name }} found in project {{ project_name }}"
   when: f_grader_test_result == "PASSED"
 
 - name: Fail if the deployment does not exist
   debug:
-    msg: "Fail: Deployment '{{ deployment_name }}' not found in project '{{ project_name }}'"
+    msg: "Fail: Deployment {{ deployment_name }} not found in project {{ project_name }}"
   when: f_grader_test_result == "FAILED"
 
 ######################################################
