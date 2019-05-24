@@ -18,6 +18,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  vars:
+    task_description_message: Check that the default project request template exists
 
   tasks:
     - name: Check for project request template
