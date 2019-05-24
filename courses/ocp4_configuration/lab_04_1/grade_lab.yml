@@ -35,6 +35,7 @@
       when: r_project_template.resources[0].spec.projectRequestTemplate.name is match( "project-request" )
       set_fact:
         f_grader_test_result: PASSED
+      ignore_errors: true
       
     - name: Print Success
       debug:
