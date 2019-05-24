@@ -11,7 +11,7 @@
         name: grader_check_ocp_deployment_exists
       vars:
         task_description_message: Check that the 'example' deployment exists
-        deployment_name: "myexample"
+        deployment_name: "example"
         project_name: "resourcemanagement"
 
 - name: 
