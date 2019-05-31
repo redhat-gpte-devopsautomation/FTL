@@ -6,24 +6,26 @@
 
   # All lab tests go here
   tasks:
-  - name: Set GUID
-    set_fact:
-      guid: "{{ lookup('env','GUID') }}"
-
-  - name: Check the CakePHP Route exists
+  - name: Check if user alice exists
     include_role:
-      name: grader_check_ocp_route_exists
+      name: grader_check_ocp_user_exists
     vars:
-      task_description_message: Check if the CakePHP route exists
-      route_name: "cakephp-mysql-example"
-      project_name: "{{ guid }}-openshift-tools"
-      student_error_message: "Route cakephp-mysql-example does not exist in project {{ guid }}-openshift-tools"
+      task_description_message: Check if the user alice exists
+      user_name: "alice"
+      student_error_message: "User alice does not exist"
 
-  - name: Check the httpd Route exists
+  - name: Check if user andrew exists
     include_role:
-      name: grader_check_ocp_route_exists
+      name: grader_check_ocp_user_exists
     vars:
-      task_description_message: Check if the HTTPD route exists
-      route_name: "httpd-deployment"
-      project_name: "{{ guid }}-yaml-app"
-      student_error_message: "Route httpd-deployment does not exist in project {{ guid }}-yaml-app"
+      task_description_message: Check if the user andrew exists
+      user_name: "andrew"
+      student_error_message: "User andrew does not exist"
+
+  - name: Check if user karla exists
+    include_role:
+      name: grader_check_ocp_user_exists
+    vars:
+      task_description_message: Check if the user karla exists
+      user_name: "karla"
+      student_error_message: "User karla does not exist"
