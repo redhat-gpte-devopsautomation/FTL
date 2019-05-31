@@ -22,7 +22,7 @@
   when:
   - r_deployment.resources|length == 1
   - r_deployment.resources[0].metadata.name is match( deployment_name )
-  - r_deployment.resources[0].spec.replicas = num_replicas|d(1)
+  - r_deployment.resources[0].spec.replicas == num_replicas|d(1)
 
 ######################################################
 #                                                    #
