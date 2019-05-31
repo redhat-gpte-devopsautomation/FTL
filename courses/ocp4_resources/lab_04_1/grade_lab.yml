@@ -13,7 +13,7 @@
     include_role:
       name: grader_check_ocp_deployment_exists
     vars:
-      task_description_message: Check if the deployment ocp-probe exists
+      task_description_message: Check if the deployment ocp-probe exists and has 3 replicas
       deployment_name: "ocp-probe"
       num_replicas: 3
       project_name: "{{ guid }}-deployments"
@@ -23,7 +23,7 @@
     include_role:
       name: grader_check_ocp_deploymentconfig_exists
     vars:
-      task_description_message: Check if the deploymentconfig ocp-probe exists
+      task_description_message: Check if the deploymentconfig ocp-probe exists and has 3 replicas
       deploymentconfig_name: "ocp-probe"
       num_replicas: 3
       project_name: "{{ guid }}-deploymentconfigs"
