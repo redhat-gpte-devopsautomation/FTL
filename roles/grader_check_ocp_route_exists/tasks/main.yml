@@ -1,5 +1,5 @@
 ---
-- name: print out the route and namespace we are checking
+- name: Print out the route and namespace we are checking
   debug:
     msg: "Checking if route {{ route_name }} exists in project {{ project_name }}"
     verbosity: 2
@@ -12,15 +12,11 @@
   register: r_route
 
 - name: Check that the route exists
-  debug:
-    msg: "Success"
+  set_fact:
+    success: true
   when:
   - r_route.resources|length == 1
   - r_route.resources[0].metadata.name is match( route_name)
-- name: Fail if the route does not exist
-  fail:
-    msg: "Fail: Route {{ route_name }} not found in project {{ project_name }}"
-  when: not r_route.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -35,6 +31,6 @@
   delegate_to: localhost
 
 - name: Import logging tasks
-  when: r_route.resources[0].metadata.name != route_name
+  when: success | d(False) | bool
   import_role:
     name: ftl_run_log_grade_to_log
