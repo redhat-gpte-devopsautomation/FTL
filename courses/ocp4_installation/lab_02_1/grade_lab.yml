@@ -13,3 +13,4 @@
       task_description_message: Check that the Web Console route exists
       route_name: "console"
       project_name: "openshift-console"
+      student_error_message: "Route console does not exist in project openshift-console"      

@@ -6,6 +6,10 @@
 
   # All lab tests go here
   tasks:
+  - name: Set success flag to false
+    set_fact:
+      success: false
+
   # oc get machines -l machine.openshift.io/cluster-api-machine-type=worker -n openshift-machine-api
   - name: Get Machines
     k8s_facts:
@@ -15,20 +19,35 @@
       label_selectors:
       - machine.openshift.io/cluster-api-machine-type=worker
     register: r_machines
-  - name: Set variable to not_found
-    set_fact:
-      machineset_found: false
+
+  # Check for a machine with instanceType m5.2xlarge
   - name: Check machine types
     set_fact:
-      machineset_found: true
+      success: true
     when:
     - item.spec.providerSpec.value.instanceType is match('m5.2xlarge')
     loop: "{{ r_machines.resources }}"
-  - name: Print success if machine found
-    debug:
-      msg: "Success"
-    when: machineset_found|bool
-  - name: Fail if machine not found
-    fail:
-      msg: Machine of type m5.2xlarge not found
-    when: not machineset_found|bool
+
+  ######################################################
+  #                                                    #
+  # Common boiler plate logging logic - Do not modify  #
+  #                                                    #
+  ######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: MachineSet with instanceType m5.2xlarge found"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: MachineSet with instanceType m5.2xlarge not found"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
