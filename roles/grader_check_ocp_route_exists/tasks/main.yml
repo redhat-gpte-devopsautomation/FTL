@@ -16,7 +16,7 @@
     success: true
   when:
   - r_route.resources|length == 1
-  - r_route.resources[0].metadata.name is match( route_name)
+  - r_route.resources[0].metadata.name is match( route_name )
 
 ######################################################
 #                                                    #
@@ -25,17 +25,19 @@
 ######################################################
 
 - name: Create Pass logging message
-  when: success | d(False) | bool
+  when: success | bool
   set_fact:
-    grader_output_message: "PASS: {{ task_description_message }}"
+    output_message: "PASS: {{ task_description_message }}"
   delegate_to: localhost
 
 - name: Create Fail logging message
-  when: not success | d(False) | bool
+  when: not success | bool
   set_fact:
-    grader_output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
   delegate_to: localhost
 
 - name: Import logging tasks
   import_role:
     name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
