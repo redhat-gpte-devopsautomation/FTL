@@ -4,7 +4,7 @@
   gather_facts: false
   become: false
 
- # All lab tests go here
+  # All lab tests go here
   tasks:
   - name: Set GUID
     set_fact:

@@ -3,25 +3,26 @@
   set_fact:
     success: false
 
-- name: Print out the ConfigMap and Namespace we are checking
+- name: Print out the DeploymentConfig and Namespace we are checking
   debug:
-    msg: "Checking if ConfigMap {{ configmap_name }} exists in Project {{ project_name }}"
+    msg: "Checking if DeploymentConfig {{ deploymentconfig_name }} exists in Project {{ project_name }}"
     verbosity: 2
 
-- name: Look up ConfigMap
+- name: Look up DeploymentConfig
   k8s_facts:
-    kind: ConfigMap
-    api_version: v1
+    kind: DeploymentConfig
+    api_version: apps.openshift.io/v1
     namespace: "{{ project_name }}"
-    name: "{{ configmap_name }}"
-  register: r_configmap
+    name: "{{ deploymentconfig_name }}"
+  register: r_deploymentconfig
 
-- name: Check that the ConfigMap exists
+- name: Check that the DeploymentConfig exist and has the requested number of replicas
   set_fact:
     success: true
   when:
-  - r_configmap.resources|length == 1
-  - r_configmap.resources[0].metadata.name is match( configmap_name )
+  - r_deploymentconfig.resources|length == 1
+  - r_deploymentconfig.resources[0].metadata.name is match( deploymentconfig_name )
+  - r_deploymentconfig.resources[0].spec.replicas = num_replicas|d(1)
 
 ######################################################
 #                                                    #

@@ -1,0 +1,30 @@
+---
+- name: Grade lab 04_1 of OpenShift 4 Resources & Tools
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+  - name: Check the Deployment exists
+    include_role:
+      name: grader_check_ocp_deployment_exists
+    vars:
+      task_description_message: Check if the deployment ocp-probe exists
+      deployment_name: "ocp-probe"
+      num_replicas: 3
+      project_name: "{{ guid }}-deployments"
+      student_error_message: "Deployment ocp-probe does not exist in project {{ guid }}-app-management or does not have 3 replicas"
+
+  - name: Check the DeploymentConfig exists
+    include_role:
+      name: grader_check_ocp_deploymentconfig_exists
+    vars:
+      task_description_message: Check if the deploymentconfig ocp-probe exists
+      deploymentconfig_name: "ocp-probe"
+      num_replicas: 3
+      project_name: "{{ guid }}-deploymentconfigs"
+      student_error_message: "DeploymentConfig ocp-probe does not exist in project {{ guid }}-app-management or does not have 3 replicas"
