@@ -9,6 +9,7 @@
   - name: Set GUID
     set_fact:
       guid: "{{ lookup('env','GUID') }}"
+
   - name: Check the Deployment exists
     include_role:
       name: grader_check_ocp_deployment_exists

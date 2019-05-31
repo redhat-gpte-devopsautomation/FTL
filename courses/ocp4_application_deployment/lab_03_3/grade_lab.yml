@@ -4,19 +4,26 @@
   gather_facts: false
   become: false
 
- # All lab tests go here
+  # All lab tests go here
   tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
   - name: Check the openshift-tasks Route exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
       task_description_message: Check that the OpenShift Tasks route exists
       route_name: "openshift-tasks"
-      project_name: "{{ lookup('env','GUID') }}-tasks"
+      project_name: "{{ guid }}-tasks"
+      student_error_message: "Route openshift-tasks does not exist in project {{ guid }}-openshift-tasks"
+
   - name: Check that the build has been executed three times
     include_role:
       name: grader_check_ocp_pod_exists
     vars:
       task_description_message: Check that the build has been executed three times
       pod_name: "openshift-tasks-3-build"
-      project_name: "{{ lookup('env','GUID') }}-tasks"
+      project_name: "{{ guid }}-tasks"
+      student_error_message: "Build openshift-tasks has not been executed 3 times in project {{ guid }}-openshift-tasks"

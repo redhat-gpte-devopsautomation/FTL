@@ -4,26 +4,35 @@
   gather_facts: false
   become: false
 
- # All lab tests go here
+  # All lab tests go here
   tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
   - name: Check the Template mlbparks-eap exists
     include_role:
       name: grader_check_ocp_template_exists
     vars:
-      task_description_message: Check that the mlbparks template exists
+      task_description_message: Check that the mlbparks-eap template exists
       template_name: "mlbparks-eap"
-      project_name: "{{ lookup('env','GUID') }}-templates"
-  - name: Check that the first route exists
+      project_name: "{{ guid }}-templates"
+      student_error_message: "Template mlbparks-eap does not exist in project {{ guid }}-templates"
+
+  - name: Check that the route instant-app exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
-      task_description_message: Check that the first route exists
+      task_description_message: Check that the route mlbparks exists
       route_name: "mlbparks"
-      project_name: "{{ lookup('env','GUID') }}-instant-app"
-  - name: Check that the second route exists
+      project_name: "{{ guid }}-instant-app"
+      student_error_message: "Route mlbparks does not exist in project {{ guid }}-instant-app"
+
+  - name: Check that the route openshift4mlbparks exists
     include_role:
       name: grader_check_ocp_route_exists
     vars:
-      task_description_message: Check that the second route exists
+      task_description_message: Check that the route openshift4mlbparks exists
       route_name: "openshift4mlbparks"
-      project_name: "{{ lookup('env','GUID') }}-test-templates"
+      project_name: "{{ guid }}-test-templates"
+      student_error_message: "Route openshift4mlbparks does not exist in project {{ guid }}-test-templates"
