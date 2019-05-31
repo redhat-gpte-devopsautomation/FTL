@@ -1,5 +1,5 @@
 ---
-- name: Grade lab 03_1 of OpenShift 4 Resources & Tools
+- name: Grade lab 02_1 of OpenShift 4 Configuration
   hosts: localhost
   gather_facts: false
   become: false
@@ -9,6 +9,7 @@
   - name: Set GUID
     set_fact:
       guid: "{{ lookup('env','GUID') }}"
+
   - name: Check the CakePHP Route exists
     include_role:
       name: grader_check_ocp_route_exists
