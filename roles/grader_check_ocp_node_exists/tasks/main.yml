@@ -1,14 +1,25 @@
 ---
-- name: print out the node we are checking
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out the node we are checking
   debug:
     msg: "Checking if node {{ node_name }} exists"
     verbosity: 2
 
-- name: check if the node exists
+- name: Lookup node
   k8s_facts:
     kind: Node
     name: "{{ node_name }}"
   register: r_node
+
+- name: Check that the node exists
+  set_fact:
+    success: true
+  when:
+  - r_node.resources|length == 1
+  - r_node.resources[0].metadata.name is match( node_name )
 
 ######################################################
 #                                                    #
@@ -16,15 +27,20 @@
 #                                                    #
 ######################################################
 
-
-- name: Create logging message fact
+- name: Create Pass logging message
+  when: success | bool
   set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
+    output_message: "PASS: {{ task_description_message }}"
   delegate_to: localhost
 
-- when: r_node.resources[0].metadata.name != node_name
-  name: Import logging tasks
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
   import_role:
     name: ftl_run_log_grade_to_log
-...
+  vars:
+    grader_output_message: "{{ output_message }}"

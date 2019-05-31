@@ -1,4 +1,8 @@
 ---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
 - name: Print out the route and namespace we are checking
   debug:
     msg: "Checking if route {{ route_name }} exists in project {{ project_name }}"

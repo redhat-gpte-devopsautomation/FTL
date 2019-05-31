@@ -1,4 +1,8 @@
 ---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
 - name: Print out the Service and Project we are checking
   debug:
     msg: "Checking if Service {{ service_name }} exists in project {{ project_name }}"
@@ -11,15 +15,11 @@
   register: r_service
 
 - name: Check that the Service exists
-  debug:
-    msg: "Success"
+  set_fact:
+    success: true
   when:
   - r_service.resources|length == 1
   - r_service.resources[0].metadata.name is match( service_name)
-- name: Fail if the Service does not exist
-  fail:
-    msg: "Fail: Service {{ service_name }} not found in project {{ project_name }}"
-  when: not r_service.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -27,14 +27,20 @@
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
+- name: Create Pass logging message
+  when: success | bool
   set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
+    output_message: "PASS: {{ task_description_message }}"
   delegate_to: localhost
 
-- when: r_route_namespace.resources[0].spec.host != route_name
-  name: Import logging tasks
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
   import_role:
     name: ftl_run_log_grade_to_log
-...
+  vars:
+    grader_output_message: "{{ output_message }}"

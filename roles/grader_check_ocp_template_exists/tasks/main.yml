@@ -1,4 +1,8 @@
 ---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
 - name: print out the template and project we are checking
   debug:
     msg: "Checking if template {{ template_name }} exists in project {{ project_name }}"
@@ -13,15 +17,11 @@
   register: r_template
 
 - name: Check that the template exists
-  debug:
-    msg: "Success"
+  set_fact:
+    success: true
   when:
   - r_template.resources|length == 1
   - r_template.resources[0].metadata.name is match( template_name )
-- name: Fail if the template does not exist
-  fail:
-    msg: "Fail: Template {{ template_name }} not found in project {{ project_name }}"
-  when: not r_template.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -29,13 +29,20 @@
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
+- name: Create Pass logging message
+  when: success | bool
   set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
   delegate_to: localhost
 
 - name: Import logging tasks
-  when: r_template.resources[0].metadata.name != template_name
   import_role:
     name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"

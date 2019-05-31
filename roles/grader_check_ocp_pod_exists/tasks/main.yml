@@ -1,4 +1,8 @@
 ---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
 - name: Print out the Pod and Namespace we are checking
   debug:
     msg: "Checking if Pod {{ pod_name }} exists in Project {{ project_name }}"
@@ -12,15 +16,11 @@
   register: r_pod
 
 - name: Check that the Pod exists
-  debug:
-    msg: "Success"
+  set_fact:
+    success: true
   when:
   - r_pod.resources|length == 1
   - r_pod.resources[0].metadata.name is match( pod_name )
-- name: Fail if the Pod does not exist
-  fail:
-    msg: "Fail: Pod {{ pod_name }} not found in project {{ project_name }}"
-  when: not r_pod.resources|length == 1
 
 ######################################################
 #                                                    #
@@ -28,13 +28,20 @@
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
+- name: Create Pass logging message
+  when: success | bool
   set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
   delegate_to: localhost
 
 - name: Import logging tasks
-  when: r_configmap_namespace.resources[0].metadata.name != configmap_name
   import_role:
     name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
