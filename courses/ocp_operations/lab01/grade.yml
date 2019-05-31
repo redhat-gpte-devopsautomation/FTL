@@ -1,7 +1,0 @@
-- import_playbook: section1.yml
-- import_playbook: section2.yml
-# Will return
-# grade:
-#   {{lab}}:
-#     section1: pass
-#     section2: fail
