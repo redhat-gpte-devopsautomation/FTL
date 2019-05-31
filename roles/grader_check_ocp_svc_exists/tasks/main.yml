@@ -10,6 +10,7 @@
 - name: Look up Service
   k8s_facts:
     kind: Service
+    api_version: v1
     namespace: "{{ project_name }}"
     name: "{{ service_name }}"
   register: r_service

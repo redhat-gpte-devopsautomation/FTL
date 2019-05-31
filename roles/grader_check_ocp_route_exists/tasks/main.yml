@@ -11,6 +11,7 @@
 - name: Look up route
   k8s_facts:
     kind: Route
+    api_version: route.openshift.io/v1
     namespace: "{{ project_name }}"
     name: "{{ route_name }}"
   register: r_route

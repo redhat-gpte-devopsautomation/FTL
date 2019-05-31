@@ -11,6 +11,7 @@
 - name: Lookup node
   k8s_facts:
     kind: Node
+    api_version: v1
     name: "{{ node_name }}"
   register: r_node
 

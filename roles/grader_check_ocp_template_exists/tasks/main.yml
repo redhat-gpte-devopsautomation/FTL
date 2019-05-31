@@ -10,8 +10,9 @@
 
 - name: Look up template
   k8s_facts:
-    api_version: template.openshift.io/v1
+    # Kind has to be templates. "Template" does not work (openshift python API)
     kind: templates
+    api_version: template.openshift.io/v1
     namespace: "{{ project_name }}"
     name: "{{ template_name }}"
   register: r_template
