@@ -1,0 +1,28 @@
+---
+- name: Grade lab 03_1 of OpenShift 4 Resources & Tools
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+  - name: Check the CakePHP Route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check if the CakePHP route exists
+      route_name: "cakephp-mysql-example"
+      project_name: "{{ guid }}-openshift-tools"
+      student_error_message: "Route cakephp-mysql-example does not exist in project {{ guid }}-openshift-tools"
+
+  - name: Check the httpd Route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check if the HTTPD route exists
+      route_name: "httpd-deployment"
+      project_name: "{{ guid }}-yaml-app"
+      student_error_message: "Route httpd-deployment does not exist in project {{ guid }}-yaml-app"
