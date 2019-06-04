@@ -34,20 +34,20 @@
   #                                                    #
   ######################################################
 
-- name: Create Pass logging message
-  when: success | bool
-  set_fact:
-    output_message: "PASS: MachineSet with instanceType m5.2xlarge found"
-  delegate_to: localhost
+  - name: Create Pass logging message
+    when: success | bool
+    set_fact:
+      output_message: "PASS: MachineSet with instanceType m5.2xlarge found"
+    delegate_to: localhost
 
-- name: Create Fail logging message
-  when: not success | bool
-  set_fact:
-    output_message: "FAIL: MachineSet with instanceType m5.2xlarge not found"
-  delegate_to: localhost
+  - name: Create Fail logging message
+    when: not success | bool
+    set_fact:
+      output_message: "FAIL: MachineSet with instanceType m5.2xlarge not found"
+    delegate_to: localhost
 
-- name: Import logging tasks
-  import_role:
-    name: ftl_run_log_grade_to_log
-  vars:
-    grader_output_message: "{{ output_message }}"
+  - name: Import logging tasks
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      grader_output_message: "{{ output_message }}"
