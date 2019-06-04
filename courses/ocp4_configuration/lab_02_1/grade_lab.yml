@@ -14,6 +14,14 @@
       user_name: "alice"
       student_error_message: "User alice does not exist"
 
+  - name: Check if user bob exists
+    include_role:
+      name: grader_check_ocp_user_exists
+    vars:
+      task_description_message: Check if the user bob exists
+      user_name: "bob"
+      student_error_message: "User bob does not exist"
+
   - name: Check if user andrew exists
     include_role:
       name: grader_check_ocp_user_exists
@@ -29,3 +37,14 @@
       task_description_message: Check if the user karla exists
       user_name: "karla"
       student_error_message: "User karla does not exist"
+
+  - name: Check that kubeadmin secret does not exist
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check if the kubeadmin secret still exists
+      resource_kind: Secret
+      resource_name: kubeadmin
+      resource_namespace: kube-system
+      resource_should_exist: false
+      student_error_message: "The kubeadmin secret still exists"

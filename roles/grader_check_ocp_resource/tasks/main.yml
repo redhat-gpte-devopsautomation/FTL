@@ -1,0 +1,50 @@
+---
+- name: Set success flag to true
+  set_fact:
+    success: true
+
+- name: Show which resource is being checked
+  debug:
+    msg: >-
+      Checking {{ resource_kind }} {{ resource_name }}
+      {% if resource_namespace %} in namespace {{ resource_namespace }}{% endif %}
+    verbosity: 2
+
+- name: Look up resource
+  k8s_facts:
+    kind: "{{ resource_kind }}"
+    api_version: "{{ resource_api_version | default('v1') }}"
+    namespace: "{{ resource_namespace }}"
+    name: "{{ resource_name }}"
+  register: r_k8s_facts
+
+- name: Check whether the resource exists
+  set_fact:
+    success: false
+  when: >-
+    (resource_should_exist and r_k8s_facts.resources|length == 0) or
+    (not resource_should_exist and r_k8s_facts.resources|length == 1)
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
