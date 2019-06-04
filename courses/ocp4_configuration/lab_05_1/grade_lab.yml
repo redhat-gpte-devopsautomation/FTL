@@ -1,0 +1,143 @@
+---
+- name: Grade lab 05_1 of OpenShift 4 Configuration
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+
+  - name: Check namespaces for portalapp and paymentapp
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check portalapp and paymentapp namespaces exist
+      resource_api_version: v1
+      resource_kind: Namespace
+      resource_name: "{{ namespace }}"
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    loop:
+    - paymentapp-dev
+    - paymentapp-test
+    - paymentapp-prod
+    - portalapp-dev
+    - portalapp-test
+    - portalapp-prod
+    loop_control:
+      loop_var: namespace
+
+  - name: Check portapp dev/test access
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Check if group {{ check.group }} is admin for {{ check.namespace }}
+      oc_command: >-
+        auth can-i create roles -n {{ check.namespace }} 
+        --as=: --as-group=system:authenticated
+        --as-group={{ check.group }}
+        --config ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+      oc_command_description: Check auth can-i
+    loop:
+    - namespace: portalapp-dev
+      group: portalapp
+    - namespace: portalapp-test
+      group: portalapp
+    - namespace: portalapp-prod
+      group: ocp-production
+    - namespace: paymentapp-dev
+      group: paymentapp
+    - namespace: paymentapp-test
+      group: paymentapp
+    - namespace: paymentapp-prod
+      group: ocp-production
+    loop_control:
+      loop_var: check
+      
+  - name: Check payment namespaces for sinatra deployment configs
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check sinatra deployment config in {{ check.namespace }}
+      resource_api_version: apps.openshift.io/v1
+      resource_kind: DeploymentConfig
+      resource_name: sinatra
+      resource_namespace: "{{ check.namespace }}"
+      resource_definition_checks:
+      - error_message: sinatra deployment config in {{ check.namespace }} not using image {{ check.image }}
+        json_query: "spec.triggers[?type=='ImageChange']|[0].imageChangeParams.from.name"
+        value: "{{ check.image }}"
+      - error_message: sinatra deployment config in {{ check.namespace }} not using image namespace paymentapp-dev
+        json_query: "spec.triggers[?type=='ImageChange']|[0].imageChangeParams.from.namespace"
+        value: paymentapp-dev
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    loop:
+    - namespace: paymentapp-dev
+      image: sinatra:latest
+    - namespace: paymentapp-test
+      image: sinatra:test
+    - namespace: paymentapp-prod
+      image: sinatra:prod
+    loop_control:
+      loop_var: check
+
+  - name: Check paymentapp-dev namespace for image stream tags
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check for image stream tag {{ image_stream_tag }} in paymentapp-dev
+      resource_api_version: image.openshift.io/v1
+      resource_kind: ImageStreamTag
+      resource_name: "{{ image_stream_tag }}"
+      resource_namespace: paymentapp-dev
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    loop:
+    - sinatra:latest
+    - sinatra:test 
+    - sinatra:prod
+    loop_control:
+      loop_var: image_stream_tag
+
+  - name: Check image pull access rights
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Check if service accounts in {{ namespace }} can pull images from paymentapp-dev
+      oc_command: >-
+        auth can-i get imagestreams --subresource=layers -n paymentapp-dev
+        --as=system:serviceaccount:{{ namespace }}:default
+        --as-group=system:serviceaccounts:{{ namespace }}
+        --as-group=system:authenticated
+        --config ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+      oc_command_description: Check auth can-i
+    loop:
+    - paymentapp-test
+    - paymentapp-prod
+    loop_control:
+      loop_var: namespace
+
+  - name: Check if group ocp-production has registry-viewer access to paymentapp-dev
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Check if group ocp-production has registry-viewer access to paymentapp-dev
+      oc_command: >-
+        auth can-i get imagestreams -n paymentapp-dev
+        --as=:
+        --as-group=ocp-production
+        --as-group=system:authenticated
+        --config ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+      oc_command_description: Check auth can-i
+
+  - name: Check SCC anyuid for mygitlab service accounts
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check SCC anyuid for mygitlab service accounts
+      resource_kind: SecurityContextConstraints
+      resource_api_version: security.openshift.io/v1
+      resource_name: anyuid
+      resource_definition_checks:
+      - error_message: SCC anyuid has mygitlab service eaccounts
+        json_query: "groups[?@=='system:serviceaccounts:mygitlab']|[0]"
+        value: system:serviceaccounts:mygitlab
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
