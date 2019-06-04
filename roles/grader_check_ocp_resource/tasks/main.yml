@@ -21,9 +21,27 @@
 - name: Check whether the resource exists
   set_fact:
     success: false
+    student_error_message: >-
+      {{ resource_kind }} {{ resource_name }}
+      {% if _resource_should_exist %}does not exist{% else %}still exists{% endif %}
+      {% if resource_namespace %}in namespace {{ resource_namespace }}{% endif %}
   when: >-
-    (resource_should_exist and r_k8s_facts.resources|length == 0) or
-    (not resource_should_exist and r_k8s_facts.resources|length == 1)
+    (_resource_should_exist and r_k8s_facts.resources|length == 0) or
+    (not _resource_should_exist and r_k8s_facts.resources|length == 1)
+
+- name: Do resource definition checks
+  set_fact:
+    success: false
+    student_error_message: "{{ check.error_message }}"
+  loop: "{{ resource_definition_checks }}"
+  loop_control:
+    label: "{{ check.error_message }}"
+    loop_var: check
+  vars:
+    resource: "{{ r_k8s_facts.resources[0] | default(None) }}"
+  when:
+  - resource
+  - check.value != resource | json_query(check.json_query)
 
 ######################################################
 #                                                    #

@@ -6,35 +6,35 @@
 
   # All lab tests go here
   tasks:
-  - name: Not Implemented
-    fail:
-      msg: This grader is not yet implemented
 
-
-
-
-
-
-  - name: Check the User alice exists
+  - name: Check definition of group local-admin
     include_role:
-      name: grader_check_ocp_user_exists
+      name: grader_check_ocp_resource
     vars:
-      task_description_message: Check if the user alice exists
-      user_name: "alice"
-      student_error_message: "User alice does not exist."
+      task_description_message: Check the definition of the group local-admin
+      resource_kind: Group
+      resource_name: local-admin
+      resource_definition_checks:
+      - error_message: User alice is not a member of the local-admin group
+        json_query: "users[?@=='alice']|[0]"
+        value: alice
 
-  - name: Check the User andrew exists
+  - name: Check LDAP groups
     include_role:
-      name: grader_check_ocp_user_exists
+      name: grader_check_ocp_resource
     vars:
-      task_description_message: Check if the user andrew exists
-      user_name: "andrew"
-      student_error_message: "User andrew does not exist."
-
-  - name: Check the User karla exists
-    include_role:
-      name: grader_check_ocp_user_exists
-    vars:
-      task_description_message: Check if the user karla exists
-      user_name: "karla"
-      student_error_message: "User karla does not exist."
+      task_description_message: Check LDAP groups sync for {{ group_name }}
+      resource_kind: Group
+      resource_name: "{{ group_name }}"
+      resource_definition_checks:
+      - error_message: Group {{ group_name }} not synced from LDAP?
+        json_query: 'metadata.labels."openshift.io/ldap.host"'
+        value: ipa.shared.example.opentlc.com
+    loop:
+    - ocp-platform
+    - ocp-production
+    - ocp-users
+    - paymentapp
+    - portalapp
+    loop_control:
+      loop_var: group_name

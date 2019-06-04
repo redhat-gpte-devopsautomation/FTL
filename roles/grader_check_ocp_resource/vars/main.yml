@@ -1,0 +1,2 @@
+---
+_resource_should_exist: "{{ resource_should_exist | bool }}"
