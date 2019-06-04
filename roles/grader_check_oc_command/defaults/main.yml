@@ -1,0 +1,4 @@
+---
+oc_command_check_rc: true
+oc_command_description: "The command 'oc {{ oc_command }}'"
+oc_command_expect_failure: false

@@ -1,0 +1,61 @@
+---
+- name: Grade lab 04_1 of OpenShift 4 Configuration
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+
+  - name: Check cluster-admin for local-admin group
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Create cluster-admin cluster role binding for local-admin group
+      oc_command_description: Test of 'oc auth can-i --as=alice --as-group=local-admin foo bar'
+      oc_command: >-
+        auth can-i --as=alice --as-group=local-admin foo bar
+        --config ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+
+  - name: Get cluster API URL from install kubeconfig
+    command: >-
+      oc whoami --show-server
+      --config ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    changed_when: false
+    register: r_get_api_url
+
+  - name: Login as LDAP user david
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Login as LDAP ocp-platorm user david
+      oc_command: >-
+        login -u david -p 'r3dh4t1!' {{ r_get_api_url.stdout }}
+        --config ~/.kube/config-david
+        --insecure-skip-tls-verify
+
+  - name: Check if user david can has sudoer access
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Check ocp-platform group sudoer access
+      oc_command: >-
+        auth can-i --as=system:admin foo bar
+        --config ~/.kube/config-david
+
+  - name: Check self-provisioners access
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that self-provisioners is disabled
+      resource_api_version: rbac.authorization.k8s.io/v1
+      resource_kind: ClusterRoleBinding
+      resource_name: self-provisioners
+      resource_definition_checks:
+      - error_message: self-provisioners is still available to oauth authenticated users
+        json_query: "subjects[?(kind=='Group' && name=='system:authenticated:oauth')]|[0]"
+        value: null
+      - error_message: self-provisioners autoupdate annotation is not set to false
+        json_query: 'metadata.annotations."rbac.authorization.kubernetes.io/autoupdate"'
+        value: 'false'
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig

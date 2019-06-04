@@ -13,7 +13,8 @@
 - name: Look up resource
   k8s_facts:
     kind: "{{ resource_kind }}"
-    api_version: "{{ resource_api_version | default('v1') }}"
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: "{{ resource_api_version }}"
     namespace: "{{ resource_namespace }}"
     name: "{{ resource_name }}"
   register: r_k8s_facts

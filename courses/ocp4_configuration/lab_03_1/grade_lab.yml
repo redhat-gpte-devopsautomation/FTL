@@ -18,6 +18,7 @@
       - error_message: User alice is not a member of the local-admin group
         json_query: "users[?@=='alice']|[0]"
         value: alice
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
 
   - name: Check LDAP groups
     include_role:
@@ -30,6 +31,7 @@
       - error_message: Group {{ group_name }} not synced from LDAP?
         json_query: 'metadata.labels."openshift.io/ldap.host"'
         value: ipa.shared.example.opentlc.com
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
     loop:
     - ocp-platform
     - ocp-production

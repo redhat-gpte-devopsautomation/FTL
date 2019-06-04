@@ -6,37 +6,35 @@
 
   # All lab tests go here
   tasks:
-  - name: Check if user alice exists
+  - name: Check HTPasswd users
     include_role:
-      name: grader_check_ocp_user_exists
+      name: grader_check_ocp_resource
     vars:
-      task_description_message: Check if the user alice exists
-      user_name: alice
-      student_error_message: User alice does not exist
+      task_description_message: Check HTPasswd user {{ user_name }}
+      resource_api_version: user.openshift.io/v1
+      resource_kind: User
+      resource_name: "{{ user_name }}"
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    loop:
+    - alice
+    - bob
+    loop_control:
+      loop_var: user_name
 
-  - name: Check if user alice exists
+  - name: Check LDAP users
     include_role:
-      name: grader_check_ocp_user_exists
+      name: grader_check_ocp_resource
     vars:
-      task_description_message: Check if the user bob exists
-      user_name: bob
-      student_error_message: User bob does not exist
-
-  - name: Check if user andrew exists
-    include_role:
-      name: grader_check_ocp_user_exists
-    vars:
-      task_description_message: Check if the user andrew exists
-      user_name: andrew
-      student_error_message: User andrew does not exist
-
-  - name: Check if user karla exists
-    include_role:
-      name: grader_check_ocp_user_exists
-    vars:
-      task_description_message: Check if the user karla exists
-      user_name: karla
-      student_error_message: User karla does not exist
+      task_description_message: Check LDAP user {{ user_name }}
+      resource_api_version: user.openshift.io/v1
+      resource_kind: User
+      resource_name: "{{ user_name }}"
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+    loop:
+    - andrew
+    - karla
+    loop_control:
+      loop_var: user_name
 
   - name: Check that kubeadmin secret does not exist
     include_role:
@@ -47,3 +45,4 @@
       resource_name: kubeadmin
       resource_namespace: kube-system
       resource_should_exist: false
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
