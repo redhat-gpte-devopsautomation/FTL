@@ -1,0 +1,3 @@
+---
+_oc_command_check_rc: "{{ oc_command_check_rc | bool }}"
+_oc_command_expect_failure: "{{ oc_command_expect_failure | bool }}"
