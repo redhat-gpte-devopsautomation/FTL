@@ -1,0 +1,27 @@
+---
+- name: Grade lab 06_1 of OpenShift 4 Configuration
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Check for the example deployment
+    include_role:
+      name: grader_check_ocp_deployment_exists
+    vars:
+      task_description_message: Check that the 'example' deployment exists
+      student_error_message: "Deployment `example` does not exist."
+      deployment_name: "example"
+      project_name: "resourcemanagement"
+
+  - name: Check for project request template
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that the default project request template exists
+      resource_api_version: config.openshift.io/v1
+      resource_kind: project
+      resource_name: cluster
+      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+      student_error_message: "Project Request Template does not exist."
