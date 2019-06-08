@@ -1,0 +1,20 @@
+---
+- name: Grade lab 03_2 of OpenShift 4 Resources & Tools
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check the Pod exists
+    include_role:
+      name: grader_check_ocp_pod_exists
+    vars:
+      task_description_message: Check if the pod cakephp-mysql-example-3-deploy exists
+      pod_name: "cakephp-mysql-example-3-deploy"
+      project_name: "{{ guid }}-app-management"
+      student_error_message: "Pod cakephp-mysql-example-3-deploy doesn't exist."

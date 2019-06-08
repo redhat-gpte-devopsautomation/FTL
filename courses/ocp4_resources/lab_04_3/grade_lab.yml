@@ -1,0 +1,20 @@
+---
+- name: Grade lab 04_3 of OpenShift 4 Resources & Tools
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check the Route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check if the Route bluegreen exists
+      route_name: "bluegreen"
+      project_name: "{{ guid }}-bluegreen"
+      student_error_message: "Route bluegreen does not exist in project {{ guid }}-bluegreen"

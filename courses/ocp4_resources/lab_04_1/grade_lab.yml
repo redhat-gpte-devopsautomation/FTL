@@ -19,13 +19,3 @@
       num_replicas: 3
       project_name: "{{ guid }}-deployments"
       student_error_message: "Deployment ocp-probe does not exist in project {{ guid }}-app-management or does not have 3 replicas"
-
-  - name: Check the DeploymentConfig exists
-    include_role:
-      name: grader_check_ocp_deploymentconfig_exists
-    vars:
-      task_description_message: Check if the deploymentconfig ocp-probe exists and has 3 replicas
-      deploymentconfig_name: "ocp-probe"
-      num_replicas: 3
-      project_name: "{{ guid }}-deploymentconfigs"
-      student_error_message: "DeploymentConfig ocp-probe does not exist in project {{ guid }}-app-management or does not have 3 replicas"

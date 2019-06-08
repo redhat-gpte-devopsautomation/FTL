@@ -1,8 +1,23 @@
-- name: "Check file {{ file }} a user exists"
+---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out the file we are checking
+  debug:
+    msg: "Checking if file {{ file }} exists"
+    verbosity: 2
+
+- name: Look up file
   stat:
     path: "{{ file }}"
-  check_mode: true
-  register: r_stat
+  register: r_file
+
+- name: Check that the file exists
+  set_fact:
+    success: true
+  when:
+  - r_file.stat.exists == True
 
 ######################################################
 #                                                    #
@@ -10,11 +25,21 @@
 #                                                    #
 ######################################################
 
-- when: r_stat.stat.exists
-  name: Call logging
-  include_role:
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
     name: ftl_run_log_grade_to_log
   vars:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
+    grader_output_message: "{{ output_message }}"
 ...

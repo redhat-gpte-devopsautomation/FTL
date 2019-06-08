@@ -1,0 +1,15 @@
+---
+- name: Grade lab 02_1 of OpenShift 4 Resources & Tools
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Check the second config file exists
+    include_role:
+      name: grader_check_file_exists
+    vars:
+      task_description_message: Check if the new-config file exists
+      file: "$HOME/.kube/new-config"
+      student_error_message: "File $HOME/.kube/new-config doesn't exist"
