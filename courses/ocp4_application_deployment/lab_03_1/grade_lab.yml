@@ -9,7 +9,18 @@
   - name: Set GUID
     set_fact:
       guid: "{{ lookup('env','GUID') }}"
- 
+
+  - name: Check that the Deployment Config printenv exists
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that the Deployment Config `printenv` exists.
+      student_error_message: "Deployment Config `printenv` does not exist in project ${GUID}-env."
+      resource_api_version: apps.openshift.io/v1
+      resource_kind: DeploymentConfig
+      resource_name: printenv
+      resource_namespace: "{{ guid }}-env"
+
   - name: Check that the Gogs ConfigMap exists
     include_role:
       name: grader_check_ocp_configmap_exists
