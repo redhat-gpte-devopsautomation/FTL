@@ -8,7 +8,7 @@
     msg: >-
       Checking {{ resource_kind }} {{ resource_name }}
       {% if resource_namespace %} in namespace {{ resource_namespace }}{% endif %}
-    verbosity: 2
+    verbosity: "2"
 
 - name: Look up resource
   k8s_facts:
