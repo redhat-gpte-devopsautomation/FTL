@@ -21,3 +21,13 @@
       resource_namespace: "{{ guid }}-development"
       kubeconfig: ~/.kube/config
       student_error_message: "Deployment Config `printenv` does not exist in project ${GUID}-development."
+
+  - name: Check contents of pod_labels file in printenv pod
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      task_description_message: Create cluster-admin cluster role binding for local-admin group
+      oc_command_description: Test of 'oc rsh to grep /downward/pod_labels for POD_NAME'
+      oc_command: >-
+        rsh $( oc get pod | grep printenv | grep Running | awk '{ print $1 }' ) 
+        grep POD_NAME /downward/pod_labels
