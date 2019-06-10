@@ -19,5 +19,5 @@
       resource_kind: DeploymentConfig
       resource_name: printenv
       resource_namespace: "{{ guid }}-development"
-      kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
+      kubeconfig: ~/.kube/config
       student_error_message: "Deployment Config `printenv` does not exist in project ${GUID}-development."
