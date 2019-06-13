@@ -1,0 +1,42 @@
+---
+- name: Grade lab 02_01 of OpenShift Service Mesh Foundations
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check that the Deployment istio-operator exists
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that the Deployment `istio-operator` exists.
+      student_error_message: "Deployment Config `istio-operator` does not exist in project istio-operator."
+      resource_api_version: apps/v1
+      resource_kind: Deployment
+      resource_name: istio-operator
+      resource_namespace: istio-operator
+
+  - name: Check that the Deployment 3scale-istio-adapter exists
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that the Deployment `3scale-istio-adapter` exists.
+      student_error_message: "Deployment Config `3scale-istio-adapter` does not exist in project istio-system."
+      resource_api_version: apps/v1
+      resource_kind: Deployment
+      resource_name: 3scale-istio-adapter
+      resource_namespace: istio-system
+
+  - name: Check the Kiali Route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check that the Kiali route exists
+      route_name: kiali
+      project_name: istio-system
+      student_error_message: "Route kiali does not exist in project istio-system"
