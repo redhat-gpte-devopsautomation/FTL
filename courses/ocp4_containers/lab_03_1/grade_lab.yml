@@ -1,0 +1,20 @@
+---
+- name: Grade lab 03_1 of OpenShift 4 Containers
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+  - name: Check rhel-tools Pod exists
+    include_role:
+      name: grader_check_ocp_pod_exists
+    vars:
+      task_description_message: Check if the rhel-tools Pod exists
+      pod_name: "rhel-tools"
+      project_name: "{{ guid }}-containers"
+      student_error_message: "Pod rhel-tools does not exist in project {{ guid }}-containers"
+
