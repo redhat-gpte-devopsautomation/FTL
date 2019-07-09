@@ -1,0 +1,34 @@
+---
+- name: Grade lab 04_1 of OpenShift 4 Containers
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check container exists
+    include_role:
+      name: grader_check_container_exists
+    vars:
+      some: thing
+      something: else
+
+  - name: Check local container image exists
+    include_role:
+      name: grader_check_local_image_exists
+    vars:
+      some: thing
+      something: else
+  
+  - name: Check S2I BuildConfig exists
+    include_role:
+      name: grader_check_ocp_buildconfig_exists
+    vars:
+      task_description_message: Check if the S2I BuildConfig exists
+      buildconfig_name: "tasks"
+      project_name: "{{ guid }}-s2i"
+      student_error_message: "Buildconfig {{ buildconfig_name }} does not exist in project {{ guid }}-s2i"

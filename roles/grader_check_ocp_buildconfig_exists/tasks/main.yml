@@ -1,0 +1,48 @@
+---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out the BuildConfig and Namespace we are checking
+  debug:
+    msg: "Checking if BuildConfig {{ buildconfig_name }} exists in Project {{ project_name }}"
+    verbosity: 2
+
+- name: Look up BuildConfig
+  k8s_facts:
+    kind: BuildConfig
+    api_version: apps/v1
+    namespace: "{{ project_name }}"
+    name: "{{ buildconfig_name }}"
+  register: r_buildconfig
+
+- name: Check that the BuildConfig exist
+  set_fact:
+    success: true
+  when:
+  - r_buildconfig.resources|length == 1
+  - r_buildconfig.resources[0].metadata.name is match( buildconfig_name )
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"

@@ -1,0 +1,48 @@
+---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out the Pod and Namespace we are checking
+  debug:
+    msg: "Checking if Pod {{ pod_name }} exists in Project {{ project_name }}"
+    verbosity: 2
+
+- name: Look up Pod
+  k8s_facts:
+    kind: Pod
+    api_version: v1
+    namespace: "{{ project_name }}"
+    name: "{{ pod_name }}"
+  register: r_pod
+
+- name: Check that the Pod exists
+  set_fact:
+    success: true
+  when:
+  - r_pod.resources|length == 1
+  - r_pod.resources[0].metadata.name is match( pod_name )
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
