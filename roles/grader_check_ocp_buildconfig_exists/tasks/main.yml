@@ -11,7 +11,7 @@
 - name: Look up BuildConfig
   k8s_facts:
     kind: BuildConfig
-    api_version: apps/v1
+    api_version: build.openshift.io/v1
     namespace: "{{ project_name }}"
     name: "{{ buildconfig_name }}"
   register: r_buildconfig

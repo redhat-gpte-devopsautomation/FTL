@@ -3,25 +3,26 @@
   set_fact:
     success: false
 
-- name: Print out the Pod and Namespace we are checking
+- name: Print out the container image we are checking
   debug:
-    msg: "Checking if Pod {{ pod_name }} exists in Project {{ project_name }}"
+    msg: "Checking if container image {{ image_name }} exists locally"
     verbosity: 2
 
-- name: Look up Pod
-  k8s_facts:
-    kind: Pod
-    api_version: v1
-    namespace: "{{ project_name }}"
-    name: "{{ pod_name }}"
-  register: r_pod
+# This needs Ansible 2.8
+- name: Look up image
+#  podman_image:
+#    name: "{{ image_name }}"
+  command: podman images
+  register: r_image
 
-- name: Check that the Pod exists
+- debug:
+    var: r_image
+
+- name: Check that the image exists
   set_fact:
     success: true
   when:
-  - r_pod.resources|length == 1
-  - r_pod.resources[0].metadata.name is match( pod_name )
+  - r_image.stdout.find(image_name) != -1
 
 ######################################################
 #                                                    #
