@@ -5,7 +5,7 @@
 
 - name: Print out the container we are running
   debug:
-    msg: "Checking if Pod {{ pod_name }} exists in Project {{ project_name }}"
+    msg: "Checking if container {{ image_name }} runs successfully"
     verbosity: 2
 
 - name: Run container
@@ -19,7 +19,7 @@
   set_fact:
     success: true
   when:
-  - r_run_container.stdout == "Hello, World!"
+  - r_run_container.stdout == "Hello, world!"
 
 ######################################################
 #                                                    #

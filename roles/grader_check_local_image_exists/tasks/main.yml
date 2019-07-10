@@ -15,9 +15,6 @@
   command: podman images
   register: r_image
 
-- debug:
-    var: r_image
-
 - name: Check that the image exists
   set_fact:
     success: true

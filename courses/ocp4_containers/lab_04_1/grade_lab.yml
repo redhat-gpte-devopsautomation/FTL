@@ -18,13 +18,13 @@
       task_description_message: "Check if the {{ image_name }} exists"
       student_error_message: "Image {{ image_name }} does not exist locally"
 
- - name: Check container working
-   include_role:
-     name: grader_check_container_runs
-   vars:
-     image_name: "localhost/buildah-hello"
-     task_description_message: "Check if the {{ image_name }} runs successfully"
-     student_error_message: "Container {{ image_name }} does not run successfully"
+  - name: Check container working
+    include_role:
+      name: grader_check_container_runs
+    vars:
+      image_name: "localhost/buildah-hello"
+      task_description_message: "Check if the {{ image_name }} runs successfully"
+      student_error_message: "Container {{ image_name }} does not run successfully"
 
   - name: Check S2I BuildConfig exists
     include_role:
