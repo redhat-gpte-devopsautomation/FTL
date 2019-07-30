@@ -1,0 +1,191 @@
+# vim: set ft=ansible
+---
+- name: Solve lab App Management Basics of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: create app-management project
+    command: oc new-project app-management
+
+  - name: deploy mapit container
+    command: oc new-app quay.io/thoraxe/mapit
+
+  - name: Wait for app to be running
+    command: oc get dc mapit -o jsonpath='{.status.availableReplicas}' -n app-management
+    register: mapit_dc
+    until: 'mapit_dc.stdout | int >= 1'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+  
+  - name: Check for the dc to be available
+    command: oc get dc mapit -n app-management
+    tags:
+      - mapit-deploy
+      - mapit-verify
+  
+  - name: Check for service to be available
+    command: oc get service mapit -n app-management
+    tags:
+      - mapit-deploy
+      - mapit-verify
+  
+  - name: Check for endpoints
+    command: oc get endpoints mapit -o json -n app-management
+    register: mapit_endpoints_json
+    tags:
+      - mapit-deploy
+  
+  - name: Convert the endpoint output into facts for inspection
+    set_fact:
+      mapit_endpoints: "{{ mapit_endpoints_json.stdout | from_json }}"
+    tags:
+      - mapit-deploy
+  
+  - name: Evaluate various criteria of the endpoint output (ports, port numbers, etc)
+    assert:
+      that:
+        - mapit_endpoints.subsets | length == 1
+        - mapit_endpoints.subsets[0].addresses | length == 1
+        - mapit_endpoints.subsets[0].ports | length == 3
+        - mapit_endpoints.subsets[0].ports[0].port == 8080
+        - mapit_endpoints.subsets[0].ports[1].port == 9779
+        - mapit_endpoints.subsets[0].ports[2].port == 8778
+    tags:
+      - mapit-deploy
+  
+  - name: Check for deploymentconfig
+    command: oc get deploymentconfig mapit -n app-management
+    tags:
+      - mapit-deploy
+      - mapit-verify
+  
+  - name: Check for replicationcontroller
+    command: oc get replicationcontroller -l app=mapit
+    register: rc_check
+    failed_when: rc_check.stdout == "No resources found."
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Scale to two instances
+    command: oc scale dc/mapit --replicas=2 -n app-management
+    tags:
+      - mapit-deploy
+
+  - name: Wait for both app instances
+    command: oc get dc mapit -o jsonpath='{.status.availableReplicas}' -n app-management
+    register: result
+    until: '"2" in result.stdout'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+
+  - name: Check for endpoints
+    command: oc get endpoints mapit -o json -n app-management
+    register: mapit_endpoints_json_v2
+    tags:
+      - mapit-deploy
+
+  - name: Convert the endpoint output into facts for inspection
+    set_fact:
+      mapit_endpoints_v2: "{{ mapit_endpoints_json_v2.stdout | from_json }}"
+    tags:
+      - mapit-deploy
+
+  - name: Evaluate various criteria of the endpoint output (ports, port numbers, etc)
+    assert:
+      that:
+        - mapit_endpoints_v2.subsets | length == 1
+        - mapit_endpoints_v2.subsets[0].addresses | length == 2
+        - mapit_endpoints_v2.subsets[0].ports | length == 3
+        - mapit_endpoints_v2.subsets[0].ports[0].port == 8080
+        - mapit_endpoints_v2.subsets[0].ports[1].port == 9779
+        - mapit_endpoints_v2.subsets[0].ports[2].port == 8778
+    tags:
+      - mapit-deploy
+
+  - name: Check for mapit route
+    command: oc get route mapit
+    register: mapit_route_check
+    failed_when: mapit_route_check.rc > 1
+    tags:
+      - mapit-deploy
+
+  - name: Create mapit route
+    command: oc expose service mapit -n app-management
+    when: mapit_route_check.rc == 1
+    tags:
+      - mapit-deploy
+
+  - name: Check again for mapit route
+    command: oc get route mapit -n app-management
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Scale down to 1 instance
+    command: oc scale dc/mapit --replicas=1 -n app-management
+    tags:
+      - mapit-deploy
+
+  - name: Wait for app instance
+    command: oc get dc mapit -o jsonpath='{.status.availableReplicas}' -n app-management
+    register: result
+    until: '"1" in result.stdout'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+
+  - name: Set mapit liveness probe
+    command: oc set probe dc/mapit --liveness --get-url=http://:8080/health --initial-delay-seconds=30 -n app-management
+    tags:
+      - mapit-deploy
+
+  - name: Set mapit readiness probe
+    command: oc set probe dc/mapit --readiness --get-url=http://:8080/health --initial-delay-seconds=30 -n app-management
+    tags:
+      - mapit-deploy
+
+  - name: Wait for app instances
+    command: oc get dc mapit -o jsonpath='{.status.readyReplicas}' -n app-management
+    register: result
+    until: '"1" in result.stdout'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+
+  - name: Check for endpoints
+    command: oc get endpoints mapit -o json -n app-management
+    register: mapit_endpoints_json_v3
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Convert the endpoint output into facts for inspection
+    set_fact:
+      mapit_endpoints_v3: "{{ mapit_endpoints_json_v3.stdout | from_json }}"
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Evaluate various criteria of the endpoint output (ports, port numbers, etc)
+    assert:
+      that:
+        - mapit_endpoints_v3.subsets | length == 1
+        - mapit_endpoints_v3.subsets[0].addresses | length >= 1
+        - mapit_endpoints_v3.subsets[0].ports | length == 3
+        - mapit_endpoints_v3.subsets[0].ports[0].port == 8080
+        - mapit_endpoints_v3.subsets[0].ports[1].port == 9779
+        - mapit_endpoints_v3.subsets[0].ports[2].port == 8778
+    tags:
+      - mapit-deploy
+      - mapit-verify

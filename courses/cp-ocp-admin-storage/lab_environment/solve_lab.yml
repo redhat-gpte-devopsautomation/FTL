@@ -1,0 +1,31 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Environment Overview of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+  
+  # we are just executing these and not validating their output
+  - name: explain Role
+    command: oc explain Role
+
+  - name: explain ClusterRole
+    command: oc explain ClusterRole
+
+  - name: explain RoleBinding
+    command: oc explain ClusterRoleBinding
+
+  - name: check the cluster-admin role
+    command: oc get clusterrole cluster-admin -o yaml
+
+  - name: oc whoami --help
+    command: oc whoami --help
+
+  - name: oc whoami
+    command: oc whoami
+
+  - name: check the admin-cluster-admin clusterrolebinding
+    command: oc get clusterrolebinding admin-cluster-admin -o yaml

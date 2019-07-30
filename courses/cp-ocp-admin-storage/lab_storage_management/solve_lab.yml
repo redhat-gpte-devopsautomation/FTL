@@ -1,0 +1,167 @@
+# vim: set ft=ansible
+---
+- name: Solve lab App Management Basics of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: switch to app management project just in case
+    command: oc project app-management
+
+  - name: Check for a PVC called 'mapit-storage'
+    shell: oc get pvc/mapit-storage -o json -n app-management
+    register: check_mapit_pvc
+    failed_when: check_mapit_pvc.rc > 1
+    tags:
+      - mapit-deploy
+
+  # the templating and piping seems to happen regardless of whether or not the task was successful
+  - name: register the pvc information as a fact if the pvc exists
+    set_fact:
+      existing_mapit_pvc: "{{ (check_mapit_pvc.stdout.strip() or '{}') | from_json }}"
+    when: check_mapit_pvc.rc == 0
+    tags:
+      - mapit-deploy
+
+  - name: ensure pvc is bound
+    assert:
+      that:
+        - existing_mapit_pvc.status.phase == "Bound"
+    when: check_mapit_pvc.rc == 0
+    tags:
+      - mapit-deploy
+
+  - name: Check for existing mapit storage configuration
+    command: oc get dc mapit -o json -n app-management
+    register: mapit_dc_cmd
+    tags:
+      - mapit-deploy
+
+  - name: register the deploymentconfig as a fact
+    set_fact:
+      mapit_dc: "{{ mapit_dc_cmd.stdout | from_json }}"
+    tags:
+      - mapit-deploy
+
+  - name: Add storage to mapit app
+    command: oc set volume dc/mapit --add --name=mapit-storage -t pvc --claim-mode=ReadWriteOnce --claim-size=1Gi --claim-name=mapit-storage --mount-path=/app-storage
+    when:
+      - mapit_dc.spec.template.spec.volumes is not defined
+      - check_mapit_pvc.rc > 0
+    tags:
+      - mapit-deploy
+
+  - name: Check for deployed mapit storage configuration
+    command: oc get dc mapit -o json
+    register: mapit_dc_cmd2
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: register the new deploymentconfig information as a fact
+    set_fact:
+      mapit_dc2: "{{ mapit_dc_cmd2.stdout | from_json }}"
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: check the volume information in the deploymentconfig 
+    assert:
+      that:
+        - mapit_dc2.spec.template.spec.volumes is defined
+        - mapit_dc2.spec.template.spec.volumes|length == 1
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Check for a PVC called 'mapit-storage'
+    shell: oc get pvc/mapit-storage -o json -n app-management
+    register: check_mapit_pvc
+    failed_when: check_mapit_pvc.rc > 1
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: register the pvc information as a fact
+    set_fact:
+      mapit_pvc: "{{ check_mapit_pvc.stdout|from_json }}"
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: wait for pvc to be bound
+    command: oc get pvc/mapit-storage -o jsonpath='{$.status.phase}' -n app-management
+    register: mapit_pvc
+    until: mapit_pvc.stdout == "Bound"
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Check for DeploymentConfig revision
+    command: oc get dc mapit -o jsonpath='{.status.latestVersion}' -n app-management
+    register: mapit_revision
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: get pod name for latest deployment config
+    command: oc get pod -o jsonpath='{.items[0].metadata.name}' -l deployment=mapit-{{ mapit_revision.stdout | int }} -n app-management
+    register: mapit_pod_1
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Wait for pod ready
+    command: oc get pod {{ mapit_pod_1.stdout }} -o jsonpath='{.status.containerStatuses[0].ready}' -n app-management
+    register: result
+    until: '"true" in result.stdout'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+
+  - name: check for directory mount
+    command: oc rsh {{ mapit_pod_1.stdout }} ls -ahl /app-storage
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: create test file in directory mount
+    command: oc rsh {{ mapit_pod_1.stdout }} touch /app-storage/hello.txt
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: destroy the pod to test that storage is working
+    command: oc delete pod {{ mapit_pod_1.stdout }}
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: get pod name for latest deployment config
+    command: oc get pod -o jsonpath='{.items[0].metadata.name}' -l deployment=mapit-{{ mapit_revision.stdout | int }} -n app-management
+    register: mapit_pod_2
+    tags:
+      - mapit-deploy
+      - mapit-verify
+
+  - name: Wait for pod ready
+    command: oc get pod {{ mapit_pod_2.stdout }} -o jsonpath='{.status.containerStatuses[0].ready}' -n app-management
+    register: result
+    until: '"true" in result.stdout'
+    retries: 10
+    delay: 15
+    tags:
+      - mapit-deploy
+
+  - name: check for the file in the new pod
+    command: oc rsh {{ mapit_pod_2.stdout }} ls -ahl /app-storage/hello.txt
+    register: result
+    tags:
+      - mapit-deploy
+      - mapit-verify

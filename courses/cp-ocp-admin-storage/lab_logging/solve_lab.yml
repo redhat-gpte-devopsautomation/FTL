@@ -1,0 +1,113 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Logging of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: Infra machineset is required
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: MachineSet
+      name: infra-us-east-2c
+      namespace: openshift-machine-api
+    register: machineset_exists
+    failed_when: machineset_exists["resources"] | length == 0
+
+  - name: Create OpenShift Objects for Logging
+    ignore_errors: yes
+    k8s:
+      state: present
+      merge_type:
+      - strategic-merge
+      - merge
+      definition: "{{ lookup('file', item ) | from_yaml }}"
+    loop:
+    - ./files/namespace.yaml
+    - ./files/operatorgroup.yaml
+    - ./files/elasticsearch_catalog_source.yaml
+    - ./files/elasticsearch_subscription.yaml
+    - ./files/logging_catalog_source.yaml
+    - ./files/logging_subscription.yaml
+  
+  - name: Wait for Elasticsearch and Logging CRDs
+    ignore_errors: yes
+    k8s_facts:
+      api_version: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      name: "{{ item }}"
+    register: crd_exists
+    until: crd_exists.resources | list | length >= 1
+    retries: 30
+    delay: 10
+    with_items:
+      - "clusterloggings.logging.openshift.io"
+      - "elasticsearches.logging.openshift.io"
+  
+  - name: Create OpenShift Objects for ClusterLogging
+    ignore_errors: yes
+    k8s:
+      state: present
+      definition:
+        apiVersion: "logging.openshift.io/v1"
+        kind: "ClusterLogging"
+        metadata:
+          name: "instance"
+          namespace: "openshift-logging"
+        spec:
+          managementState: "Managed"
+          logStore:
+            type: "elasticsearch"
+            elasticsearch:
+              nodeCount: 3
+              storage: {}
+              redundancyPolicy: "SingleRedundancy"
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              resources:
+                request:
+                  memory: 4G
+          visualization:
+            type: "kibana"
+            kibana:
+              replicas: 1
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+          curation:
+            type: "curator"
+            curator:
+              schedule: "30 3 * * *"
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+          collection:
+            logs:
+              type: "fluentd"
+              fluentd: {}
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""   
+
+  - name: Wait for Elasticsearch Deployments to exist
+    ignore_errors: yes
+    k8s_facts:
+      api_version: extensions/v1beta1
+      kind: Deployment
+      namespace: openshift-logging
+      label_selectors:
+        - component = elasticsearch
+    register: elastic_deployments
+    until: elastic_deployments.resources | list | length >= 1
+    retries: 100
+    delay: 10
+  
+  # could this also use k8s_facts in some way?
+  - name: wait for running elasticsearch
+    ignore_errors: yes
+    shell: "oc get deployment {{ item.metadata.name }} -n openshift-logging -o jsonpath='{.status.readyReplicas}'"
+    register: replicas_out
+    retries: 100
+    delay: 10
+    with_items: "{{ elastic_deployments.resources }}"
+    until: replicas_out.stdout | int == 1
