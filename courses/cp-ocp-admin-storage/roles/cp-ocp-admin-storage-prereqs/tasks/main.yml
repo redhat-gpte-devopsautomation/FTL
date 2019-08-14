@@ -1,0 +1,18 @@
+# vim: set ft=ansible
+---
+- name: get the admin-user SA token into a fact
+  command: oc sa get-token admin-user -n labguide
+  register: sa_token_out
+
+- name: login with the SA token
+  command: "oc login --token {{ sa_token_out.stdout }}"
+
+- name: check for lab content already cloned
+  stat:
+    path: /tmp/content
+  register: p
+
+- name: Clone lab content to /tmp/content
+  command: git clone https://github.com/openshift/openshift-cns-testdrive.git -b ocp4-prod /tmp/content
+  when: not p.stat.exists
+

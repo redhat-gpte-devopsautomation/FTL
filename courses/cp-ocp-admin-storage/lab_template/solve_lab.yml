@@ -1,0 +1,129 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Logging of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: The bootstrap command should work
+    command: oc adm create-bootstrap-project-template -o yaml
+
+  # k8s module appears to have issues with template objects
+  - name: Check for the template's existence before attempting to create
+    command: oc get template project-request -n openshift-config
+    register: template_out
+    failed_when: template_out.rc > 1
+    tags:
+    - quota-deploy
+
+  # k8s module appears to have issues with template objects
+  - name: Create the project-request template in the namespace 'openshift-config'
+    command: oc create -f /tmp/content/support/project_request_template.yaml -n openshift-config
+    when: template_out.rc == 1
+    tags:
+    - quota-deploy
+
+  - name: Create the CR that will configure the OpenShift API Server to use a the specified project-request template in the namespace 'openshift-config'
+    k8s:
+      state: present
+      namespace: openshift-config
+      src: /tmp/content/support/cr_project_request.yaml
+    tags:
+    - quota-deploy
+
+  # k8s module appears to have issues with template objects
+  - name: Check for the template's existence before attempting to create
+    command: oc get template project-request -n openshift-config
+    register: template_out
+    failed_when: template_out.rc > 1
+    tags:
+    - quota-deploy
+    - quota-verify
+
+  - name: Delete any existing 'template-test' project
+    k8s:
+      name: template-test
+      api_version: project.openshift.io/v1
+      kind: Project
+      state: absent
+    tags:
+    - quota-deploy
+    - quota-verify
+
+  # need to use new-project rather than k8s because pure api call doesn't support
+  #  using the project-request template
+  - name: Creating the creation of a new project
+    command: oc new-project template-test
+    tags:
+    - quota-deploy
+    - quota-verify
+
+  ###################
+  # Check Quota
+  ###################
+  - name: Check if the 'template-test-quota' exists
+    k8s_facts:
+      kind: quota
+      name: template-test-quota
+      namespace: template-test
+    register: quota_out
+    tags:
+    - quota-verify
+
+  - name: Show the template-test-quota
+    debug:
+      var: quota_out
+      verbosity: 1
+    tags:
+    - quota-verify
+
+  - name: fail if the template-test-quota is not found
+    fail:
+      msg: "The template-test-quota is not found! Please investigate!"
+    when: quota_out.resources | length < 1
+    tags:
+    - quota-verify
+  ###################
+  # END Check Quota
+  ###################
+
+  ###################
+  # Check Limits
+  ###################
+  - name: Check if 'template-test-limits' exists
+    k8s_facts:
+      kind: limits
+      name: template-test-limits
+      namespace: template-test
+    register: limits_out
+    tags:
+    - quota-verify
+
+  - name: Show the template-test-limits
+    debug:
+      var: limits_out
+      verbosity: 1
+    tags:
+    - quota-verify
+
+  - name: fail if the template-test-limits is not found
+    fail:
+      msg: "The template-test-limits is not found! Please investigate!"
+    when: limits_out.resources | length < 1
+    tags:
+    - quota-verify
+  ###################
+  # END Check Limits
+  ###################
+
+  - name: Delete template-test project
+    k8s:
+      state: absent
+      kind: Namespace
+      name: template-test
+    tags:
+    - quota-deploy
+    - quota-verify

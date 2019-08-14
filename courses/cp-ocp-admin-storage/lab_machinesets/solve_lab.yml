@@ -1,0 +1,34 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Machinesets of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: get the 2c machineset name
+    shell: oc get machineset -n openshift-machine-api -o json | jq -r '.items[] | select(.metadata.name | endswith("east-2c")) | .metadata.name'
+    register: machineset_name
+
+  - name: scale the machineset to 2 replicas
+    command: oc scale machineset {{ machineset_name.stdout }} -n openshift-machine-api --replicas=2
+
+  - name: wait for 2 ready machine replicas
+    command: oc get machineset {{ machineset_name.stdout }} -n openshift-machine-api -o jsonpath='{.status.readyReplicas}'
+    register: number_machine_replicas
+    until: number_machine_replicas.stdout | int == 2
+    retries: 28
+    delay: 15
+
+  - name: scale the machineset to 1 replicas
+    command: oc scale machineset {{ machineset_name.stdout }} -n openshift-machine-api --replicas=1
+
+  - name: wait for 1 ready machine replicas
+    command: oc get machineset {{ machineset_name.stdout }} -n openshift-machine-api -o jsonpath='{.status.readyReplicas}'
+    register: number_machine_replicas
+    until: number_machine_replicas.stdout | int == 1
+    retries: 28
+    delay: 15
+

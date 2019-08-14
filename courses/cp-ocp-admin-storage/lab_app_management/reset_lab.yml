@@ -1,0 +1,13 @@
+# vim: set ft=ansible
+---
+- name: Solve lab App Management Basics of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: login as system:admin
+    command: oc login -u system:admin
+
+  - name: delete app-management project
+    command: oc delete project app-management

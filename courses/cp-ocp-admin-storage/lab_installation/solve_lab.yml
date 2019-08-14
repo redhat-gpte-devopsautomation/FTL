@@ -1,0 +1,22 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Installation and Verification of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: get clusterversion
+    command: oc get clusterversion
+    register: clusterversion_out
+    failed_when: '"4.1.3" not in clusterversion_out.stdout'
+
+  - name: describe clusterversion
+    command: oc describe clusterversion
+
+  - name: get nodes
+    command: oc get nodes
+    register: nodes_out
+    failed_when: '"v1.13.4+9b19d73a0" not in nodes_out.stdout'

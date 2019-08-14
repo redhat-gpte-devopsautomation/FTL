@@ -1,0 +1,116 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Installation and Verification of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: execute infra-nodes.sh
+    command: bash /tmp/content/support/infra-nodes.sh
+
+  - name: make sure the machineset is ready
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: MachineSet
+      name: infra-us-east-2c
+      namespace: openshift-machine-api
+    register: infra_machineset
+    until: infra_machineset.resources[0].status.readyReplicas is defined and infra_machineset.resources[0].status.readyReplicas == 3
+    retries: 28
+    delay: 15
+
+  - name: apply the ingress controller cr
+    command: oc apply -f /tmp/content/support/ingresscontroller.yaml
+
+  - name: patch the image registry cr
+    command: oc patch configs.imageregistry.operator.openshift.io/cluster -p '{"spec":{"nodeSelector":{"node-role.kubernetes.io/infra":""}}}' --type=merge
+
+  - name: create the monitoring cr
+    command: oc create -f /tmp/content/support/cluster-monitoring-configmap.yaml
+
+  - name: fetch the infra node IPs for checking the operands
+    command: oc get node -l node-role.kubernetes.io/infra='' -o jsonpath='{range .items[*]}{.status.addresses[0].address}{"\n"}'
+    register: infra_node_ip_list
+
+  - name: sleep for 5 minutes to wait for pods to settle
+    pause:
+      minutes: 5
+
+  - name: get the router pods
+    command: oc get pod -n openshift-ingress -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: router_pod_list
+
+  - name: check that router pods are on infra nodes
+    command: oc get pod -n openshift-ingress {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ router_pod_list.stdout_lines }}"
+    register: router_hostip_out
+    failed_when: router_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: check that registry pods are on infra nodes
+    command: oc get pod -n openshift-image-registry -l docker-registry=default -o jsonpath='{.items[0].status.hostIP}'
+    with_items: "{{ router_pod_list.stdout_lines }}"
+    register: registry_hostip_out
+    failed_when: registry_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get alertmanager pod list
+    command: oc get pod -n openshift-monitoring -l app=alertmanager -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: alertmanager_pod_list
+  
+  - name: check that alertmanager pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ alertmanager_pod_list.stdout_lines }}"
+    register: alertmanager_hostip_out
+    failed_when: alertmanager_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get grafana pod list
+    command: oc get pod -n openshift-monitoring -l app=grafana -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: grafana_pod_list
+
+  - name: check that grafana pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ grafana_pod_list.stdout_lines }}"
+    register: grafana_hostip_out
+    failed_when: grafana_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get kube-state-metrics pod list
+    command: oc get pod -n openshift-monitoring -l app=kube-state-metrics -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: kube_state_metrics_pod_list
+
+  - name: check that kube-state-metrics pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ kube_state_metrics_pod_list.stdout_lines }}"
+    register: ksm_hostip_out
+    failed_when: ksm_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get prometheus-adapter pod list
+    command: oc get pod -n openshift-monitoring -l name=prometheus-adapter -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: prometheus_adapter_pod_list
+
+  - name: check that prometheus-adapter pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ prometheus_adapter_pod_list.stdout_lines }}"
+    register: prometheus_adapter_hostip_out
+    failed_when: prometheus_adapter_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get prometheus-k8s pod list
+    command: oc get pod -n openshift-monitoring -l name=prometheus -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: prometheus_pod_list
+
+  - name: check that prometheus pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ prometheus_pod_list.stdout_lines }}"
+    register: prometheus_hostip_out
+    failed_when: prometheus_hostip_out.stdout not in infra_node_ip_list.stdout_lines
+
+  - name: get telemeter pod list
+    command: oc get pod -n openshift-monitoring -l k8s-app=telemeter-client -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'
+    register: telemeter_pod_list
+
+  - name: check that telemeter pods are on infra nodes
+    command: oc get pod -n openshift-monitoring {{ item }} -o jsonpath='{.status.hostIP}'
+    with_items: "{{ telemeter_pod_list.stdout_lines }}"
+    register: telemeter_hostip_out
+    failed_when: telemeter_hostip_out.stdout not in infra_node_ip_list.stdout_lines
