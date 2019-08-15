@@ -1,5 +1,8 @@
 # vim: set ft=ansible
 ---
+- name: login as system:admin
+  command: oc login -u system:admin
+
 - name: get the admin-user SA token into a fact
   command: oc sa get-token admin-user -n labguide
   register: sa_token_out
