@@ -1,0 +1,62 @@
+---
+- name: Grade lab Homework of OpenShift Advanced Infrastructure Deployment
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check if there are 3 masters
+    include_role:
+      name: grader_check_ocp_node_label
+    vars:
+      node_label: "node-role.kubernetes.io/master="
+      node_count: 3
+      task_description_message: Check if the cluster has 3 masters
+      student_error_message: "The cluster doesn't have 3 masters"
+
+  - name: Check if there are 2 infra
+    include_role:
+      name: grader_check_ocp_node_label
+    vars:
+      node_label: "node-role.kubernetes.io/infra="
+      node_count: 2
+      task_description_message: Check if the cluster has 2 infra nodes
+      student_error_message: "The cluster doesn't have 2 infra nodes"
+
+  - name: Check if there are 2 workers
+    include_role:
+      name: grader_check_ocp_node_label
+    vars:
+      node_label: "node-role.kubernetes.io/worker="
+      node_count: 4  # because infra are workers too
+      task_description_message: Check if the cluster has 2 worker nodes
+      student_error_message: "The cluster doesn't have 2 worker nodes"
+
+      
+  - name: Check if 5 user identities exist
+    include_role:
+      name: grader_check_ocp_identity
+    vars:
+      id_count: 5
+      task_description_message: Check if 5 user identities exist
+      student_error_message: "The cluster doesn't have 5 user identities"
+#
+#  - name: Check if john is a cluster admin
+## oc auth can-i list nodes --as john
+##
+#
+#  - name: Create a project test-hw-project
+#
+#  - name: Check LimitRange in project test-hw-project
+#
+#  - name: Check ResourceQuota in project test-hw-project
+#
+#  - name: Check NetworkPolicy allow-namespace in project test-hw-project
+#
+#  - name: Check NetworkPolicy allow-ingress in project test-hw-project
+
