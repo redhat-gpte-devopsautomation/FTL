@@ -1,0 +1,17 @@
+---
+- name: Grade lab 03_1 of Quay Foundations
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','QUAYGUID') }}"
+
+  - name: Check Quay user exists
+    include_role:
+      name: grader_check_quay_user_exists
+    vars:
+      quay_user_name: myquayuser

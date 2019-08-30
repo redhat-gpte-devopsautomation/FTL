@@ -1,0 +1,47 @@
+---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out the user we are checking
+  debug:
+    msg: "Checking if Quay user {{ quay_user_name }} exists"
+    verbosity: 2
+
+- debug:
+    msg: quay is {{ guid }}
+
+- name: Look up user
+  uri:
+    url: https://myquayuser:'r3dh4t1'@quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
+  register: r_quay_user
+
+- name: Check that the user exists
+  set_fact:
+    success: true
+  when:
+  - r_quay_user.status == 200
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
