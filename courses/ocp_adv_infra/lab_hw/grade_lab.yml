@@ -45,18 +45,56 @@
       id_count: 5
       task_description_message: Check if 5 user identities exist
       student_error_message: "The cluster doesn't have 5 user identities"
-#
-#  - name: Check if john is a cluster admin
-## oc auth can-i list nodes --as john
-##
+
+  - name: Check if john is a cluster admin
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      oc_command: "auth can-i list nodes --as john"
+      task_description_message: Check if john is a cluster admin
+      student_error_message: "User john is not a cluster admin"
+
 #
 #  - name: Create a project test-hw-project
 #
-#  - name: Check LimitRange in project test-hw-project
-#
-#  - name: Check ResourceQuota in project test-hw-project
-#
-#  - name: Check NetworkPolicy allow-namespace in project test-hw-project
-#
-#  - name: Check NetworkPolicy allow-ingress in project test-hw-project
+  - name: Check LimitRange in project george-test
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: LimitRange
+      resource_namespace: george-test
+      resource_name: project-limits
+      task_description_message: Check LimitRange in project george-test
+      student_error_message: "LimitRange project-limits doesn't exist in project george-test"
+
+  - name: Check ResourceQuota in project george-test
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: ResourceQuota
+      resource_namespace: george-test
+      resource_name: project-quota
+      task_description_message: Check ResourceQuota in project george-test
+      student_error_message: "ResourceQuota project-quota doesn't exist in project george-test"
+
+  - name: Check NetworkPolicy allow-same-namespace in project george-test
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: NetworkPolicy
+      resource_namespace: george-test
+      resource_name: allow-same-namespace
+      task_description_message: Check NetworkPolicy allow-same-namespace in project george-test
+      student_error_message: "NetworkPolicy allow-same-namespace doesn't exist in project george-test"
+
+  - name: Check NetworkPolicy allow-from-openshift-ingress in project george-test
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: NetworkPolicy
+      resource_namespace: george-test
+      resource_name: allow-from-openshift-ingress
+      task_description_message: Check NetworkPolicy allow-from-openshift-ingress in project george-test
+      student_error_message: "NetworkPolicy allow-from-openshift-ingress doesn't exist in project george-test"
+
 

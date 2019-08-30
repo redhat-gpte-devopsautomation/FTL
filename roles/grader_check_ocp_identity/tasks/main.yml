@@ -12,8 +12,6 @@
   k8s_facts:
     kind: Identity
   register: r_id
-- debug:
-    msg: '{{ r_id }}'
 
 - name: Check the identities count
   set_fact:
