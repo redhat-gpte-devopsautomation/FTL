@@ -2,7 +2,7 @@
 - name: Grade lab 03_1 of Quay Foundations
   hosts: localhost
   gather_facts: false
-  become: false
+  become: true
 
   # All lab tests go here
   tasks:
@@ -15,3 +15,18 @@
       name: grader_check_quay_user_exists
     vars:
       quay_user_name: myquayuser
+      task_description_message: Check if the Quay user exists
+      student_error_message: "The Quay user {{ quay_user_name }} does not exist in the {{ guid }} Quay instance"
+  
+  - name: Check if container runs correctly
+    include_role:
+      name: grader_check_container_runs
+    vars:
+      quay_namespace: myquayuser
+      image_name: quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/{{ quay_namespace }}/hello-php:v0.2
+      runtime_args: "-d -p 8001:8000"
+      url_to_check: http://localhost:8001
+      expected_output: "Hello World, from your favorite PHP 7.2.10 version!"
+      cleanup: true
+      task_description_message: Checking if the hello-php application runs correctly
+      student_error_message: "The image {{ image_name }} did not start correctly"

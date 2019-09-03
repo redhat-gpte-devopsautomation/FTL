@@ -9,17 +9,37 @@
     verbosity: 2
 
 - name: Run container
-  command: "podman run localhost/buildah-hello"
+  shell: "podman run {{ runtime_args }} {{ image_name }}"
   register: r_run_container
+  ignore_errors: true
 
-- debug:
-    var: r_run_container
+# - debug:
+#     var: r_run_container
+
+- name: Test application
+  uri:
+    url: "{{ url_to_check }}"
+    return_content: true
+  when: url_to_check is defined
+  register: r_container_output
+  ignore_errors: true
+
+# - debug:
+#     var: r_container_output
+
+- name: Stop container
+  command: "podman stop {{ r_run_container.stdout }}"
+  when: 
+  - cleanup
+  - r_run_container.stdout != -1
+  ignore_errors: true
 
 - name: Check that the container ran successfully
   set_fact:
     success: true
-  when:
-  - r_run_container.stdout == "Hello, world!"
+  when: 
+  - (r_run_container.stdout == "{{ expected_output }}") or 
+    (r_container_output.content.find("{{ expected_output }}") != -1)
 
 ######################################################
 #                                                    #
