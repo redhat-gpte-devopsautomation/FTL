@@ -2,7 +2,7 @@
 - name: Grade lab 04_1 of Quay Foundations
   hosts: localhost
   gather_facts: false
-  become: false
+  become: true
 
   # All lab tests go here
   tasks:
