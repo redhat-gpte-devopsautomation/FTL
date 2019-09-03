@@ -5,25 +5,24 @@
 
 - name: Print out the user we are checking
   debug:
-    msg: "Checking if Quay user {{ quay_user_name }} exists"
+    msg: "Checking if Quay Organization {{ quay_org_name }} exists"
     verbosity: 2
 
-- debug:
-    msg: quay is {{ guid }}
+# - debug:
+#     msg: quay is {{ guid }}
 
-- name: Look up user
+- name: Look up org
   uri:
-    url: https://quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
-    #url: https://myquayuser:'r3dh4t1'@quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
+    url: https://quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/organization/{{ quay_org_name }}
     validate_certs: no
-  register: r_quay_user
+  register: r_quay_org
   ignore_errors: true
 
-- name: Check that the user exists
+- name: Check that the org exists
   set_fact:
     success: true
   when:
-  - r_quay_user.status == 200
+  - r_quay_org.status == 200
   ignore_errors: true
 
 ######################################################

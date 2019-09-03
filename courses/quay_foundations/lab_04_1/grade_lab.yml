@@ -8,29 +8,49 @@
   tasks:
   - name: Set GUID
     set_fact:
-      guid: "{{ lookup('env','GUID') }}"
+      guid: "{{ lookup('env','QUAYGUID') }}"
 
-  - name: Check local container image exists
+  - name: Check Quay user exists
     include_role:
-      name: grader_check_local_image_exists
+      name: grader_check_quay_user_exists
     vars:
-      image_name: "localhost/buildah-hello"
-      task_description_message: "Check if the {{ image_name }} exists"
-      student_error_message: "Image {{ image_name }} does not exist locally"
+      quay_user_name: myviewuser
+      task_description_message: Check if the Quay user exists
+      student_error_message: "The Quay user {{ quay_user_name }} does not exist in the {{ guid }} Quay instance"
 
-  - name: Check container working
+  - name: Check Quay user exists
+    include_role:
+      name: grader_check_quay_user_exists
+    vars:
+      quay_user_name: myedituser # The username you want to check
+      task_description_message: Check if the Quay user exists
+      student_error_message: "The Quay user {{ quay_user_name }} does not exist in the {{ guid }} Quay instance"
+
+  - name: Check Quay user exists
+    include_role:
+      name: grader_check_quay_user_exists
+    vars:
+      quay_user_name: myotheruser
+      task_description_message: Check if the Quay user exists
+      student_error_message: "The Quay user {{ quay_user_name }} does not exist in the {{ guid }} Quay instance"
+  
+  - name: Check Quay org exists
+    include_role:
+      name: grader_check_quay_org_exists
+    vars:
+      quay_org_name: myfirstquayorg
+      task_description_message: Check if the Quay Organization exists
+      student_error_message: "The Quay Organization {{ quay_org_name }} does not exist in the {{ guid }} Quay instance"
+
+  - name: Check if container runs correctly
     include_role:
       name: grader_check_container_runs
     vars:
-      image_name: "localhost/buildah-hello"
-      task_description_message: "Check if the {{ image_name }} runs successfully"
-      student_error_message: "Container {{ image_name }} does not run successfully"
-
-  - name: Check S2I BuildConfig exists
-    include_role:
-      name: grader_check_ocp_buildconfig_exists
-    vars:
-      task_description_message: Check if the S2I BuildConfig exists
-      buildconfig_name: "tasks"
-      project_name: "{{ guid }}-s2i"
-      student_error_message: "Buildconfig {{ buildconfig_name }} does not exist in project {{ guid }}-s2i"
+      quay_namespace: myquayuser
+      image_name: quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/{{ quay_namespace }}/hello-php:v0.3
+      runtime_args: "-d -p 8001:8000"
+      url_to_check: http://localhost:8001
+      expected_output: "Hello World"
+      cleanup: true
+      task_description_message: Checking if the hello-php application runs correctly
+      student_error_message: "The image {{ image_name }} did not start correctly"
