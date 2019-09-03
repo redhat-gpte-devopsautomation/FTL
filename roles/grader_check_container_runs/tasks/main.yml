@@ -28,7 +28,7 @@
 #     var: r_container_output
 
 - name: Stop container
-  command: "podman stop {{ r_run_container.stdout }}"
+  command: "podman rm {{ r_run_container.stdout }} --force"
   when: 
   - cleanup
   - r_run_container.stdout != -1
