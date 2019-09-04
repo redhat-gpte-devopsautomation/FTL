@@ -138,6 +138,6 @@
       resource_name: anyuid
       resource_definition_checks:
       - error_message: SCC anyuid has mygitlab service eaccounts
-        json_query: "groups[?@=='system:serviceaccounts:mygitlab']|[0]"
+        json_query: "users[?@=='system:serviceaccount:mygitlab:default']|[0]"
         value: system:serviceaccounts:mygitlab
       kubeconfig: ~/cluster-{{ lookup('env', 'GUID') }}/auth/kubeconfig
