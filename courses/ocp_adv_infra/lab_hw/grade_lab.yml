@@ -10,52 +10,79 @@
     set_fact:
       guid: "{{ lookup('env','GUID') }}"
 
-  - name: Check if there are 3 masters
-    include_role:
-      name: grader_check_ocp_node_label
-    vars:
-      node_label: "node-role.kubernetes.io/master="
-      node_count: 3
-      task_description_message: Check if the cluster has 3 masters
-      student_error_message: "The cluster doesn't have 3 masters"
+#  - name: Check if there are 3 masters
+#    include_role:
+#      name: grader_check_ocp_node_label
+#    vars:
+#      node_label: "node-role.kubernetes.io/master="
+#      node_count: 3
+#      task_description_message: Check if the cluster has 3 masters
+#      student_error_message: "The cluster doesn't have 3 masters"
+#
+#  - name: Check if there are 2 infra
+#    include_role:
+#      name: grader_check_ocp_node_label
+#    vars:
+#      node_label: "node-role.kubernetes.io/infra="
+#      node_count: 2
+#      task_description_message: Check if the cluster has 2 infra nodes
+#      student_error_message: "The cluster doesn't have 2 infra nodes"
+#
+#  - name: Check if there are 2 workers
+#    include_role:
+#      name: grader_check_ocp_node_label
+#    vars:
+#      node_label: "node-role.kubernetes.io/worker="
+#      node_count: 4  # because infra are workers too
+#      task_description_message: Check if the cluster has 2 worker nodes
+#      student_error_message: "The cluster doesn't have 2 worker nodes"
+#
+#  - name: Check if the image registry is running on infra nodes
+#    include_role:
+#      name: grader_check_ocp_pod_node
+#    vars:
+#      node_label: node-role.kubernetes.io/infra=
+#      pod_label: docker-registry=default 
+#      task_description_message: Check if image registry is running on infra nodes
+#      student_error_message: "The image registry is not running on infra nodes"
+#      
+#  - name: Check if Prometheus is running on infra nodes
+#    include_role:
+#      name: grader_check_ocp_pod_node
+#    vars:
+#      node_label: node-role.kubernetes.io/infra=
+#      pod_label: app=prometheus 
+#      task_description_message: Check if Prometheus is running on infra nodes
+#      student_error_message: "Prometheus is not running on infra nodes"
+#    
+#  - name: Check if Elasticsearch is running on infra nodes
+#    include_role:
+#      name: grader_check_ocp_pod_node
+#    vars:
+#      node_label: node-role.kubernetes.io/infra=
+#      pod_label: component=elasticsearch
+#      task_description_message: Check if Elasticsearch is running on infra nodes
+#      student_error_message: "Elasticsearch is not running on infra nodes"
+    
 
-  - name: Check if there are 2 infra
-    include_role:
-      name: grader_check_ocp_node_label
-    vars:
-      node_label: "node-role.kubernetes.io/infra="
-      node_count: 2
-      task_description_message: Check if the cluster has 2 infra nodes
-      student_error_message: "The cluster doesn't have 2 infra nodes"
-
-  - name: Check if there are 2 workers
-    include_role:
-      name: grader_check_ocp_node_label
-    vars:
-      node_label: "node-role.kubernetes.io/worker="
-      node_count: 4  # because infra are workers too
-      task_description_message: Check if the cluster has 2 worker nodes
-      student_error_message: "The cluster doesn't have 2 worker nodes"
-
-      
-  - name: Check if 5 user identities exist
-    include_role:
-      name: grader_check_ocp_identity
-    vars:
-      id_count: 5
-      task_description_message: Check if 5 user identities exist
-      student_error_message: "The cluster doesn't have 5 user identities"
-
-  - name: Check if john is a cluster admin
-    include_role:
-      name: grader_check_oc_command
-    vars:
-      oc_command: "auth can-i list nodes --as john"
-      task_description_message: Check if john is a cluster admin
-      student_error_message: "User john is not a cluster admin"
+#  - name: Check if 5 user identities exist
+#    include_role:
+#      name: grader_check_ocp_identity
+#    vars:
+#      id_count: 5
+#      task_description_message: Check if 5 user identities exist
+#      student_error_message: "The cluster doesn't have 5 user identities"
+#
+#  - name: Check if john is a cluster admin
+#    include_role:
+#      name: grader_check_oc_command
+#    vars:
+#      oc_command: "auth can-i list nodes --as john"
+#      task_description_message: Check if john is a cluster admin
+#      student_error_message: "User john is not a cluster admin"
 
 #
-#  - name: Create a project test-hw-project
+#  - name: Create a project george-test
 #
   - name: Check LimitRange in project george-test
     include_role:
@@ -67,6 +94,20 @@
       task_description_message: Check LimitRange in project george-test
       student_error_message: "LimitRange project-limits doesn't exist in project george-test"
 
+  - name: Check if the default CPU request is 500m in the LimitRange
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: LimitRange
+      resource_namespace: george-test
+      resource_name: project-limits
+      resource_definition_checks:
+      - error_message: "Default CPU request is not 500m in the LimitRange project-limits"
+        json_query: "spec.limits[0].defaultRequest.cpu"
+        value: "500m"
+      task_description_message: Check if the default CPU request is 500m in the LimitRange
+      student_error_message: "Default CPU request is not 500m in the LimitRange project-limits"
+
   - name: Check ResourceQuota in project george-test
     include_role:
       name: grader_check_ocp_resource
@@ -77,24 +118,38 @@
       task_description_message: Check ResourceQuota in project george-test
       student_error_message: "ResourceQuota project-quota doesn't exist in project george-test"
 
-  - name: Check NetworkPolicy allow-same-namespace in project george-test
+  - name: Check if the CPU quota is 1 in the project george-test
     include_role:
       name: grader_check_ocp_resource
     vars:
-      resource_kind: NetworkPolicy
+      resource_kind: ResourceQuota
       resource_namespace: george-test
-      resource_name: allow-same-namespace
-      task_description_message: Check NetworkPolicy allow-same-namespace in project george-test
-      student_error_message: "NetworkPolicy allow-same-namespace doesn't exist in project george-test"
+      resource_name: project-quota
+      resource_definition_checks:
+      - error_message: "Check if the CPU quota is 1 in the project george-test"
+      json_query: "status.hard.requests.cpu"
+      value: "1"
+      task_description_message: Check if the CPU quota is 1 in the project george-test
+      student_error_message: "CPU ResourceQuota is not set to 1 in the project george-test"
 
-  - name: Check NetworkPolicy allow-from-openshift-ingress in project george-test
-    include_role:
-      name: grader_check_ocp_resource
-    vars:
-      resource_kind: NetworkPolicy
-      resource_namespace: george-test
-      resource_name: allow-from-openshift-ingress
-      task_description_message: Check NetworkPolicy allow-from-openshift-ingress in project george-test
-      student_error_message: "NetworkPolicy allow-from-openshift-ingress doesn't exist in project george-test"
-
+#  - name: Check NetworkPolicy allow-same-namespace in project george-test
+#    include_role:
+#      name: grader_check_ocp_resource
+#    vars:
+#      resource_kind: NetworkPolicy
+#      resource_namespace: george-test
+#      resource_name: allow-same-namespace
+#      task_description_message: Check NetworkPolicy allow-same-namespace in project george-test
+#      student_error_message: "NetworkPolicy allow-same-namespace doesn't exist in project george-test"
+#
+#  - name: Check NetworkPolicy allow-from-openshift-ingress in project george-test
+#    include_role:
+#      name: grader_check_ocp_resource
+#    vars:
+#      resource_kind: NetworkPolicy
+#      resource_namespace: george-test
+#      resource_name: allow-from-openshift-ingress
+#      task_description_message: Check NetworkPolicy allow-from-openshift-ingress in project george-test
+#      student_error_message: "NetworkPolicy allow-from-openshift-ingress doesn't exist in project george-test"
+#
 

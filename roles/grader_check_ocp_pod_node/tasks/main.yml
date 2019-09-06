@@ -1,0 +1,80 @@
+---
+- name: Set success flag to false
+  set_fact:
+    success: false
+
+- name: Print out what we are checking
+  debug:
+    msg: "Checking if a pod with label {{ pod_label }} is running on one of the nodes with label {{ node_label }}"
+    verbosity: 2
+
+- name: Set ips to None
+  set_fact:
+    ips: None
+
+- name: Set pod_host_ip to None
+  set_fact:
+    pod_host_ip: None
+
+- name: Get node count
+  command: oc get nodes -l {{ node_label }} -o name 
+  register: r_node_count
+
+- name: Lookup node IPs
+  command: oc get nodes -l {{ node_label }} -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'
+  register: r_command
+  when:
+  - r_node_count.stdout_lines|length != 0
+
+- name: Save IPs to list
+  set_fact:
+    ips: "{{ r_command.stdout_lines }}"
+  when: r_command is defined
+
+- name: Get pod count
+  command: oc get pods -l {{ pod_label }} -A -o name
+  register: r_pod_count
+
+- name: Get pod host IP
+  command: oc get pods -l {{ pod_label }} -A -o jsonpath='{.items[0].status.hostIP}'
+  register: r_command_pods
+  when:
+  - r_pod_count.stdout_lines|length > 0
+
+- name: Save pod host IP
+  set_fact:
+    pod_host_ip: "{{ r_command_pods.stdout }}"
+  when: r_command_pods is not skipped
+
+- name: Check if the pod host IP is in the list
+  set_fact:
+    success: true
+  when: 
+  - ips != None
+  - pod_host_ip != None
+  - pod_host_ip in ips
+  
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"

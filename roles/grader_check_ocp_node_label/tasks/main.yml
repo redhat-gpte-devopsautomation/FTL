@@ -16,6 +16,7 @@
       - "{{ node_label }}"
   register: r_node
 
+
 - name: Check the node count
   set_fact:
     success: true
