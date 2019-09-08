@@ -108,6 +108,20 @@
       task_description_message: Check if the default CPU request is 500m in the LimitRange
       student_error_message: "Default CPU request is not 500m in the LimitRange project-limits"
 
+  - name: Check if the default memory request is 500Mi in the LimitRange
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: LimitRange
+      resource_namespace: george-test
+      resource_name: project-limits
+      resource_definition_checks:
+      - error_message: "Default memory request is not 500Mi in the LimitRange project-limits"
+        json_query: "spec.limits[0].defaultRequest.memory"
+        value: "500Mi"
+      task_description_message: Check if the default memory request is 500Mi in the LimitRange
+      student_error_message: "Default CPU request is not 500Mi in the LimitRange project-limits"
+
   - name: Check ResourceQuota in project george-test
     include_role:
       name: grader_check_ocp_resource
@@ -127,10 +141,24 @@
       resource_name: project-quota
       resource_definition_checks:
       - error_message: "Check if the CPU quota is 1 in the project george-test"
-      json_query: "status.hard.requests.cpu"
-      value: "1"
+        json_query: 'status.hard."requests.cpu"'
+        value: "1"
       task_description_message: Check if the CPU quota is 1 in the project george-test
       student_error_message: "CPU ResourceQuota is not set to 1 in the project george-test"
+
+  - name: Check if the storage request quota is 2Gi in the project george-test
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: ResourceQuota
+      resource_namespace: george-test
+      resource_name: project-quota
+      resource_definition_checks:
+      - error_message: "Check if the storage request quota is 2Gi in the project george-test"
+        json_query: 'status.hard."requests.storage"'
+        value: "2Gi"
+      task_description_message: Check if the storage request quota is 2Gi in the project george-test
+      student_error_message: "Storage requests quota is not set to 2Gi in the project george-test"
 
 #  - name: Check NetworkPolicy allow-same-namespace in project george-test
 #    include_role:
