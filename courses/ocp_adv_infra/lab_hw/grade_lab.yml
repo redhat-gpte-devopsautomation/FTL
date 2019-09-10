@@ -64,6 +64,48 @@
       task_description_message: Check if Elasticsearch is running on infra nodes
       student_error_message: "Elasticsearch is not running on infra nodes"
     
+  - name: Check if the CPU request is 500m for Elasticsearch
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Elasticsearch
+      resource_namespace: openshift-logging
+      resource_name: elasticsearch
+      resource_definition_checks:
+      - error_message: "CPU request is not 500m for Elasticsearch"
+        json_query: "spec.nodeSpec.resources.requests.cpu"
+        value: "500m"
+      task_description_message: Check if the CPU request is 500m for Elasticsearch
+      student_error_message: "CPU request is not 500m for Elasticsearch"
+
+  - name: Check if the memory request is 4Gi for Elasticsearch
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Elasticsearch
+      resource_namespace: openshift-logging
+      resource_name: elasticsearch
+      resource_definition_checks:
+      - error_message: "Memory request is not 4Gi for Elasticsearch"
+        json_query: "spec.nodeSpec.resources.requests.memory"
+        value: "4Gi"
+      task_description_message: Check if the memory request is 4Gi for Elasticsearch
+      student_error_message: "Memory request is not 4Gi for Elasticsearch"
+
+  - name: Check if the storage size is 20G for Elasticsearch
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Elasticsearch
+      resource_namespace: openshift-logging
+      resource_name: elasticsearch
+      resource_definition_checks:
+      - error_message: "Storage size is not 20G for Elasticsearch"
+        json_query: "spec.nodes[0].storage.size"
+        value: "20G"
+      task_description_message: Check if the storage size is 20G for Elasticsearch
+      student_error_message: "Storage size is not 20G for Elasticsearch"
+
 
   - name: Check if there are 2 routers
     include_role:
