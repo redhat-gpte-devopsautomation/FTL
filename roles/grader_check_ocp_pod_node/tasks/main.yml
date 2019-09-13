@@ -29,7 +29,8 @@
 - name: Save IPs to list
   set_fact:
     ips: "{{ r_command.stdout_lines }}"
-  when: r_command is defined
+  when: 
+  - r_node_count.stdout_lines|length != 0
 
 - name: Get pod count
   command: oc get pods -l {{ pod_label }} -A -o name
