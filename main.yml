@@ -2,7 +2,7 @@
 - name: Run FTL Init role - initialize grading report data structures
   hosts: localhost
   gather_facts: false
-  become: true
+  become: false
 
   roles:
 
@@ -15,7 +15,7 @@
 - name: Run FTL finish role - generate reports and updates
   hosts: localhost
   gather_facts: false
-  become: true
+  become: false
 
   roles:
     - when: purpose == "grade_lab"

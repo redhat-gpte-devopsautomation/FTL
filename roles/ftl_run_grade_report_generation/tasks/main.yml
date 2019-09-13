@@ -28,4 +28,15 @@
     src: lab_success_report.j2
     dest: "{{ opentlc_grading_file }}"
   when: not r_opentlc_student_error_file.stat.exists
+
+- name: Get report hash
+  stat:
+    path: "{{ opentlc_grading_file }}"
+    checksum_algorithm: sha256
+  register: st
+
+- name: Sign student report
+  lineinfile:
+    path: "{{ opentlc_grading_file }}"
+    line: "{{ st.stat.checksum }}  {{ opentlc_grading_file }}"
 ...
