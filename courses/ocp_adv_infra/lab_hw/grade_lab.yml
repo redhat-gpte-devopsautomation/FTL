@@ -142,13 +142,13 @@
       task_description_message: Check if john is a cluster admin
       student_error_message: "User john is not a cluster admin"
 
+  - name: Check if project george-test already exists
+    command: oc project george-test
+    register: r_oc 
+
   - name: Create a project george-test
-    include_role:
-      name: grader_check_oc_command
-    vars:
-      oc_command: "new-project george-test --as george --as-group=system:authenticated --as-group=system:authenticated:oauth"
-      task_description_message: Create a new project george-test
-      student_error_message: "Can't create a new project george-test"
+    command: oc new-project george-test
+    when: r_oc.rc != 0
 
   - name: Check LimitRange in project george-test
     include_role:
