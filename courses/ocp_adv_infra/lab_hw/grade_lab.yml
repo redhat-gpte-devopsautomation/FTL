@@ -145,6 +145,7 @@
   - name: Check if project george-test already exists
     command: oc project george-test
     register: r_oc 
+    ignore_errors: yes
 
   - name: Create a project george-test
     command: oc new-project george-test
@@ -212,7 +213,7 @@
       task_description_message: Check if the CPU quota is 1 in the project george-test
       student_error_message: "CPU ResourceQuota is not set to 1 in the project george-test"
 
-  - name: Check if the storage request quota is 2Gi in the project george-test
+  - name: Check if the storage request quota is 2G in the project george-test
     include_role:
       name: grader_check_ocp_resource
     vars:
@@ -220,11 +221,11 @@
       resource_namespace: george-test
       resource_name: project-quota
       resource_definition_checks:
-      - error_message: "Check if the storage request quota is 2Gi in the project george-test"
+      - error_message: "Check if the storage request quota is 2G in the project george-test"
         json_query: 'status.hard."requests.storage"'
-        value: "2Gi"
-      task_description_message: Check if the storage request quota is 2Gi in the project george-test
-      student_error_message: "Storage requests quota is not set to 2Gi in the project george-test"
+        value: "2G"
+      task_description_message: Check if the storage request quota is 2G in the project george-test
+      student_error_message: "Storage requests quota is not set to 2G in the project george-test"
 
   - name: Check NetworkPolicy allow-same-namespace in project george-test
     include_role:
