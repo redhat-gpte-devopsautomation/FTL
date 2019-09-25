@@ -199,7 +199,7 @@
       task_description_message: Check ResourceQuota in project george-test
       student_error_message: "ResourceQuota project-quota doesn't exist in project george-test"
 
-  - name: Check if the CPU quota is 1 in the project george-test
+  - name: Check if the CPU quota is 4 in the project george-test
     include_role:
       name: grader_check_ocp_resource
     vars:
@@ -207,13 +207,13 @@
       resource_namespace: george-test
       resource_name: project-quota
       resource_definition_checks:
-      - error_message: "Check if the CPU quota is 1 in the project george-test"
+      - error_message: "Check if the CPU quota is 4 in the project george-test"
         json_query: 'status.hard."requests.cpu"'
-        value: "1"
-      task_description_message: Check if the CPU quota is 1 in the project george-test
-      student_error_message: "CPU ResourceQuota is not set to 1 in the project george-test"
+        value: "4"
+      task_description_message: Check if the CPU quota is 4 in the project george-test
+      student_error_message: "CPU ResourceQuota is not set to 4 in the project george-test"
 
-  - name: Check if the storage request quota is 2G in the project george-test
+  - name: Check if the storage request quota is 20G in the project george-test
     include_role:
       name: grader_check_ocp_resource
     vars:
@@ -221,11 +221,11 @@
       resource_namespace: george-test
       resource_name: project-quota
       resource_definition_checks:
-      - error_message: "Check if the storage request quota is 2G in the project george-test"
+      - error_message: "Check if the storage request quota is 20G in the project george-test"
         json_query: 'status.hard."requests.storage"'
-        value: "2G"
-      task_description_message: Check if the storage request quota is 2G in the project george-test
-      student_error_message: "Storage requests quota is not set to 2G in the project george-test"
+        value: "20G"
+      task_description_message: Check if the storage request quota is 20G in the project george-test
+      student_error_message: "Storage requests quota is not set to 20G in the project george-test"
 
   - name: Check NetworkPolicy allow-same-namespace in project george-test
     include_role:
