@@ -113,8 +113,8 @@
     vars:
       pod_label: ingresscontroller.operator.openshift.io/deployment-ingresscontroller=default
       pod_count: 2 
-      task_description_message: Check if the cluster has 2 worker nodes
-      student_error_message: "The cluster doesn't have 2 worker nodes"
+      task_description_message: Check if the cluster has 2 router pods
+      student_error_message: "The cluster doesn't have 2 router pods"
 
   - name: Check if the routers are running on infra nodes
     include_role:
