@@ -173,7 +173,7 @@
       resource_name: project-limits
       resource_definition_checks:
       - error_message: "Default CPU request is not 500m in the LimitRange project-limits"
-        json_query: "spec.limits[0].defaultRequest.cpu"
+        json_query: "spec.limits[?@.type=='Container'].defaultRequest.cpu|[0]"
         value: "500m"
       task_description_message: Check if the default CPU request is 500m in the LimitRange
       student_error_message: "Default CPU request is not 500m in the LimitRange project-limits"
@@ -187,7 +187,7 @@
       resource_name: project-limits
       resource_definition_checks:
       - error_message: "Default memory request is not 500Mi in the LimitRange project-limits"
-        json_query: "spec.limits[0].defaultRequest.memory"
+        json_query: "spec.limits[?@.type=='Container'].defaultRequest.memory|[0]"
         value: "500Mi"
       task_description_message: Check if the default memory request is 500Mi in the LimitRange
       student_error_message: "Default CPU request is not 500Mi in the LimitRange project-limits"
