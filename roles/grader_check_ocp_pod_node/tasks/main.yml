@@ -10,11 +10,11 @@
 
 - name: Set ips to None
   set_fact:
-    ips: None
+    ips: []
 
 - name: Set pod_host_ip to None
   set_fact:
-    pod_host_ip: None
+    pod_host_ip: []
 
 - name: Get node count
   command: oc get nodes -l {{ node_label }} -o name 
@@ -24,13 +24,13 @@
   command: oc get nodes -l {{ node_label }} -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'
   register: r_command
   when:
-  - r_node_count.stdout_lines|length != 0
+  - r_node_count.stdout_lines|length > 0
 
 - name: Save IPs to list
   set_fact:
     ips: "{{ r_command.stdout_lines }}"
   when: 
-  - r_node_count.stdout_lines|length != 0
+  - r_node_count.stdout_lines|length > 0
 
 - name: Get pod count
   command: oc get pods -l {{ pod_label }} -A -o name
@@ -51,8 +51,8 @@
   set_fact:
     success: true
   when: 
-  - ips != None
-  - pod_host_ip != None
+  - ips|length > 0
+  - pod_host_ip|length > 0
   - pod_host_ip in ips
   
 
