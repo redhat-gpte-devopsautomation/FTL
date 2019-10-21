@@ -147,7 +147,7 @@
     ignore_errors: yes
   
   - name: Delete project george-test if exists
-    command: oc project delete george-test
+    command: oc delete project george-test
     when: r_oc.rc == 0
 
   - name: Create a project george-test
