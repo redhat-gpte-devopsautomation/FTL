@@ -141,18 +141,9 @@
       task_description_message: Check if john is a cluster admin
       student_error_message: "User john is not a cluster admin"
 
-  - name: Check if project george-test already exists
-    command: oc project george-test
-    register: r_oc 
-    ignore_errors: yes
-  
-  - name: Delete project george-test if exists
-    command: oc delete project george-test
-    when: r_oc.rc == 0
-
   - name: Create a project george-test
     command: oc new-project george-test
-    when: r_oc.rc != 0
+    ignore_errors: yes
 
   - name: Check LimitRange in project george-test
     include_role:
@@ -250,4 +241,7 @@
       task_description_message: Check NetworkPolicy allow-from-openshift-ingress in project george-test
       student_error_message: "NetworkPolicy allow-from-openshift-ingress doesn't exist in project george-test"
 
+  - name: Delete project george-test 
+    command: oc delete project george-test
+    ignore_errors: yes
 
