@@ -227,9 +227,6 @@
       - error_message: "Check if the storage request quota is 20G in the project george-test"
         json_query: 'status.hard."requests.storage"'
         value: "20G"
-      - error_message: "Check if the storage request quota is 20Gi in the project george-test"
-        json_query: 'status.hard."requests.storage"'
-        value: "20Gi"
       task_description_message: Check if the storage request quota is 20G in the project george-test
       student_error_message: "Storage requests quota is not set to 20G in the project george-test"
 
