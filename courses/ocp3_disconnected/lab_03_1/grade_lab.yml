@@ -1,0 +1,41 @@
+---
+- name: Grade lab 02_1 of OpenShift 3 Disconnected Installation
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check if Nexus Deployment Config has 1 replica
+    include_role:
+      name: grader_check_ocp_deploymentconfig_exists
+    vars:
+      task_description_message: Check if Nexus Deployment Config has 1 replica
+      deployment_name: "nexus"
+      num_replicas: 1
+      project_name: "cicd"
+      student_error_message: "Deployment Config nexus does not exist in project cicd or does not have 1 replica"
+
+  - name: Check if Gogs Deployment Config has 1 replica
+    include_role:
+      name: grader_check_ocp_deploymentconfig_exists
+    vars:
+      task_description_message: Check if Gogs Deployment Config has 1 replica
+      deployment_name: "gogs"
+      num_replicas: 1
+      project_name: "cicd"
+      student_error_message: "Deployment Config gogs does not exist in project cicd or does not have 1 replica"
+
+  - name: Check if Tasks Deployment Config has 1 replica
+    include_role:
+      name: grader_check_ocp_deploymentconfig_exists
+    vars:
+      task_description_message: Check if Tasks Deployment Config has 1 replica
+      deployment_name: "tasks"
+      num_replicas: 1
+      project_name: "tasks"
+      student_error_message: "Deployment Config tasks does not exist in project tasks or does not have 1 replica"
