@@ -1,0 +1,53 @@
+---
+- name: Grade lab 02_1 of OpenShift 3 Disconnected Installation
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Check if the Web Console Route exists
+    include_role:
+      name: grader_check_ocp_route_exists
+    vars:
+      task_description_message: Check if the Web Console route exists
+      route_name: "console"
+      project_name: "openshift-console"
+      student_error_message: "Route console does not exist in project openshift-console"
+
+  # Check nodes
+  - name: Check if Master 3 exists
+    include_role:
+      name: grader_check_ocp_node_exists
+    vars:
+      task_description_message: Check if Master 3 exists
+      node_name: "master3.{{ guid }}.internal"
+      student_error_message: "Master 3 does not exist"
+  - name: Check if Infranode 1 exists
+    include_role:
+      name: grader_check_ocp_node_exists
+    vars:
+      task_description_message: Check if Infranode 1 exists
+      node_name: "infranode1.{{ guid }}.internal"
+      student_error_message: "Infranode 1 does not exist"
+  - name: Check if Infranode 2 exists
+    include_role:
+      name: grader_check_ocp_node_exists
+    vars:
+      task_description_message: Check if Infranode 2 exists
+      node_name: "infranode2.{{ guid }}.internal"
+      student_error_message: "Infranode 2 does not exist"
+
+  # Check Pods
+  - name: Check that the Prometheus pod is running
+    include_role:
+      name: grader_check_ocp_pod_exists
+    vars:
+      task_description_message: Check that the Prometheus pod is running
+      pod_name: "prometheus-k8s-0"
+      project_name: "openshift-monitoring"
+      student_error_message: "Prometeus pod prometheus-k8s-0 not found"
