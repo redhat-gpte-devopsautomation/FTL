@@ -15,7 +15,7 @@
       name: grader_check_ocp_deploymentconfig_exists
     vars:
       task_description_message: Check if Nexus Deployment Config has 1 replica
-      deploymentconfig_name: "nexus"
+      deploymentconfig_name: "nexus3"
       num_replicas: 1
       project_name: "cicd"
       student_error_message: "Deployment Config nexus does not exist in project cicd or does not have 1 replica"
