@@ -1,0 +1,22 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Disabling Project Self-Provisioning of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: login as system:admin
+    command: oc login -u system:admin
+
+  - name: add self-provisioner cluster role to authenticated users
+    command: >
+      oc patch clusterrolebinding.rbac self-provisioners -p '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"Group","name":"system:authenticated:oauth"}]}'
+
+  - name: enable automatic updates to the self-provisioners role
+    command: >
+      oc patch clusterrolebinding.rbac self-provisioners -p '{"metadata":{"annotations":{"rbac.authorization.kubernetes.io/autoupdate":"true"}}}'
+
+  - name: remove the projectRequestMessage custom message
+    command: >
+      oc patch --type=json project.config.openshift.io cluster -p '[{"op": "remove", "path": "/spec/projectRequestMessage"}]'

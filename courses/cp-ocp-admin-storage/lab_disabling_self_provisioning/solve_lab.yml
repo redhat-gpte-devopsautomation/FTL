@@ -1,0 +1,50 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Disabling Project Self-Provisioning of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: remove self-provisioner cluster role from authenticated users
+    command: >
+      oc patch clusterrolebinding.rbac self-provisioners -p '{"subjects": null}'
+
+  - name: diable automatic updates to the self-provisioners role
+    command: oc patch clusterrolebinding.rbac self-provisioners -p '{"metadata":{ "annotations":{"rbac.authorization.kubernetes.io/autoupdate":"false"}}}'
+
+  - name: update the projectRequestMessage to a custom message
+    command: oc patch --type=merge project.config.openshift.io cluster -p '{"spec":{"projectRequestMessage":"Please visit https://ticket.example.com to request a project"}}'
+
+  - name: check that self-provisioner cluster role was removed from authenticated users
+    command: oc get clusterrolebinding.rbac self-provisioners -o jsonpath='{.subjects}'
+    register: check_missing_subject
+
+  - name: convert missing subject into a fact for expection
+    set_fact:
+      rbac_subject: "{{ check_missing_subject.stdout }}"
+
+  - name: check automatic updates are disabled
+    shell: oc get clusterrolebinding.rbac self-provisioners -o json | jq -r .metadata.annotations.\"rbac.authorization.kubernetes.io/autoupdate\"
+    register: check_automatic_update
+
+  - name: convert automatic update into a fact for expection
+    set_fact:
+      automatic_update: "{{ check_automatic_update.stdout }}"
+
+  - name: check the projectRequestMessage
+    command: oc get project.config.openshift.io cluster -o jsonpath='{.spec.projectRequestMessage}'
+    register: check_request_msg
+
+  - name: convert projectRequestMessage output into a fact for expection
+    set_fact:
+      request_msg: "{{ check_request_msg.stdout }}"
+
+  - name: evaluate various criteria of requesting project outputs (rbac subjects, request message, etc)
+    assert:
+      that:
+        - rbac_subject == ""
+        - automatic_update == false
+        - request_msg | length >= 1
