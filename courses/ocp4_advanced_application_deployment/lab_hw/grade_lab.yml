@@ -8,7 +8,7 @@
   tasks:
   - name: Set opentlc_student
     set_fact:
-      opentlc_student: "{{ lookup('env', 'CREDENTIAL_NAME' }}"
+      opentlc_student: "{{ lookup('env', 'CREDENTIAL_NAME') }}"
 
   - name: Set GUID
     set_fact:
