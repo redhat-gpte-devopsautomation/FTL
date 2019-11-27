@@ -1,0 +1,28 @@
+---
+- name: Grade Homework of OpenShift 4 Advanced Application Deployment ILT
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks:
+  - name: Set opentlc_student
+    set_fact:
+      opentlc_student: "{{ lookup('env', 'CREDENTIAL_NAME' }}"
+
+  - name: Set GUID
+    set_fact:
+      guid: "{{ lookup('env','GUID') }}"
+
+  - name: Print debug output
+    debug:
+      msg: "Submitting grade for student {{ opentlc_student }} and GUID ${GUID}."
+
+  # - name: Check that the route instant-app exists
+  #   include_role:
+  #     name: grader_check_ocp_route_exists
+  #   vars:
+  #     task_description_message: Check that the route mlbparks exists
+  #     route_name: "mlbparks"
+  #     project_name: "{{ guid }}-instant-app"
+  #     student_error_message: "Route mlbparks does not exist in project {{ guid }}-instant-app"
