@@ -21,6 +21,7 @@
       resource_api_version: route.openshift.io/v1
       resource_kind: Route
       resource_name: tasks
+      resource_namespace: "{{ guid }}-tasks-prod"
       resource_definition_checks:
       - error_message: Tasks route does not point to tasks-green service.
         json_query: "spec.to.name"
