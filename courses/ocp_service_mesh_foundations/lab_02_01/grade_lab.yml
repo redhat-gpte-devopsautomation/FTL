@@ -21,16 +21,16 @@
       resource_name: istio-operator
       resource_namespace: istio-operator
 
-  - name: Check that the Deployment 3scale-istio-adapter exists
-    include_role:
-      name: grader_check_ocp_resource
-    vars:
-      task_description_message: Check that the Deployment `3scale-istio-adapter` exists.
-      student_error_message: "Deployment Config `3scale-istio-adapter` does not exist in project istio-system."
-      resource_api_version: apps/v1
-      resource_kind: Deployment
-      resource_name: 3scale-istio-adapter
-      resource_namespace: istio-system
+  # - name: Check that the Deployment 3scale-istio-adapter exists
+  #   include_role:
+  #     name: grader_check_ocp_resource
+  #   vars:
+  #     task_description_message: Check that the Deployment `3scale-istio-adapter` exists.
+  #     student_error_message: "Deployment Config `3scale-istio-adapter` does not exist in project istio-system."
+  #     resource_api_version: apps/v1
+  #     resource_kind: Deployment
+  #     resource_name: 3scale-istio-adapter
+  #     resource_namespace: istio-system
 
   - name: Check the Kiali Route exists
     include_role:
