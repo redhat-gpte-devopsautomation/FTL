@@ -1,0 +1,18 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Disabling Project Self-Provisioning of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: login as system:admin
+    command: oc login -u system:admin
+
+  - name: delete clusterresourcequotas for-pricelist and for-user-normaluser1
+    command: >
+      oc delete clusterresourcequotas for-pricelist for-user-normaluser1
+
+  - name: delete projects pricelist-backend pricelist-frontend welcome1 and welcome2
+    command: >
+      oc delete projects pricelist-backend pricelist-frontend welcome1 welcome2
