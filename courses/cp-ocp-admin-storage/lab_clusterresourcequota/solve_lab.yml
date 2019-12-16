@@ -1,0 +1,276 @@
+# vim: set ft=ansible
+---
+- name: Solve lab Disabling Project Self-Provisioning of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: create clusterquota with a hard cap of 10 pods
+    command: >
+      oc create clusterquota for-user-normaluser1 --project-annotation-selector openshift.io/requester=normaluser1 --hard pods=10
+
+  - name: check to see if if the clusterquota was created
+    command: >
+      oc get clusterresourcequotas for-user-normaluser1 -o jsonpath='{.metadata.name}'
+    register: check_crq_fnu1
+
+  - name: convert clusterquota name as a fact
+    set_fact:
+      crq_fnu1: "{{ check_crq_fnu1.stdout }}"
+
+  - name: create project welcome1
+    command: >
+      oc new-project welcome1
+
+  - name: check to see if welcome1 was created
+    command: >
+      oc get project welcome1 -o jsonpath='{.metadata.name}'
+    register: check_project_w1
+
+  - name: convert welcome1 project check into a fact
+    set_fact:
+      project_w1: "{{ check_project_w1.stdout }}"
+
+  - name: create project welcome2
+    command: >
+      oc new-project welcome2
+
+  - name: check to see if welcome2 was created
+    command: >
+      oc get project welcome2 -o jsonpath='{.metadata.name}'
+    register: check_project_w2
+
+  - name: convert welcome2 project check into a fact
+    set_fact:
+      project_w2: "{{ check_project_w2.stdout }}"
+
+  - name: annotate welcome1 as being created by normaluser1
+    command: >
+      oc annotate ns welcome1 openshift.io/requester=normaluser1 --overwrite
+
+  - name: check to see if welcome1 was properly annotated
+    shell: oc get project welcome1 -o json | jq -r .metadata.annotations.\"openshift.io/requester\"
+    register: check_w1_annotation
+
+  - name: convert welcome1 annotation into a fact
+    set_fact:
+      w1_annotation: "{{ check_w1_annotation.stdout }}"
+
+  - name: annotate welcome2 as being created by normaluser1
+    command: >
+      oc annotate ns welcome2 openshift.io/requester=normaluser1 --overwrite
+
+  - name: check to see if welcome2 was properly annotated
+    shell: oc get project welcome2 -o json | jq -r .metadata.annotations.\"openshift.io/requester\"
+    register: check_w2_annotation
+
+  - name: convert welcome2 annotation into a fact
+    set_fact:
+      w2_annotation: "{{ check_w2_annotation.stdout }}"
+
+  - name: create php1 app in welcome1 project
+    command: >
+      oc new-app -n welcome1 --name=php1 quay.io/redhatworkshops/welcome-php:latest
+
+  - name: Wait for php1 app to be running
+    command: >
+      oc get dc php1 -n welcome1 -o jsonpath='{.status.availableReplicas}'
+    register: php1_dc
+    until: 'php1_dc.stdout | int >= 1'
+    retries: 10
+    delay: 15
+
+  - name: create php2 app in welcome2 project
+    command: >
+      oc new-app -n welcome2 --name=php2 quay.io/redhatworkshops/welcome-php:latest
+
+  - name: Wait for php2 app to be running
+    command: >
+      oc get dc php2 -n welcome2 -o jsonpath='{.status.availableReplicas}'
+    register: php2_dc
+    until: 'php2_dc.stdout | int >= 1'
+    retries: 10
+    delay: 15
+
+  - name: scale php1 app to 5 pods
+    command: >
+      oc scale dc php1 -n welcome1 --replicas=5
+
+  - name: wait for php1 to scale
+    command: >
+      oc get dc php1 -n welcome1 -o jsonpath='{.status.availableReplicas}'
+    register: php1_dc_scale
+    until: 'php1_dc_scale.stdout | int >= 5'
+    retries: 10
+    delay: 15
+
+  - name: scale php2 app to 6 pods
+    command: >
+      oc scale dc php2 -n welcome2 --replicas=6
+
+  - name: wait for php2 to scale
+    command: >
+      oc get dc php2 -n welcome2 -o jsonpath='{.status.availableReplicas}'
+    register: php2_dc_scale
+    until: 'php2_dc_scale.stdout | int >= 5'
+    retries: 10
+    delay: 15
+
+  - name: check clusterquota for user
+    command: >
+      oc get clusterresourcequotas for-user-normaluser1  -o jsonpath='{.status.total.used.pods}'
+    register: check_clusterquota_foruser
+
+  - name: convert clusterquota for user into a fact
+    set_fact:
+      clusterquota_foruser: "{{ check_clusterquota_foruser.stdout }}"
+
+  - name: check pod count for php1 app
+    command: >
+      oc get dc php1 -n welcome1 -o jsonpath='{.status.availableReplicas}'
+    register: check_php1_pod_count
+
+  - name: set php1 app pod count as a fact
+    set_fact:
+      php1_pod_count: "{{ check_php1_pod_count.stdout }}"
+
+  - name: check pod count for php2 app
+    command: >
+      oc get dc php2 -n welcome2 -o jsonpath='{.status.availableReplicas}'
+    register: check_php2_pod_count
+
+  - name: set php2 app pod count as a fact
+    set_fact:
+      php2_pod_count: "{{ check_php2_pod_count.stdout }}"
+
+  - name: create clusterquota by label
+    command: >
+      oc create clusterresourcequota for-pricelist --project-label-selector=appstack=pricelist --hard=pods=5
+
+  - name: check to see if creating clusterquota by label succeeded
+    command: >
+      oc get clusterresourcequotas for-pricelist -o jsonpath='{.metadata.name}'
+    register: check_crq_by_label
+
+  - name: set clsuterquota by label as a fact
+    set_fact:
+      crq_by_label: "{{ check_crq_by_label.stdout }}"
+
+  - name: create project pricelist-frontend
+    command: >
+      oc adm new-project pricelist-frontend
+
+  - name: check to see if pricelist-frontend was created
+    command: >
+      oc get project pricelist-frontend -o jsonpath='{.metadata.name}'
+    register: check_pricelist_frontend
+
+  - name: set pricelist-frontend as a fact
+    set_fact:
+      pricelist_frontend: "{{ check_pricelist_frontend.stdout }}"
+
+  - name: create project pricelist-backend 
+    command: >
+      oc adm new-project pricelist-backend
+
+  - name: check to see if pricelist-backend was created
+    command: >
+      oc get project pricelist-backend -o jsonpath='{.metadata.name}'
+    register: check_pricelist_backend
+
+  - name: set pricelist-backend as a fact
+    set_fact:
+      pricelist_backend: "{{ check_pricelist_backend.stdout }}"
+
+  - name: label pricelist-frontend
+    command: >
+      oc label ns pricelist-frontend appstack=pricelist
+
+  - name: label pricelist-backend
+    command: >
+      oc label ns pricelist-backend appstack=pricelist
+
+  - name: check the number of projects within the pricelist appstack 
+    shell: oc get ns -l appstack=pricelist -o json  | jq -r '.items | length'
+    register: check_appstack_pricelist
+
+  - name:
+    set_fact:
+      appstack_pricelist: "{{ check_appstack_pricelist.stdout }}"
+
+  - name: create pricelist-frontend app
+    command: >
+      oc new-app -n pricelist-frontend --name frontend quay.io/redhatworkshops/pricelist:frontend
+
+  - name: Wait for  pricelist-frontend app to be running
+    command: >
+      oc get dc frontend -n pricelist-frontend -o jsonpath='{.status.availableReplicas}'
+    register: plfrontend_dc
+    until: 'plfrontend_dc.stdout | int >= 1'
+    retries: 10
+    delay: 15
+
+  - name: create pricelist-backend app
+    command: >
+      oc new-app -n pricelist-backend --name backend quay.io/redhatworkshops/pricelist:backend
+
+  - name: Wait for pricelist-backend app to be running
+    command: >
+      oc get dc backend -n pricelist-backend -o jsonpath='{.status.availableReplicas}'
+    register: plbackend_dc
+    until: 'plbackend_dc.stdout | int >= 1'
+    retries: 10
+    delay: 15
+
+  - name: scale pricelist-frontend to 3 pods 
+    command: >
+      oc scale dc frontend -n pricelist-frontend --replicas=3
+
+  - name: wait for pricelist-frontend to scale
+    command: >
+      oc get dc frontend -n pricelist-frontend -o jsonpath='{.status.availableReplicas}'
+    register: frontend_dc_scale
+    until: 'frontend_dc_scale.stdout | int >= 2'
+    retries: 10
+    delay: 15
+
+  - name: scale pricelist-backend to 3 pods 
+    command: >
+      oc scale dc backend -n pricelist-backend --replicas=3
+
+  - name: wait for pricelist-backend to scale
+    command: >
+      oc get dc backend -n pricelist-backend -o jsonpath='{.status.availableReplicas}'
+    register: backend_dc_scale
+    until: 'backend_dc_scale.stdout | int >= 2'
+    retries: 10
+    delay: 15
+
+  - name: check clusterquota for pricelist
+    command: >
+      oc get clusterresourcequotas for-pricelist  -o jsonpath='{.status.total.used.pods}'
+    register: check_clusterquota_forpricelist
+
+  - name: convert clusterquota for pricelist into a fact
+    set_fact:
+      clusterquota_forpricelist: "{{ check_clusterquota_forpricelist.stdout }}"
+
+  - name: evaluate criterias for finishing the clusterresourcequotas lab (project names, hard quota limits, pod count, etc)
+    assert:
+      that:
+        - crq_fnu1 == "for-user-normaluser1"
+        - project_w1 == "welcome1"
+        - project_w2 == "welcome2"
+        - w1_annotation == "normaluser1"
+        - w2_annotation == "normaluser1"
+        - clusterquota_foruser | int == 10
+        - php1_pod_count | int == 5
+        - php2_pod_count | int == 5
+        - crq_by_label == "for-pricelist"
+        - pricelist_frontend == "pricelist-frontend"
+        - pricelist_backend == "pricelist-backend"
+        - appstack_pricelist | int == 2
+        - clusterquota_forpricelist | int == 5
