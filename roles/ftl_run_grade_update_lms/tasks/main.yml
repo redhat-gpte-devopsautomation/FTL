@@ -1,3 +1,9 @@
-- name: Stub routine for updating LMS
-  debug:
-    msg: I'll update the LMS
+---
+
+- name: Update LMS if lab is enabled for LMS update
+  when:
+    - update_lms is defined
+    - update_lms == true
+  uri:  
+
+...

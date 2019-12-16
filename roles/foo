@@ -1,0 +1,39 @@
+---
+- name: "Launch requested Job of type {{ job_vars['__meta__']['tower']['action'] }} of {{ job_vars['__meta__']['deployer']['scm_ref'] }}"
+  tower_job_launch:
+    job_template: >-
+                                  {{
+                                    job_vars['__meta__']['tower']['action'] ~ '-'
+                                    ~ job_vars['__meta__']['deployer']['type'] ~ '-'
+                                    ~ job_vars['__meta__']['deployer']['scm_ref'] ~ '-'
+                                    ~ job_vars['guid']
+
+                                  }}
+    inventory:        "empty-inventory-{{ job_vars['__meta__']['tower']['run_group'] | default('default') }}"
+    extra_vars: "{{ ( job_vars | default({}) | combine(secrets  | default({})) ) | to_nice_yaml }}"
+  register:       r_tower_job_launch
+
+- name: Callback with job started event
+  include_role:
+    name: job_callback
+  vars:
+    job_callback_event: started
+    job_callback_message:
+      - "{{ job_vars['__meta__']['tower']['action'] }}-{{ job_vars['__meta__']['deployer']['type'] }}-{{ job_vars['__meta__']['deployer']['scm_ref'] }}"
+      - "{{ r_tower_job_launch }}"
+
+- name: Wait for job to complete
+  tower_job_wait:
+    job_id:   "{{ r_tower_job_launch.id }}"
+    timeout:  "{{ tower_job_timeout | default(1800) }}"
+  register: r_tower_job_status
+
+- name: Callback with job complete event
+  include_role:
+    name: job_callback
+  vars:
+    job_callback_event: complete
+    job_callback_message:
+      - "{{ job_vars['__meta__']['tower']['action'] }}-{{ job_vars['__meta__']['deployer']['type'] }}-{{ job_vars['__meta__']['deployer']['scm_ref'] }}"
+      - "{{ r_tower_job_status }}"
+...

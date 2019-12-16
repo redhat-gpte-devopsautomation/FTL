@@ -20,3 +20,21 @@
         student_error_message: Package httpd not started
         service: httpd
 ...
+---
+#- hosts: all
+#  gather_facts: false
+#
+#  tasks:
+#
+#    - name: check for motd line
+#      lineinfile:
+#        path: /etc/motd
+#        state: present
+#        line: "Managed by Ansible"
+#      check_mode: true
+#      register: r_motd
+#
+#    - name: check for motd line
+#      debug:
+#        var: r_motd
+
