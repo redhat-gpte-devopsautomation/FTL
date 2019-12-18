@@ -1,0 +1,53 @@
+---
+- when: update_lms | default(false)
+  name: Update LRS when lab enabled for LRS update
+ me: Update SCORMCloud with student lab status
+  hosts:          localhost
+  connection:     local
+  gather_facts:   false
+  become:         false
+  vars:
+    job_template_name: ftl-lms-updater
+    tower_server: tower.ftl-tower-test.na.shared.opentlc.com
+    tower_server_api_endpoint: "https://{{ tower_server }}/api/v2/job_templates/{{ f_ftl_updater_job_id }}/launch/"
+    tower_bearer_token: nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+
+  tasks:
+
+    - name: Capture the job id for the requested job template
+      block:
+
+        - name: Lookup Tower Job ID by name
+          command: >-
+            awx job_template list 
+            --name={{ job_template_name }} 
+            -f jq --filter '.results[] | .id'
+          register: r_ftl_updater_job_id
+
+        - name: Output response from job_id lookup
+          debug:
+            var: r_ftl_updater_job_id   
+
+        - name: Capture ftl job_id as fact for easy reference
+          set_fact:
+            f_ftl_updater_job_id: "{{ r_ftl_updater_job_id.stdout }}" 
+
+    - name: Call Tower API scormcloud-updater
+      uri:
+        url:                "{{ tower_server_api_endpoint }}"
+        method:             POST
+        headers:
+          Content-Type: application/json
+          Authorization: Bearer nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+        validate_certs:     false
+        body:
+          extra_vars:     "{{ payload }}"
+        body_format:      json
+        status_code:
+          - 200
+          - 201
+          - 202
+          #        follow_redirects: true
+
+
+...

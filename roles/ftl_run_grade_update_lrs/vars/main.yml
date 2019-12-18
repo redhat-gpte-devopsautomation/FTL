@@ -1,0 +1,6 @@
+---
+job_template_name:          ftl-lms-updater
+tower_server:               tower.ftl-tower-test.na.shared.opentlc.com
+tower_server_api_endpoint:  "https://{{ tower_server }}/api/v2/job_templates/{{ f_ftl_updater_job_id }}/launch/"
+tower_bearer_token:         nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+...
