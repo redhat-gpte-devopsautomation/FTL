@@ -4,7 +4,8 @@
     path: "{{ opentlc_student_error_file }}"
   register: r_opentlc_student_error_file
 
-- name: If log file exists - process errors  
+- when: r_opentlc_student_error_file.stat.exists
+  name: If log file exists - process errors  
   block:
 
     - name: Get the student errors from the log file
@@ -21,13 +22,23 @@
         src: lab_error_report.j2
         dest: "{{ opentlc_grading_file }}"
         #dest: /tmp/error_report.txt
-  when: r_opentlc_student_error_file.stat.exists
 
-- name:  Generate student success report
-  template:
-    src: lab_success_report.j2
-    dest: "{{ opentlc_grading_file }}"
-  when: not r_opentlc_student_error_file.stat.exists
+    - name: Set lab_passed to false
+      set_fact:
+        lab_passed: false
+
+- when: not r_opentlc_student_error_file.stat.exists
+  name: Student has passed lab
+  block:
+
+    - name:  Generate student success report
+      template:
+        src: lab_success_report.j2
+        dest: "{{ opentlc_grading_file }}"
+
+    - name: Set lab_passed to false
+      set_fact:
+        lab_passed: true
 
 - name: Get report hash
   stat:
