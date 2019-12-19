@@ -1,0 +1,10 @@
+---
+- name: Run the ftl_run_grade_update_lrs role
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  roles:
+    - ftl_run_grade_update_lrs
+...

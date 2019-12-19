@@ -1,6 +1,37 @@
 ---
-job_template_name:          ftl-lms-updater
-tower_server:               tower.ftl-tower-test.na.shared.opentlc.com
-tower_server_api_endpoint:  "https://{{ tower_server }}/api/v2/job_templates/{{ f_ftl_updater_job_id }}/launch/"
-tower_bearer_token:         nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+job_template_name:          	ftl-lms-updater
+tower_server:               	tower.ftl-tower-test.na.shared.opentlc.com
+tower_server_api_endpoint:  	"https://{{ tower_server }}/api/v2/job_templates/{{ f_ftl_updater_job_id }}/launch/"
+tower_bearer_token:         	nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+
+student_id:                   tok-opentlc-id
+course_id:                    ansible_implementation
+course_name:                  Ansible Implementation YAML creds
+module_id:                    03_roles
+lab_id:                       "03_01"
+lab_name:                     Ansible Roles
+lab_passed:                   true
+
+payload:
+  scormcloud_api_endpoint:    https://cloud.scorm.com/lrs/5XNTTIURRT/sandbox/data/xAPI/statements
+  scormcloud_api_body:
+    actor:
+      account: 
+        name:             "{{ student_id }}"
+        homePage:         "http://redhat.gpte.com/lab_grading"
+      objectType:       Agent 
+    verb:  
+      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
+      display:
+        en-US:            "{{ course_name }}"
+        lab-id:           "{{ lab_id }}"
+    object:        
+      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
+      definition: 
+        name:
+          en-US:          "{{ course_name }}"
+      objectType:       Activity
+    result:    
+      success:          "{{ lab_passed }}"
+      response:         Attempted
 ...

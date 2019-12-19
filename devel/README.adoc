@@ -3,8 +3,30 @@
 == Overview
 
 
-
 === Pushing your development code
+
+To speed up the development cycle it is possible to push changes in FTL directly
+to your development grader host without having to redeploy. The example given
+below is for a labs.opentlc.com deployed `three-tier-app` config.
+
+==== Steps
+
+. Work from the development directory
+
+
+. Install the `ftl-injector` role locally
+
++
+[source,bash]
+----
+ansible-galaxy install git+https://github.com/redhat-gpte-devopsautomation/ftl-injector.git
+----
+. Create an appropriate inventory
+
+NOTE: A simple pattern, that avoids needless updating of inventory files is to
+export a shell environmental variable e.g. `export GRADER_HOST=<GUID>`.
+
+A sample inventory file is provided and enables by `ansible.cfg`
 
 
 [source,bash]
@@ -29,9 +51,4 @@ grader_host
 ansible_host                    = 3.213.167.74
 ansible_user                    = student1
 ansible_ssh_pass                = ansible
-
-
-iyyyy
-----
-. hello
 
