@@ -1,12 +1,12 @@
 ---
 - name: Check SCORMCLOUD API vars are set
-  when: >- 
-    student_id is not defined
-    or course_id is not defined
-    or course_name is not defined
-    or lab_id is not defined
-    or lab_passed is not defined
-  fail: 
+  assert: 
+    that:
+      - student_id is defined
+      - course_id is defined
+      - course_name is defined
+      - lab_id is defined
+      - lab_passed is defined
     msg: | 
      All the following variables must be defined: 
       - student_id
@@ -39,8 +39,8 @@
         url:                "{{ tower_server_api_endpoint }}"
         method:             POST
         headers:
-          Content-Type: application/json
-          Authorization: Bearer nrbqlLeivGmlJDZgV68oQUTQ0FMcX5
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ tower_bearer_token }}"
         validate_certs:     false
         body:
           extra_vars:     "{{ payload }}"
