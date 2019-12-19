@@ -1,6 +1,6 @@
 ---
 
-- when: update_lms | default(false)
+- when: update_lrs | default(false)
   name: Update LRS when lab enabled for LRS update
   block:
 
