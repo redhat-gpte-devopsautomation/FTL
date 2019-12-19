@@ -9,5 +9,5 @@
 
 - name: Update LMS
   import_role:
-    name: ftl_run_grade_update_lms
+    name: ftl_run_grade_update_lrs
 ...

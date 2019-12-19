@@ -1,23 +1,24 @@
 ---
-- name: Check SCORMCLOUD API vars are set
-  assert: 
-    that:
-      - student_id is defined
-      - course_id is defined
-      - course_name is defined
-      - lab_id is defined
-      - lab_passed is defined
-    msg: | 
-     All the following variables must be defined: 
-      - student_id
-      - course_id
-      - course_name
-      - lab_id
-      - lab_passed
 
 - when: update_lms | default(false)
   name: Update LRS when lab enabled for LRS update
   block:
+
+    - name: Check SCORMCLOUD API vars are set
+      assert: 
+        that:
+          - student_id is defined
+          - course_id is defined
+          - course_name is defined
+          - lab_id is defined
+          - lab_passed is defined
+        msg: | 
+         All the following variables must be defined: 
+          - student_id
+          - course_id
+          - course_name
+          - lab_id
+          - lab_passed
 
     - name: Lookup Tower Job ID by name
       command: >-

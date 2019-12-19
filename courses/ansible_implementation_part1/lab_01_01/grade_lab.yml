@@ -9,14 +9,8 @@
     - name: Section 2
       role: grader_check_always_succeed
       vars:
-        section_number: 6.4.1
-        student_error_message: Package httpd not installed
-        package: httpd
-
-    - name: Section 6.4.2, Check student has enabled Apache
-      role: ftl_check_service_started
-      vars:
-        section_number: 6.4.2
-        student_error_message: Package httpd not started
-        service: httpd
+        section_number: 2.2
+        student_error_message: Grader failed
+        task_description_message: Run lab grader on grader host
+...
 ...
