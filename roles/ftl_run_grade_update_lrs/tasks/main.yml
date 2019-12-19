@@ -1,4 +1,20 @@
 ---
+- name: Check SCORMCLOUD API vars are set
+  when: >- 
+    student_id is not defined
+    or course_id is not defined
+    or course_name is not defined
+    or lab_id is not defined
+    or lab_passed is not defined
+  fail: 
+    msg: | 
+     All the following variables must be defined: 
+      - student_id
+      - course_id
+      - course_name
+      - lab_id
+      - lab_passed
+
 - when: update_lms | default(false)
   name: Update LRS when lab enabled for LRS update
   block:
@@ -33,7 +49,4 @@
           - 200
           - 201
           - 202
-      #        follow_redirects: true
-
-
 ...
