@@ -6,10 +6,11 @@
 
   roles:      # All lab tests go here
 
-    - name: Section 2
+    - name: Section 3
       role: grader_check_user_exists
       vars:
-        section_number: 3.2
+        user: devops
+        #section_number: 3.2
         student_error_message: User devops doesn not exist
         task_description_message: Check user devops exists
 ...
