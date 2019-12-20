@@ -8,7 +8,7 @@
   delegate_to: localhost
 
   #- when: grader_step == "PASS"
-- when: grader_step is match("PASS.*)
+- when: grader_output_message is match("PASS.*)
   name: Appends lab message to success log
   lineinfile:
     create: yes
@@ -18,7 +18,7 @@
   delegate_to: localhost
 
   #- when: grader_step == "FAIL"
-- when: grader_step is match("FAIL.*)
+- when: grader_output_message is match("FAIL.*)
   name: Appends lab failure message to error log
   lineinfile:
     create: yes
