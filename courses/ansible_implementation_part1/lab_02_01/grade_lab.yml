@@ -10,7 +10,6 @@
       role: grader_check_user_exists
       vars:
         user: devops
-        #section_number: 3.2
-        student_error_message: User devops doesn not exist
+        student_error_message: User devops does not exist
         task_description_message: Check user devops exists
 ...

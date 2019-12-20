@@ -18,7 +18,7 @@
       vars:
         user: root
         #section_number: 3.2
-        student_error_message: User root doesn not exist
+        student_error_message: User root does not exist
         task_description_message: Check user root exists
 
     - name: Section 3
@@ -26,7 +26,7 @@
       vars:
         user: lp
         #section_number: 3.2
-        student_error_message: User lp doesn not exist
+        student_error_message: User lp does not exist
         task_description_message: Check user lp exists
 
     - name: Section 3
@@ -34,6 +34,6 @@
       vars:
         user: devops
         #section_number: 3.2
-        student_error_message: User devops doesn not exist
+        student_error_message: User devops does not exist
         task_description_message: Check user devops exists
 ...
