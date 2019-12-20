@@ -36,7 +36,7 @@
         src: lab_success_report.j2
         dest: "{{ opentlc_grading_file }}"
 
-    - name: Set lab_passed to false
+    - name: Set lab_passed to true
       set_fact:
         lab_passed: true
 
