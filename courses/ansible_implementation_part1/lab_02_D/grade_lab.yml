@@ -28,6 +28,7 @@
         #section_number: 3.2
         student_error_message: User lp doesn not exist
         task_description_message: Check user lp exists
+
     - name: Section 3
       role: grader_check_user_exists
       vars:
