@@ -11,14 +11,14 @@
 #                                                    #
 ######################################################
 
-- when: success | bool
+- when: not r_state.changed | bool
   name: Create Pass logging message
   set_fact:
     output_message: "PASS: {{ task_description_message }}"
     step: PASS
   delegate_to: localhost
 
-- when: not success | bool
+- when: r_state.changed | bool
   name: Create Fail logging message
   set_fact:
     output_message: "FAIL: {{ task_description_message }}: {{ student_error_message | d('') }}"
