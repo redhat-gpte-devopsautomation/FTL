@@ -1,4 +1,12 @@
 ---
+- name: Appends lab message to grader log
+  lineinfile:
+    create: yes
+    insertafter: EOF
+    path: "{{ opentlc_student_grader_log }}"
+    line: "{{ grader_output_message }}"
+  delegate_to: localhost
+
 - when: success | bool
   name: Appends lab message to error log
   lineinfile:

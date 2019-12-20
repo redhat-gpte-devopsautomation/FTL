@@ -40,14 +40,14 @@
       set_fact:
         lab_passed: true
 
-- name: Get report hash
-  stat:
-    path: "{{ opentlc_grading_file }}"
-    checksum_algorithm: sha256
-  register: st
-
-- name: Sign student report
-  lineinfile:
-    path: "{{ opentlc_grading_file }}"
-    line: "{{ st.stat.checksum }}  {{ opentlc_grading_file }}"
+#- name: Get report hash
+#  stat:
+#    path: "{{ opentlc_grading_file }}"
+#    checksum_algorithm: sha256
+#  register: st
+#
+#- name: Sign student report
+#  lineinfile:
+#    path: "{{ opentlc_grading_file }}"
+#    line: "{{ st.stat.checksum }}  {{ opentlc_grading_file }}"
 ...
