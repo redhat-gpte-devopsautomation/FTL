@@ -8,7 +8,7 @@
   delegate_to: localhost
 
 - when: success | bool
-  name: Appends lab message to error log
+  name: Appends lab message to success log
   lineinfile:
     create: yes
     insertafter: EOF

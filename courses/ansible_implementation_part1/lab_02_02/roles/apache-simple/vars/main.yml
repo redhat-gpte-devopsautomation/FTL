@@ -1,5 +1,0 @@
----
-# vars file for apache
-httpd_packages:
-  - httpd
-  - mod_wsgi
