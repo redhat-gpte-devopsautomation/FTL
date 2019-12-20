@@ -11,24 +11,6 @@
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
-  set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
-  delegate_to: localhost
-
-- when: r_state.changed
-  name: Import logging tasks
-  import_role:
-    name: ftl_run_log_grade_to_log
-
-
-######################################################
-#                                                    #
-# Common boiler plate logging logic - Do not modify  #
-#                                                    #
-######################################################
-
 - when: success | bool
   name: Create Pass logging message
   set_fact:
@@ -47,3 +29,4 @@
   vars:
     grader_output_message: "{{ output_message }}"
     success: "{{ success }}"
+...
