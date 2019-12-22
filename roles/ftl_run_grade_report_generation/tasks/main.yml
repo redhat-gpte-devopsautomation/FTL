@@ -7,7 +7,7 @@
   check_mode: true
   register: r_lab_pass
 
-- when: "{{ r_lab_pass.changed | bool }}"
+- when: r_lab_pass.changed | bool
   name: Report contains a fail
   set_fact:
     lab_passed: true
@@ -18,9 +18,9 @@
     msg: 
       - "student_failed = {{ student_failed }}"
       - "Error count = {{ student_errors }}"  
-  verbosity: 2
+    verbosity: 2
 
-- when: "{{ lab_passed | bool }}"
+- when: lab_passed | bool
   name: Lab passed, update report 
   blockinfile:
     block: |
@@ -28,7 +28,7 @@
     dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
     insertafter: EOF
 
-- when: "{{ not lab_passed | bool }}"
+- when: not lab_passed | bool
   name: Lab failed, update report 
   blockinfile:
     block: |
