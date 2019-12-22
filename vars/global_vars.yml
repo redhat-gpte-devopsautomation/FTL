@@ -3,6 +3,9 @@
 
 # Student's report and previous report
 
+grader_working_dir:               /tmp/grading_dir
+grader_student_report_file:       grading_report.txt
+
 opentlc_grading_file:             /tmp/grading_report.txt
 opentlc_grading_file_previous:    /tmp/grading_report.txt-previous
 

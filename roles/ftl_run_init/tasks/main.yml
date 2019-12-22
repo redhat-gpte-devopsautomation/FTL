@@ -1,32 +1,34 @@
 ---
+#- name: Gather local facts for simple access to opentlc metadata
+#  setup:
+#    gather_subset: local
+#
+#- name: Set facts for simple access to opentlc metadata
+#  set_fact:
+#    #    opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
+#    opentlc_student: "{{ ansible_local.opentlc.ftl.opentlc_student }}"
 
-- name: Gather local facts for simple access to opentlc metadata
-  setup:
-    gather_subset: local
+#- name: Logging and debug course name and lab number
+#  debug:
+#    msg:
+#      - "Course name: {{ course_name }}"
+#      - "Lab Number: {{ lab_number }}"
+#    verbosity: 2
 
-- name: Set facts for simple access to opentlc metadata
-  set_fact:
-    #    opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
-    opentlc_student: "{{ ansible_local.opentlc.ftl.opentlc_student }}"
-
-- name: Logging and debug course name and lab number
-  debug:
-    msg:
-      - "Course name: {{ course_name }}"
-      - "Lab Number: {{ lab_number }}"
-    verbosity: 2
-
-- name: "Remove existing {{ opentlc_student_error_file  }} - clear old error"
+- name: "Create grader working directory {{ grader_working_dir }}"
   file:
-    path: "{{ opentlc_student_error_file }}"
+    path:   "{{ grader_working_dir }}
+    state:  directory
+    mode:   '0755'
+
+- name: "Remove any existing grader report: {{ grader_student_report_file }}" 
+  file:
+    path: "{{ grader_student_report_file }}"
     state: absent
 
-- name: "Does {{ opentlc_grading_file }} exist"
-  stat:
-    path: "{{ opentlc_grading_file }}"
-  register: r_grading_file
-
-- name: Preserve old grading file as previous and delete original
+    
+- when: r_grading_file.stat.exists
+  name: Preserve old grading file as previous and delete original
   block:
 
     - name: "Copy existing {{ opentlc_grading_file }} to previous"
@@ -41,6 +43,4 @@
       file:
         path: "{{ opentlc_grading_file }}"
         state: absent
-
-  when: r_grading_file.stat.exists
 ...
