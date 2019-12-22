@@ -28,7 +28,7 @@
     
 - name: "Generate header for new: {{ grader_student_report_file }}" 
   template:
-    src:    grader_student_report_file 
+    src:    grader_student_report_file.j2
     dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
   
 #- when: r_grading_file.stat.exists
