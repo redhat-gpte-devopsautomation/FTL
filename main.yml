@@ -3,6 +3,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  tags:
+    - ftl-init
 
   roles:
 

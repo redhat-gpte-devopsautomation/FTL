@@ -25,22 +25,26 @@
   file:
     path: "{{ grader_student_report_file }}"
     state: absent
-
     
-- when: r_grading_file.stat.exists
-  name: Preserve old grading file as previous and delete original
-  block:
-
-    - name: "Copy existing {{ opentlc_grading_file }} to previous"
-      copy:
-        remote_src: yes
-        force: yes
-        src: "{{ opentlc_grading_file }}"
-        dest: "{{ opentlc_grading_file_previous }}"
-        mode: 0666
-
-    - name: "Delete existing {{ opentlc_grading_file }}"
-      file:
-        path: "{{ opentlc_grading_file }}"
-        state: absent
+- name: "Generate header for new: {{ grader_student_report_file }}" 
+  template:
+    src:    grader_student_report_file 
+    dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+  
+#- when: r_grading_file.stat.exists
+#  name: Preserve old grading file as previous and delete original
+#  block:
+#
+#    - name: "Copy existing {{ opentlc_grading_file }} to previous"
+#      copy:
+#        remote_src: yes
+#        force: yes
+#        src: "{{ opentlc_grading_file }}"
+#        dest: "{{ opentlc_grading_file_previous }}"
+#        mode: 0666
+#
+#    - name: "Delete existing {{ opentlc_grading_file }}"
+#      file:
+#        path: "{{ opentlc_grading_file }}"
+#        state: absent
 ...
