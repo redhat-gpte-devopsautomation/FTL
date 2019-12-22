@@ -10,6 +10,12 @@
 - when: r_lab_pass.changed | bool
   name: Report contains a fail
   set_fact:
+    lab_passed: false
+    student_errors: "{{ r_lab_pass.found }}"
+
+- when: not r_lab_pass.changed | bool
+  name: Report contains a fail
+  set_fact:
     lab_passed: true
     student_errors: "{{ r_lab_pass.found }}"
 
