@@ -14,7 +14,7 @@
       name: ftl_run_init
 
 - name: "Import and run the {{ purpose }} playbooks"
-  include_playbook: "./courses/{{ course_id }}/lab_{{ lab_id }}/{{ purpose }}.yml"
+  import_playbook: "./courses/{{ course_id }}/lab_{{ lab_id }}/{{ purpose }}.yml"
 
 - name: Run FTL finish role - generate reports and updates
   hosts: localhost
