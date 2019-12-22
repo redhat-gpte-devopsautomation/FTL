@@ -1,0 +1,10 @@
+---
+#
+# Fake grader vars 
+#
+
+course_name:    ftl_ansible_implementation
+student_name:   john-snow
+lab_number:     02_01
+purpose:        grade_lab # _lab postfix compenstates for grader script substitution
+...

@@ -10,6 +10,9 @@
 
     - when: purpose == "grade_lab"
       name: ftl_run_init
+#      apply:
+#        tags:
+#          - ftl-init
 
 - name: "Import and run the {{ purpose }} playbooks"
   import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/{{ purpose }}.yml"
