@@ -1,53 +1,38 @@
 ---
-- name: "Check if errors recorded in {{ opentlc_student_error_file }} exists"
-  stat:
-    path: "{{ opentlc_student_error_file }}"
-  register: r_opentlc_student_error_file
+- name: Searching file for FAIL
+  lineinfile:
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    regex: "^FAIL.*"
+    state: absent
+  check_mode: true
+  register: r_lab_pass
 
-- when: r_opentlc_student_error_file.stat.exists
-  name: If log file exists - process errors  
-  block:
+- when: "{{ r_lab_pass.changed | bool }}"
+  name: Report contains a fail
+  set_fact:
+    lab_passed: true
+    student_errors: "{{ r_lab_pass.found }}"
 
-    - name: Get the student errors from the log file
-      command: "cat {{ opentlc_student_error_file }}"
-      register: r_opentlc_errors
+- name: Output lab status and error count
+  debug:
+    msg: 
+      - "student_failed = {{ student_failed }}"
+      - "Error count = {{ student_errors }}"  
+  verbosity: 2
 
-    - name: Iterate through log file appending to fact
-      set_fact:
-        opentlc_log_content: "{{ ( opentlc_log_content | default([])) +  [( item )] }}"
-      with_items: "{{ r_opentlc_errors.stdout_lines | sort }}"
+- when: "{{ lab_passed | bool }}"
+  name: Lab passed, update report 
+  blockinfile:
+    block: |
+      SUCCESS
+    dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter: EOF
 
-    - name:  Generate student error report
-      template:
-        src: lab_error_report.j2
-        dest: "{{ opentlc_grading_file }}"
-        #dest: /tmp/error_report.txt
-
-    - name: Set lab_passed to false
-      set_fact:
-        lab_passed: false
-
-- when: not r_opentlc_student_error_file.stat.exists
-  name: Student has passed lab
-  block:
-
-    - name:  Generate student success report
-      template:
-        src: lab_success_report.j2
-        dest: "{{ opentlc_grading_file }}"
-
-    - name: Set lab_passed to true
-      set_fact:
-        lab_passed: true
-
-#- name: Get report hash
-#  stat:
-#    path: "{{ opentlc_grading_file }}"
-#    checksum_algorithm: sha256
-#  register: st
-#
-#- name: Sign student report
-#  lineinfile:
-#    path: "{{ opentlc_grading_file }}"
-#    line: "{{ st.stat.checksum }}  {{ opentlc_grading_file }}"
+- when: "{{ not lab_passed | bool }}"
+  name: Lab failed, update report 
+  blockinfile:
+    block: |
+      FAILURE
+    dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter: EOF
 ...
