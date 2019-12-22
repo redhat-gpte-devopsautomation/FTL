@@ -17,7 +17,7 @@
 
 - name: "Create grader working directory {{ grader_working_dir }}"
   file:
-    path:   "{{ grader_working_dir }}
+    path:   "{{ grader_working_dir }}"
     state:  directory
     mode:   '0755'
 

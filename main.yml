@@ -3,6 +3,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  vars_files:
+    vars/global_vars.yml
   tags:
     - ftl-init
 
@@ -21,6 +23,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  vars_files:
+    vars/global_vars.yml
 
   roles:
     - when: purpose == "grade_lab"
