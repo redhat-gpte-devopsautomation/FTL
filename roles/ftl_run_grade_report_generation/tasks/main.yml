@@ -31,14 +31,16 @@
   blockinfile:
     block: |
       SUCCESS
-    dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    insertafter: EOF
+    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter:  EOF
+    marker:       ""
 
 - when: not lab_passed | bool
   name: Lab failed, update report 
   blockinfile:
     block: |
-      FAILURE
-    dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    insertafter: EOF
+      FAILURE {{ student_errors }} Errors
+    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter:  EOF
+    marker:       ""
 ...
