@@ -16,7 +16,7 @@
 - name: Output lab status and error count
   debug:
     msg: 
-      - "student_failed = {{ student_failed }}"
+      - "lab_passed = {{ lab_passed }}"
       - "Error count = {{ student_errors }}"  
     verbosity: 2
 
