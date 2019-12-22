@@ -3,8 +3,6 @@
   hosts: localhost
   gather_facts: false
   become: false
-  vars_files:
-    vars/global_vars.yml
   tags:
     - ftl-init
 
@@ -15,13 +13,13 @@
 
 - name: "Import and run the {{ purpose }} playbooks"
   import_playbook: "./courses/{{ course_id }}/lab_{{ lab_id }}/{{ purpose }}.yml"
+  tags:
+    - ftl-grade
 
 - name: Run FTL finish role - generate reports and updates
   hosts: localhost
   gather_facts: false
   become: false
-  vars_files:
-    vars/global_vars.yml
   tags:
     - ftl-finish
 
