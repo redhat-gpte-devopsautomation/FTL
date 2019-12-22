@@ -3,8 +3,8 @@
 # Fake grader vars 
 #
 
-course_name:    ftl_ansible_implementation
-student_id:   john-snow
-lab_number:     02_01
+course_id:      ftl_ansible_implementation
+student_id:     john-snow@example.com
+lab_id:        "02_01"
 purpose:        grade_lab # _lab postfix compenstates for grader script substitution
 ...
