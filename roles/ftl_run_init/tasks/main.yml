@@ -11,7 +11,7 @@
 #- name: Logging and debug course name and lab number
 #  debug:
 #    msg:
-#      - "Course name: {{ course_name }}"
+#      - "Course name: {{ course_id }}"
 #      - "Lab Number: {{ lab_number }}"
 #    verbosity: 2
 

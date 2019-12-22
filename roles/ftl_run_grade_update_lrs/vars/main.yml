@@ -24,13 +24,13 @@ payload:
     verb:  
       id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
       display:
-        en-US:            "{{ course_name }}"
+        en-US:            "{{ course_id }}"
         lab-id:           "{{ lab_id }}"
     object:        
       id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
       definition: 
         name:
-          en-US:          "{{ course_name }}"
+          en-US:          "{{ course_id }}"
       objectType:       Activity
     result:    
       success:          "{{ lab_passed }}"

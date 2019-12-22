@@ -9,14 +9,14 @@
         that:
           - student_id is defined
           - course_id is defined
-          - course_name is defined
+          - course_id is defined
           - lab_id is defined
           - lab_passed is defined
         msg: | 
          All the following variables must be defined: 
           - student_id
           - course_id
-          - course_name
+          - course_id
           - lab_id
           - lab_passed
 
