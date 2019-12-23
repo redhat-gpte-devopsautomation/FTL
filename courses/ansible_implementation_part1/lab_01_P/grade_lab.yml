@@ -1,0 +1,14 @@
+---
+- name: Debug grader to ping hosts
+  hosts: 3tierapp
+  connection: local
+  gather_facts: false
+
+  roles:      # All lab tests go here
+
+    - name: Section 2
+      role: grader_check_ping
+      vars:
+        student_error_message: Failed to ping host
+        task_description_message: Ping target host
+...
