@@ -28,11 +28,11 @@
       - "Error count = {{ student_errors }}"  
     verbosity: 2
 
-  name: Finalize lab report with status
+- name: Finalize lab report with status
   lineinfile:
+    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter:  EOF
     line: |
 
       {{ report_status_message }} {{ student_errors }} Errors
-    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    insertafter:  EOF
 ...
