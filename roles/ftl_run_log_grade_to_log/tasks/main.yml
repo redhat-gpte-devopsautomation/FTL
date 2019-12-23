@@ -1,9 +1,21 @@
 ---
-- name: Appends lab check result message to grader log
-  lineinfile:
-    create: yes
-    insertafter: EOF
-    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    line: "{{ grader_output_message }}"
+- name: Logging lab section PASS or FAIL to student grader report
+  block:
+    - when: success | bool
+      name: Create Pass logging message
+      set_fact:
+        grader_log_prefix: "PASS:"
+
+    - when: not success | bool
+      name: Create Fail logging message
+      set_fact:
+        grader_log_prefix: "FAIL:"
+
+    - name: Appends lab check result message to grader log
+      lineinfile:
+        create: yes
+        insertafter: EOF
+        path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+        line: "{{ grader_log_prefix }} {{ task_description_message }}"
   delegate_to: localhost
 ...

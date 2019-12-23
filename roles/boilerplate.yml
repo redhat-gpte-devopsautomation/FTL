@@ -1,12 +1,12 @@
 ---
-- name: "This test always recordes as FAI"
+- name: "This test always succeeds - verifies student logged in and ran it"
   debug:
-    msg: "Fails, debug role, always fails"
+    msg: "Success, student invoked grader"
     verbosity: 2
 
 - name: "Success - set fact"
   set_fact:
-    success: false
+    success: true
 
 ######################################################
 #                                                    #
@@ -18,5 +18,5 @@
 
 - name: Import logging role
   import_role:
-    name: ftl_run_log_grade_to_log
+    name: new_ftl_run_log_grade_to_log
 ...
