@@ -19,25 +19,4 @@
 - name: Import logging role
   import_role:
     name: new_ftl_run_log_grade_to_log
-        
-        #delegate_to: localhost
-
-#- name: Logging lab section PASS or FAIL to student grader report
-#  block:
-#    - when: success | bool
-#      name: Create Pass logging message
-#      set_fact:
-#        output_message: "PASS: {{ task_description_message }}"
-#
-#    - when: not success | bool
-#      name: Create Fail logging message
-#      set_fact:
-#        output_message: "FAIL: {{ task_description_message }}: {{ student_error_message | d('') }}"
-#
-#    - name: Import logging role
-#      import_role:
-#        name: ftl_run_log_grade_to_log
-#      vars:
-#        grader_output_message: "{{ output_message }}"
-#  delegate_to: localhost
 ...
