@@ -5,31 +5,27 @@
   check_mode: true
   register: r_state
 
+- when: not r_state.changed | bool
+  name: "Success - set fact"
+  name: Create Pass logging message
+  set_fact:
+    success: true
+
+- when: r_state.changed | bool
+  name: "Fail - set fact"
+  name: Create Fail logging message
+  set_fact:
+    success: false
+
 ######################################################
 #                                                    #
 # Common boiler plate logging logic - Do not modify  #
 #                                                    #
+# 2019-12-23 tok@redhat.com                          # 
+#                                                    #
 ######################################################
 
-- name: Logging section
-  block:
-    - when: not r_state.changed | bool
-      name: Create Pass logging message
-      set_fact:
-        output_message: "PASS: {{ task_description_message }}"
-        #      step: PASS
-
-    - when: r_state.changed | bool
-      name: Create Fail logging message
-      set_fact:
-        output_message: "FAIL: {{ task_description_message }}: {{ student_error_message | d('') }}"
-        # step: FAIL
-
-    - name: Import logging role
-      import_role:
-        name: ftl_run_log_grade_to_log
-      vars:
-        grader_output_message: "{{ output_message }}"
-        #  grader_step: "{{ step }}"
-  delegate_to: localhost
+- name: Import logging role
+  import_role:
+    name: new_ftl_run_log_grade_to_log
 ...
