@@ -1,0 +1,35 @@
+---
+- name: "This test always recordes as FAI"
+  debug:
+    msg: "Fails, debug role, always fails"
+    verbosity: 2
+
+- name: "Success - set fact"
+  set_fact:
+    success: false
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
+
+
+- name: Create Pass logging message
+  when: success | bool
+  set_fact:
+    output_message: "PASS: {{ task_description_message }}"
+  delegate_to: localhost
+
+- name: Create Fail logging message
+  when: not success | bool
+  set_fact:
+    output_message: "FAIL: {{ task_description_message }}: {{ student_error_message|d('')}}"
+  delegate_to: localhost
+
+- name: Import logging tasks
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    grader_output_message: "{{ output_message }}"
+...
