@@ -16,6 +16,6 @@
         create: yes
         insertafter: EOF
         path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-        line: "{{ grader_log_prefix }} {{ task_description_message }}"
+        line: "{{ grader_log_prefix }} {{ inventory_hostname }} {{ task_description_message }}"
   delegate_to: localhost
 ...
