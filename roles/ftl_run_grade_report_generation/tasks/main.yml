@@ -10,14 +10,16 @@
 - when: r_lab_pass.changed | bool
   name: Report contains one or more FAILs
   set_fact:
-    lab_passed: false
-    student_errors: "{{ r_lab_pass.found }}"
+    lab_passed:             false
+    student_errors:         "{{ r_lab_pass.found }}"
+    report_status_message:  FAILED
 
 - when: not r_lab_pass.changed | bool
   name: Report contains no FAILs
   set_fact:
     lab_passed: true
     student_errors: "{{ r_lab_pass.found }}"
+    report_status_message:  SUCCESS
 
 - name: Output lab status and error count
   debug:
@@ -26,21 +28,11 @@
       - "Error count = {{ student_errors }}"  
     verbosity: 2
 
-- when: lab_passed | bool
-  name: Lab passed, update report 
-  blockinfile:
-    block: |
-      SUCCESS
-    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    insertafter:  EOF
-    marker:       ""
+  name: Finalize lab report with status
+  lineinfile:
+    line: |
 
-- when: not lab_passed | bool
-  name: Lab failed, update report 
-  blockinfile:
-    block: |
-      FAILURE {{ student_errors }} Errors
+      {{ report_status_message }} {{ student_errors }} Errors
     dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
     insertafter:  EOF
-    marker:       ""
 ...
