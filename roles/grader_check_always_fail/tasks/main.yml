@@ -18,12 +18,12 @@
 
 - name: Logging lab section PASS or FAIL to student grader report
   block:
-    - when: not r_state.changed | bool
+    - when: success | bool
       name: Create Pass logging message
       set_fact:
         output_message: "PASS: {{ task_description_message }}"
 
-    - when: r_state.changed | bool
+    - when: not success | bool
       name: Create Fail logging message
       set_fact:
         output_message: "FAIL: {{ task_description_message }}: {{ student_error_message | d('') }}"
