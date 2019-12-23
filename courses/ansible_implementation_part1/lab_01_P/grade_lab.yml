@@ -1,5 +1,5 @@
 ---
-- name: Debug grader to ping hosts
+- name: Check ssh connecivity to hosts aka ansible ping
   hosts: 3tierapp
   connection: local
   gather_facts: false
@@ -7,8 +7,8 @@
   roles:      # All lab tests go here
 
     - name: Section 2
-      role: grader_check_ping
+      role: grader_check_ssh_connectivity
       vars:
-        student_error_message: Failed to ping host
-        task_description_message: Ping target host
+        student_error_message: Failed to ssh connect to host
+        task_description_message: ssh connectivity test aka ping
 ...
