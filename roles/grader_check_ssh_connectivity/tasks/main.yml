@@ -1,0 +1,41 @@
+---
+- name: Check host connectivity
+	block:
+		- name: check hosts
+			wait_for_connection:
+				timeout: 5
+		- name: 
+			set_fact:
+				success: true
+	rescue:
+		- name: Connection failed set success false
+			set_fact: 
+				success: false
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+# 2019-12-23 tok@redhat.com                          # 
+#                                                    #
+######################################################
+
+- name: Logging lab section PASS or FAIL to student grader report
+  block:
+    - when: success | bool
+      name: Create Pass logging message
+      set_fact:
+        output_message: "PASS: {{ task_description_message }}"
+
+    - when: not success | bool
+      name: Create Fail logging message
+      set_fact:
+        output_message: "FAIL: {{ task_description_message }}: {{ student_error_message | d('') }}"
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        grader_output_message: "{{ output_message }}"
+  delegate_to: localhost
+...

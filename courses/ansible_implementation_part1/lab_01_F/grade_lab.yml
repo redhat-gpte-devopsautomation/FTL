@@ -10,5 +10,5 @@
       role: grader_check_always_fail
       vars:
         student_error_message: Grader failed
-        task_description_message: Run lab grader on grader host
+        task_description_message: lab 01_F set to always FAIL
 ...
