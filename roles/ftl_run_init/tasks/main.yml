@@ -1,25 +1,9 @@
 ---
-#- name: Gather local facts for simple access to opentlc metadata
-#  setup:
-#    gather_subset: local
-#
-#- name: Set facts for simple access to opentlc metadata
-#  set_fact:
-#    #    opentlc_student: "{{ hostvars['localhost']['ansible_local']['opentlc']['ftl']['opentlc_student'] }}"
-#    opentlc_student: "{{ ansible_local.opentlc.ftl.opentlc_student }}"
-
-#- name: Logging and debug course name and lab number
-#  debug:
-#    msg:
-#      - "Course name: {{ course_id }}"
-#      - "Lab Number: {{ lab_number }}"
-#    verbosity: 2
-
 - name: "Create grader working directory {{ grader_working_dir }}"
   file:
     path:   "{{ grader_working_dir }}"
     state:  directory
-    mode:   '0755'
+    mode:   '0777'
 
 - name: "Remove any existing grader report: {{ grader_student_report_file }}" 
   file:
@@ -30,21 +14,5 @@
   template:
     src:    grader_student_report_file.j2
     dest:   "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-  
-#- when: r_grading_file.stat.exists
-#  name: Preserve old grading file as previous and delete original
-#  block:
-#
-#    - name: "Copy existing {{ opentlc_grading_file }} to previous"
-#      copy:
-#        remote_src: yes
-#        force: yes
-#        src: "{{ opentlc_grading_file }}"
-#        dest: "{{ opentlc_grading_file_previous }}"
-#        mode: 0666
-#
-#    - name: "Delete existing {{ opentlc_grading_file }}"
-#      file:
-#        path: "{{ opentlc_grading_file }}"
-#        state: absent
+    mode:   "0777"
 ...
