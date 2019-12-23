@@ -1,16 +1,16 @@
 ---
 - name: Check host connectivity
-	block:
-		- name: check hosts
-			wait_for_connection:
-				timeout: 5
-		- name: 
-			set_fact:
-				success: true
-	rescue:
-		- name: Connection failed set success false
-			set_fact: 
-				success: false
+  block:
+    - name: check hosts
+      wait_for_connection:
+        timeout: 5
+    - name: 
+      set_fact:
+        success: true
+  rescue:
+    - name: Connection failed set success false
+      set_fact: 
+        success: false
 
 ######################################################
 #                                                    #
