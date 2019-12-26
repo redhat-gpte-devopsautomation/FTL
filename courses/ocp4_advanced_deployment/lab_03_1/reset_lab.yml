@@ -1,0 +1,44 @@
+---
+- name: Reset the OCP4 on OpenStack installation lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  tasks:
+  - name: Get infra_id
+    shell: jq -r .infraID $HOME/openstack-upi/metadata.json
+    register: r_infra_id
+
+  - name: Delete servers
+    shell: openstack server list --name $INFRA_ID -f value -c ID | xargs openstack server delete
+    ignore_errors: true
+    environment:
+      INFRA_ID: "{{ r_infra_id.stdout }}"
+
+  - name: Delete ports
+    shell: openstack port list --tags openshiftClusterID="$INFRA_ID" -f value -c ID | xargs openstack port delete
+    ignore_errors: true
+    environment:
+      INFRA_ID: "{{ r_infra_id.stdout }}"
+
+  - name: Delete volumes
+    shell: openstack volume list | grep $INFRA_ID | awk '{ print $2 }' | xargs openstack volume delete
+    ignore_errors: true
+    environment:
+      INFRA_ID: "{{ r_infra_id.stdout }}"
+
+  - name: Cleanup install directory
+    file:
+      state: absent
+      path: $HOME/openstack-upi
+
+  - name: Create fresh install direcgtory
+    file:
+      state: directory
+      path: $HOME/openstack-upi
+
+  - name: Restore install-config from backup
+    copy:
+      src: $HOME/backup/install-config.yaml
+      dest: $HOME/openstack-upi/install-config.yaml
+      remote_src: true

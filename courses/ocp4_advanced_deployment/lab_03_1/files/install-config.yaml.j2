@@ -1,0 +1,46 @@
+apiVersion: v1
+baseDomain: {{ lookup('env', 'OPENSHIFT_DNS_ZONE') }}
+compute:
+- hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  platform:
+    openstack:
+      type: 4c16g30d
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: {{ lookup('env', 'GUID') }}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineCIDR: 192.168.47.0/24
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  openstack:
+    cloud: {{ lookup('env', 'GUID') }}-project
+    computeFlavor: 4c16g30d
+    externalNetwork: external
+    lbFloatingIP: {{ lookup('env', 'API_FIP') }}
+    octaviaSupport: "1"
+    region: ""
+    trunkSupport: "0"
+pullSecret: '{"auths":{"cloud.openshift.com":{"auth":"b3BlbnNoaWZ0LXJlbGVhc2UtZGV2K25zdGVwaGFuMWRma210bHJwdmlpZ3U2M2VuYTZxZ2R4bHJwOkJNTTZOOFI5MVRUOEFHSlJaVkVXMUJDVTFESVBTN0hISjhRR1E5UDI5WEFJNEVQSUw2TjNQN0o0R1ZaQVRYR0U=","email":"nstephan@redhat.com"},"quay.io":{"auth":"b3BlbnNoaWZ0LXJlbGVhc2UtZGV2K25zdGVwaGFuMWRma210bHJwdmlpZ3U2M2VuYTZxZ2R4bHJwOkJNTTZOOFI5MVRUOEFHSlJaVkVXMUJDVTFESVBTN0hISjhRR1E5UDI5WEFJNEVQSUw2TjNQN0o0R1ZaQVRYR0U=","email":"nstephan@redhat.com"},"registry.connect.redhat.com":{"auth":"Nzc5NjE4MXx1aGMtMURma010THJQdmlJR3U2M2VuYTZRZ2R4THJwOmV5SmhiR2NpT2lKU1V6VXhNaUo5LmV5SnpkV0lpT2lKall6VmtZelJqWVRNd05UZzBZelkyWWpFeVkyTTVNMlUxWVRNNU0yRm1aU0o5LkFnWW00SjB5R1d4OHZ4bDNhcnVJSlFrTEFHb2NiVEQ4dkRNNUdIdEZpQU4zOGp4bXkyMlJLX004MGN2alZBa3FUWjJobEJqQ25kMGNYTVhxaXNFSlBxdzJOT3dlU0o1TGZxMEdlTUx6TmozSjNKVmxZWm9VMVR0OXNxa25vYWxWdTJEZ0xDalVPeHlOUVFTd0NuMTN3WFoxTl9DWnNXekxhU0tFZzc0VzUtR1YzTGVHZU92RV9EdTlld3NBMWt5MkYyMi01NlVES2w2Nmc4cU5waWlDRjVROXBfUXBZYzR0elpKczlrUHFlakVnNC1xOU0tVjBqajY4NGd3dk90TGYzcmV1VjJBLTFuS2ltRXNnVGhlbHloVllzSENaWVFveHNkNmFjZnVMMnhSa01KMXAyeVJBREhoNXJhUG51Nnh0Qjk1VmdhTVl4dkVURk43X2ctXzVqTWFGSnF6Ynk5Q2JxaHFRT1VNZnFFNHQzclltUGVIMkp0MTRMVWVkRHlDbzJXWUhzMlRjeGNYbUd1VFhmR2xvdmlYeXV0MDBfRndXM1N0MDhHLVlJX1htYXpWclRuVV92QVl2Tm5waWNPMzZVYUxoUXp2dUJ2ZnQtQUc5eEY1dDIwakZrZTNHZDhiNWxTN0tSUVRsRHNnQmRqbmkxQnZNYUJad2NQWEVieFd6dFJYNmdndXR1Z1lNNnJfc3E2ODJOZlRoeUdjLTE2RkZBNjdwWExWS0JyY1BlZzY4RWd6QV9HdC16MzlCWktSVTRwVnowbjRpX085WlV3MGlvbDlKVGJQcU5mZ1JRYWNUaEZzeHJWd3E3aVB4Zk5ZZW1NUFdQUG4xYjNpQzZDbnV0aC1zVWI5UWpPTDN2amNzV05qdGRGU2huSWVwTFVMOUlsWjB2YUR5clBB","email":"nstephan@redhat.com"},"registry.redhat.io":{"auth":"Nzc5NjE4MXx1aGMtMURma010THJQdmlJR3U2M2VuYTZRZ2R4THJwOmV5SmhiR2NpT2lKU1V6VXhNaUo5LmV5SnpkV0lpT2lKall6VmtZelJqWVRNd05UZzBZelkyWWpFeVkyTTVNMlUxWVRNNU0yRm1aU0o5LkFnWW00SjB5R1d4OHZ4bDNhcnVJSlFrTEFHb2NiVEQ4dkRNNUdIdEZpQU4zOGp4bXkyMlJLX004MGN2alZBa3FUWjJobEJqQ25kMGNYTVhxaXNFSlBxdzJOT3dlU0o1TGZxMEdlTUx6TmozSjNKVmxZWm9VMVR0OXNxa25vYWxWdTJEZ0xDalVPeHlOUVFTd0NuMTN3WFoxTl9DWnNXekxhU0tFZzc0VzUtR1YzTGVHZU92RV9EdTlld3NBMWt5MkYyMi01NlVES2w2Nmc4cU5waWlDRjVROXBfUXBZYzR0elpKczlrUHFlakVnNC1xOU0tVjBqajY4NGd3dk90TGYzcmV1VjJBLTFuS2ltRXNnVGhlbHloVllzSENaWVFveHNkNmFjZnVMMnhSa01KMXAyeVJBREhoNXJhUG51Nnh0Qjk1VmdhTVl4dkVURk43X2ctXzVqTWFGSnF6Ynk5Q2JxaHFRT1VNZnFFNHQzclltUGVIMkp0MTRMVWVkRHlDbzJXWUhzMlRjeGNYbUd1VFhmR2xvdmlYeXV0MDBfRndXM1N0MDhHLVlJX1htYXpWclRuVV92QVl2Tm5waWNPMzZVYUxoUXp2dUJ2ZnQtQUc5eEY1dDIwakZrZTNHZDhiNWxTN0tSUVRsRHNnQmRqbmkxQnZNYUJad2NQWEVieFd6dFJYNmdndXR1Z1lNNnJfc3E2ODJOZlRoeUdjLTE2RkZBNjdwWExWS0JyY1BlZzY4RWd6QV9HdC16MzlCWktSVTRwVnowbjRpX085WlV3MGlvbDlKVGJQcU5mZ1JRYWNUaEZzeHJWd3E3aVB4Zk5ZZW1NUFdQUG4xYjNpQzZDbnV0aC1zVWI5UWpPTDN2amNzV05qdGRGU2huSWVwTFVMOUlsWjB2YUR5clBB","email":"nstephan@redhat.com"},"utilityvm.example.com:5000":{"auth":"b3BlbnNoaWZ0OnJlZGhhdA=="}}}'
+sshKey: |
+  {{ lookup('file', HOME ~ '/.ssh/' ~ GUID ~ 'key.pub') | indent(2, true) }}
+imageContentSources:
+- mirrors:
+  - utilityvm.example.com:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - utilityvm.example.com:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+additionalTrustBundle: |
+  {{ lookup('file', '/etc/pki/ca-trust/source/anchors/domain.crt') | indent(2, false) }}
