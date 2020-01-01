@@ -404,7 +404,7 @@
 
     - name: Wait for bootstrapping to have a chance at life
       wait_for:
-        timeout: 300
+        timeout: 600
 
     - name: Wait for bootstrap complete
       shell: openshift-install wait-for bootstrap-complete --dir $HOME/openstack-upi
