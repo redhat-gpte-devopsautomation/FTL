@@ -9,6 +9,9 @@
     OCP_RELEASE: "{{ ocp_version }}"
 
   tasks:
+    - name: Run reset_lab before starting
+      import_tasks: reset_lab.yml
+
     - name: Set OCP version
       lineinfile:
         path: $HOME/.bashrc
@@ -448,15 +451,17 @@
       command:
         oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
       register: r_bootstrap_csr
-      tags: testhere
+      environment:
+        KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
 
     - debug: 
         var: r_bootstrap_csr
-      tags: testhere
 
     - name: Check for two worker nodes
       command: oc get nodes
       register: r_num_nodes
+      environment:
+        KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
 
     - debug:
         msg: "You must approve the worker CSRs before finishing the installation"
