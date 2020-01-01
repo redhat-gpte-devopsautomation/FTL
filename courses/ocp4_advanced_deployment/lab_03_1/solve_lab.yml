@@ -106,7 +106,7 @@
           -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key
         container_state: running
       import_role:
-        name: podman_container_systemd
+        name: ../../../roles/podman_container_systemd
       become: true
 
     - name: Stop mirror-registry service if running
@@ -178,16 +178,13 @@
     - name: Get podman credentials into file
       command: podman login -u openshift -p redhat --authfile $HOME/pullsecret_config.json utilityvm.example.com:5000
 
-    - name: Add pull secret for OpenShift
-      file:
-        state: touch
-        path: $HOME/ocp_pullsecret.json
-
-#TODO: This must be variablized so we do not provide a pull secret
-    - name: Add pull secret for OpenShift
-      lineinfile:
-        path: $HOME/ocp_pullsecret.json
-        line: '{FILLMEINWITHSOMETHINGMOREBETTER}'
+    - name: Verify pull secret is valid syntax
+      assert:
+        that:
+          lookup('file', HOME ~ '/ocp_pullsecret.json') | from_json is succeeded
+        success_msg: The OCP pull secret has correct syntax
+      vars:
+        HOME: "{{ lookup('env', 'HOME') }}"
 
     - name: Merge pull secrets
       shell: >-
@@ -295,11 +292,9 @@
     - name: Get infra_id
       shell: jq -r .infraID $HOME/openstack-upi/metadata.json
       register: r_infra_id
-      tags: testhere
 
     - debug:
         var: r_infra_id
-      tags: testhere
 
     - name: Run python script for bootstrap ignition
       shell: >-
@@ -320,7 +315,6 @@
         done
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
-      tags: testhere
 
     - name: Copy bootstrap.ign to web server
       command: "scp $HOME/openstack-upi/bootstrap.ign utilityvm.example.com:"
@@ -450,13 +444,22 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    # - name: Approve bootstrap CSRs when they appear
-    #   debug:
-    #     msg: stub
+    - name: Approve CSRs when they appear
+      command:
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+      register: r_bootstrap_csr
+      tags: testhere
 
-    # - name: Approve node CSRs when they appear
-    #   debug:
-    #     msg: stub
+    - debug: 
+        var: r_bootstrap_csr
+      tags: testhere
+
+    - name: Check for two worker nodes
+      command: oc get nodes
+      register: r_num_nodes
+
+    - debug:
+        msg: "You must approve the worker CSRs before finishing the installation"
 
     # - name: Finish installation
-    #   shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
+      # shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
