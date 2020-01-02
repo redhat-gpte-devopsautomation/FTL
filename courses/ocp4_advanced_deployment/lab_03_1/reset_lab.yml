@@ -8,6 +8,7 @@
   - name: Get infra_id
     shell: jq -r .infraID $HOME/openstack-upi/metadata.json
     register: r_infra_id
+    ignore_errors: true
 
   - name: Delete servers
     shell: openstack server list --name $INFRA_ID -f value -c ID | xargs openstack server delete
@@ -31,14 +32,3 @@
     file:
       state: absent
       path: $HOME/openstack-upi
-
-  - name: Create fresh install direcgtory
-    file:
-      state: directory
-      path: $HOME/openstack-upi
-
-  - name: Restore install-config from backup
-    copy:
-      src: $HOME/backup/install-config.yaml
-      dest: $HOME/openstack-upi/install-config.yaml
-      remote_src: true

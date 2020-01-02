@@ -1,4 +1,7 @@
 ---
+- name: Run reset_lab
+  import_playbook: reset_lab.yml
+
 - name: Solve the OCP4 on OpenStack installation lab
   hosts: localhost
   gather_facts: false
@@ -9,9 +12,6 @@
     OCP_RELEASE: "{{ ocp_version }}"
 
   tasks:
-    - name: Run reset_lab before starting
-      import_tasks: reset_lab.yml
-
     - name: Set OCP version
       lineinfile:
         path: $HOME/.bashrc
@@ -201,7 +201,7 @@
         line: "export {{ item.entry }}={{ item.val }}"
       loop:
         - entry: "LOCAL_REGISTRY"
-          val: "utilityvm.example.com"
+          val: "utilityvm.example.com:5000"
         - entry: "LOCAL_REPOSITORY"
           val: "ocp4/openshift4"
         - entry: "LOCAL_SECRET_JSON"
@@ -405,7 +405,7 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    - name: Wait for bootstrapping to have a chance at life
+    - name: Wait 10 minutes for bootstrapping to have a chance at life
       wait_for:
         timeout: 600
 
@@ -448,20 +448,24 @@
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
     - name: Approve CSRs when they appear
-      command:
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
-      register: r_bootstrap_csr
+      shell:
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type | grep -v Approved | awk '{ print $1 }' | xargs oc adm certificate approve
       environment:
         KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
+      ignore_errors: true
+      register: r_bootstrap_csr
 
     - debug: 
         var: r_bootstrap_csr
 
     - name: Check for two worker nodes
-      command: oc get nodes
-      register: r_num_nodes
+      shell: oc get nodes
+      register: r_nodes
       environment:
         KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
+
+    - debug:
+        var: r_nodes
 
     - debug:
         msg: "You must approve the worker CSRs before finishing the installation"
