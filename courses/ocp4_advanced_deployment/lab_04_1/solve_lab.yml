@@ -1,0 +1,115 @@
+---
+- name: Solve the OCP4 on OpenStack machine management lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID $HOME/openstack-upi/metadata.json)"
+    K8S_AUTH_KUBECONFIG: $HOME/openstack-upi/auth/kubeconfig
+
+  tasks:
+    - name: Set python version
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+
+    - name: Get infra_id
+      shell: "jq -r .infraID $HOME/openstack-upi/metadata.json"
+      register: r_infra_id
+
+    - name: Create machineset templates
+      template:
+        src: "./templates/worker-ms.yaml.j2"
+        dest: "$HOME/worker-ms-{{ item }}.yaml"
+      vars:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+        GUID: "{{ lookup('env', 'GUID') }}"
+      loop:
+        - 1a
+        - 1b
+
+    - name: Create new MachineSets
+      k8s:
+        state: present
+        definition: "{{ lookup('template', HOME ~ '/worker-ms-' ~ item ~ '.yaml' }}"
+      loop:
+        - 1a
+        - 1b
+      
+    - name: Create new MachineSets
+      shell: oc create -f $HOME/worker-ms-{{ item }}.yaml
+      loop:
+        - 1a
+        - 1b
+
+    - name: Wait for new worker nodes to come online
+      wait_for:
+        timeout: 420
+
+    - name: Get nodes
+      shell: oc get nodes -l node-role.kubernetes.io/general-use
+      register: r_worker_nodes
+
+    - debug:
+        var:
+          r_worker_nodes
+
+    - name: Check that new nodes are online
+      assert:
+        that:
+          r_worker_nodes.stdout something
+
+    - name: Drain and cordon manual workers
+      shell: oc adm drain $INFRA_ID-worker-1 --ignore-daemonsets --delete-local-data --force=true
+
+    - name: Get nodes
+      shell: oc get nodes
+      register: r_nodes
+
+    - name: Check to make sure nodes are not schedulable
+      assert:
+        that:
+          r_nodes.stdout something
+
+    - name: Delete nodes
+      shell: oc delete node $INFRA_ID-worker-0 $INFRA_ID-worker-1
+
+    - name: Delete OpenStack instances
+      shell: openstack server list --name $INFRA_ID-worker -f value -c ID | xargs openstack server delete
+
+    - name: Wait for the instances to delete
+      wait_for:
+        timeout: 30
+
+    - name: Make sure instances are gone
+      shell: openstack server list -c ID -c Name -c Status
+      register: r_osp_instances
+
+    - name: Make sure instances are gone
+      assert:
+        that:
+          r_osp_instances something
+
+    - name: Create infra MachineSet
+      template:
+        src: ./templates/infra-ms.yaml.j2
+        dest: "$HOME/infra-ms.yaml"
+      vars:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+        GUID: "{{ lookup('env', 'GUID') }}"
+
+    - name: Create infra MachineSet
+      shell: oc create -f $HOME/infra-ms.yaml
+
+    - name: Wait for new infra node to come online
+      wait_for:
+        timeout: 420
+    
+    - name: Get nodes
+      shell: oc get nodes -l node-role.kubernetes.io/infra
+      register: r_infra_nodes
+
+    - name: Verify infra nodes are created
+      assert:
+        that:
+          r_infra_nodes.stdout something
