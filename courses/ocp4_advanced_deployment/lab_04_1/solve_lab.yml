@@ -31,7 +31,7 @@
     - name: Create new MachineSets
       k8s:
         state: present
-        definition: "{{ lookup('template', HOME ~ '/worker-ms-' ~ item ~ '.yaml' }}"
+        src: "$HOME/worker-ms-{{ item }}.yaml"
       loop:
         - 1a
         - 1b
