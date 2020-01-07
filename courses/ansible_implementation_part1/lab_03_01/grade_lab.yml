@@ -1,13 +1,19 @@
 ---
-- name: Grade lab 02 01 of Ansible Implementation
-  hosts: 3tierapp
+- name: Grade lab 03 01 of Ansible Implementation
+  hosts: apps
   gather_facts: false
 
   roles:      # All lab tests go here
 
-    - name: Section 3
-      role: grader_check_user_exists
+    - name: Section 5
+      role: grader_check_package_installed
       vars:
-        user: devops
-        task_description_message: Check user devops exists
+        name: httpd
+        task_description_message: Check package httpd installed 
+
+    - name: Section 5
+      role: grader_check_service_started
+      vars:
+        name: httpd
+        task_description_message: Check service httpd started
 ...

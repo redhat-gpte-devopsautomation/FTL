@@ -6,20 +6,25 @@
   check_mode: True
   register: r_state
 
+- when: not r_state.changed | bool
+  name: "Success - set fact"
+  name: Create Pass logging message
+  set_fact:
+    success: true
+
+- when: r_state.changed | bool
+  name: "Fail - set fact"
+  name: Create Fail logging message
+  set_fact:
+    success: false
+
 ######################################################
 #                                                    #
 # Common boiler plate logging logic - Do not modify  #
 #                                                    #
 ######################################################
 
-- name: Create logging message fact
-  set_fact:
-    grader_output_message: "{{ inventory_hostname + ', '\
-    + task_description_message }}"
-  delegate_to: localhost
-
-- when: r_state.changed
-  name: Import logging tasks
+- name: Import logging role
   import_role:
     name: ftl_run_log_grade_to_log
 ...
