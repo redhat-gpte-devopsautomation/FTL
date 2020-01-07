@@ -1,4 +1,5 @@
-- name: Check a user exists
+---
+- name: Check user {{ user }} exists
   user:
     name: "{{ user }}"
     state: present
