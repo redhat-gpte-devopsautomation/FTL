@@ -538,5 +538,20 @@
       assert:
         that: r_nodes.stdout_lines | length == 2
 
+    - name: Create registry PV
+      k8s:
+        state: present
+        src: "$HOME/resources/pv-registry.yaml"
+
+    - name: Create registry PVC
+      k8s:
+        state: present
+        src: "$HOME/resources/pvc-registry.yaml"
+
+    - name: Patch registry for new storage
+      shell: >-
+        oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+        '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
+
     - name: Finish installation
       shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
