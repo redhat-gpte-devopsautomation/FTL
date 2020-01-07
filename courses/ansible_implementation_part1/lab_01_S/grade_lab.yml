@@ -1,0 +1,13 @@
+---
+- name: Debug grader - should always succedd
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  roles:      # All lab tests go here
+
+    - name: Section 2 - will always succeed
+      role: grader_check_always_succeed
+      vars:
+        task_description_message:  lab 01_S set to always PASS
+...

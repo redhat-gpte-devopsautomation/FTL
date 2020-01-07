@@ -1,0 +1,22 @@
+---
+- name: "This test always recordes as FAI"
+  debug:
+    msg: "Fails, debug role, always fails"
+    verbosity: 2
+
+- name: "Success - set fact"
+  set_fact:
+    success: false
+
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+# 2019-12-23 tok@redhat.com                          # 
+#                                                    #
+######################################################
+
+- name: Import logging role
+  import_role:
+    name: ftl_run_log_grade_to_log
+...

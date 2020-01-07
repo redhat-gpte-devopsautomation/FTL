@@ -1,0 +1,9 @@
+---
+- name: Appends lab check result message to grader log
+  lineinfile:
+    create: yes
+    insertafter: EOF
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    line: "{{ grader_output_message }}"
+  delegate_to: localhost
+...

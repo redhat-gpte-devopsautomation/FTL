@@ -3,6 +3,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  tags:
+    - ftl-init
 
   roles:
 
@@ -10,12 +12,16 @@
       name: ftl_run_init
 
 - name: "Import and run the {{ purpose }} playbooks"
-  import_playbook: "./courses/{{ course_name }}/lab_{{ lab_number }}/{{ purpose }}.yml"
+  import_playbook: "./courses/{{ course_id }}/lab_{{ lab_id }}/{{ purpose }}.yml"
+  tags:
+    - ftl-grade
 
 - name: Run FTL finish role - generate reports and updates
   hosts: localhost
   gather_facts: false
   become: false
+  tags:
+    - ftl-finish
 
   roles:
     - when: purpose == "grade_lab"

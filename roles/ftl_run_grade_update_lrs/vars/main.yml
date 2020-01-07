@@ -1,0 +1,38 @@
+---
+tower_server:                 tower.ftl-tower-test.na.shared.opentlc.com
+tower_bearer_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          33663962373333326239313866333066616430363938396136646239346437333635613937623931
+          6361323933376532653163666364383039613534316239350a653637343734663662353030366334
+          64626333623465303135356635653962303638373436646166396537316331316231363136383138
+          3731643136613537300a653035376130323136323263326433613663396432333737353232666634
+          37383065653966353633383434353432613433366264336162353639393136386462
+sandbox_id:                   5XNTTIURRT
+
+job_template_name:            ftl-lms-updater
+tower_server_api_endpoint:    "https://{{ tower_server }}/api/v2/job_templates/{{ f_ftl_updater_job_id }}/launch/"
+
+
+payload:
+  scormcloud_api_endpoint:    "https://cloud.scorm.com/lrs/{{ sandbox_id }}/sandbox/data/xAPI/statements"
+  scormcloud_api_body:
+    actor:
+      account: 
+        name:             "{{ student_id }}"
+        homePage:         "http://redhat.gpte.com/lab_grading"
+      objectType:       Agent 
+    verb:  
+      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
+      display:
+        en-US:            "{{ course_id }}"
+        lab-id:           "{{ lab_id }}"
+    object:        
+      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
+      definition: 
+        name:
+          en-US:          "{{ course_id }}"
+      objectType:       Activity
+    result:    
+      success:          "{{ lab_passed }}"
+      response:         Attempted
+...

@@ -3,12 +3,17 @@
 
 # Student's report and previous report
 
+grader_working_dir:               /tmp/grading_dir
+grader_student_report_file:       grading_report.txt
+
 opentlc_grading_file:             /tmp/grading_report.txt
 opentlc_grading_file_previous:    /tmp/grading_report.txt-previous
 
 # Error log of students failures
 
-opentlc_student_error_file:       /tmp/opentlc_grader.log
+opentlc_student_error_file:       /tmp/opentlc_error.log
+opentlc_student_success_file:     /tmp/opentlc_success.log
+opentlc_student_grader_log:       /tmp/opentlc_grader.log
 
 # Last ansible output from grading run
 

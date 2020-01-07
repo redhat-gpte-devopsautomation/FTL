@@ -1,42 +1,38 @@
 ---
-- name: "Check if errors recorded in {{ opentlc_student_error_file }} exists"
-  stat:
-    path: "{{ opentlc_student_error_file }}"
-  register: r_opentlc_student_error_file
-
-- name: If log file exists - process errors  
-  block:
-
-    - name: Get the student errors from the log file
-      command: "cat {{ opentlc_student_error_file }}"
-      register: r_opentlc_errors
-
-    - name: Iterate through log file appending to fact
-      set_fact:
-        opentlc_log_content: "{{ ( opentlc_log_content | default([])) +  [( item )] }}"
-      with_items: "{{ r_opentlc_errors.stdout_lines | sort }}"
-
-    - name:  Generate student error report
-      template:
-        src: lab_error_report.j2
-        dest: "{{ opentlc_grading_file }}"
-        #dest: /tmp/error_report.txt
-  when: r_opentlc_student_error_file.stat.exists
-
-- name:  Generate student success report
-  template:
-    src: lab_success_report.j2
-    dest: "{{ opentlc_grading_file }}"
-  when: not r_opentlc_student_error_file.stat.exists
-
-- name: Get report hash
-  stat:
-    path: "{{ opentlc_grading_file }}"
-    checksum_algorithm: sha256
-  register: st
-
-- name: Sign student report
+- name: Searching file for FAIL
   lineinfile:
-    path: "{{ opentlc_grading_file }}"
-    line: "{{ st.stat.checksum }}  {{ opentlc_grading_file }}"
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    regex: "^FAIL.*"
+    state: absent
+  check_mode: true
+  register: r_lab_pass
+
+- when: r_lab_pass.changed | bool
+  name: Report contains one or more FAILs
+  set_fact:
+    lab_passed:             false
+    student_errors:         "{{ r_lab_pass.found }}"
+    report_status_message:  FAILED
+
+- when: not r_lab_pass.changed | bool
+  name: Report contains no FAILs
+  set_fact:
+    lab_passed: true
+    student_errors: "{{ r_lab_pass.found }}"
+    report_status_message:  SUCCESS
+
+- name: Output lab status and error count
+  debug:
+    msg: 
+      - "lab_passed = {{ lab_passed }}"
+      - "Error count = {{ student_errors }}"  
+    verbosity: 2
+
+- name: Finalize lab report with status
+  lineinfile:
+    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter:  EOF
+    line: |
+
+      {{ report_status_message }} {{ student_errors }} Errors
 ...

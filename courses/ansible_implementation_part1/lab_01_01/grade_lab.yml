@@ -1,22 +1,16 @@
 ---
-- name: Grade lab 03 01 of Ansible Engine Foundations
-  hosts: web
+- name: Grade lab 01 01 of Ansible Implementation
+  hosts: localhost
+  connection: local
   gather_facts: false
-  become: true
 
   roles:      # All lab tests go here
 
-    - name: Section 6.4.1, Check student has installed Apache
-      role: ftl_check_package_installed
+    - name: Section 2
+      role: grader_check_always_succeed
       vars:
-        section_number: 6.4.1
-        student_error_message: Package httpd not installed
-        package: httpd
-
-    - name: Section 6.4.2, Check student has enabled Apache
-      role: ftl_check_service_started
-      vars:
-        section_number: 6.4.2
-        student_error_message: Package httpd not started
-        service: httpd
+        section_number: 2.2
+        student_error_message: Grader failed
+        task_description_message: Run lab grader on grader host
+...
 ...

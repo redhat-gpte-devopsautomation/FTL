@@ -1,0 +1,53 @@
+---
+
+- when: update_lrs | default(false)
+  name: Update LRS when lab enabled for LRS update
+  block:
+
+    - name: Check SCORMCLOUD API vars are set
+      assert: 
+        that:
+          - student_id is defined
+          - course_id is defined
+          - course_id is defined
+          - lab_id is defined
+          - lab_passed is defined
+        msg: | 
+         All the following variables must be defined: 
+          - student_id
+          - course_id
+          - course_id
+          - lab_id
+          - lab_passed
+
+    - name: Lookup Tower Job ID by name
+      command: >-
+        awx job_template list 
+        --name={{ job_template_name }} 
+        -f jq --filter '.results[] | .id'
+      register: r_ftl_updater_job_id
+
+    - name: Output response from job_id lookup
+      debug:
+        var: r_ftl_updater_job_id   
+
+    - name: Capture ftl job_id as fact for easy reference
+      set_fact:
+        f_ftl_updater_job_id: "{{ r_ftl_updater_job_id.stdout }}" 
+
+    - name: Call Tower API scormcloud-updater
+      uri:
+        url:                "{{ tower_server_api_endpoint }}"
+        method:             POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ tower_bearer_token }}"
+        validate_certs:     false
+        body:
+          extra_vars:     "{{ payload }}"
+        body_format:      json
+        status_code:
+          - 200
+          - 201
+          - 202
+...

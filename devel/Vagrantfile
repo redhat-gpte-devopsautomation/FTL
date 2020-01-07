@@ -1,0 +1,71 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+NODES=4
+# Overwrite host locale in ssh session
+ENV["LC_ALL"] = "en_US.UTF-8"
+
+# Control host settings
+
+control_hostname = "bastion.ftl"
+control_ip = "10.42.0.2"
+#control_box = "geerlingguy/centos7"
+control_box = "generic/rhel7"
+
+control_memory = 2048
+
+# Target node settings
+
+#node_box = "geerlingguy/centos7"
+node_box = "generic/rhel7"
+node_memory = 512
+
+# Your private ssh key
+
+Vagrant.configure("2") do |cluster|
+
+  # Avoid using the Virtualbox guest additions
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    cluster.vbguest.auto_update = false
+  end
+  
+  cluster.vm.define "bastion" do |subconfig|
+
+    subconfig.vm.box = control_box
+    
+    subconfig.vm.hostname = "%s" % control_hostname
+    subconfig.vm.network "private_network", ip: control_ip
+
+    # setup ssh keys, use own instead of allowing vagrant to generate one
+
+    subconfig.ssh.insert_key = false
+    subconfig.ssh.private_key_path = ["~/.vagrant.d/insecure_private_key",
+                                      "~/.ssh/id_rsa"]
+
+    subconfig.vm.provider :virtualbox do |vb|
+      vb.name = "%s" % control_hostname
+      vb.memory = control_memory
+    end
+  end
+# hosts to run ansible-core
+  
+  (1..NODES).each do |i|
+    cluster.vm.define "node#{i}" do |node|
+      node.vm.box = node_box
+
+      node.vm.hostname = "node-#{i}"
+      node.vm.network :private_network, ip: "10.42.0.#{i+5}"
+    
+      node.ssh.insert_key = false
+      node.ssh.private_key_path = ["~/.vagrant.d/insecure_private_key",
+                                      "~/.ssh/id_rsa"]
+
+      node.vm.provider :virtualbox do |vb|
+        vb.name = "node-#{i}"
+        vb.memory = node_memory
+      end
+    end  
+  end
+end
+
