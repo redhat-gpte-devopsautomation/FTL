@@ -8,12 +8,12 @@
     - name: Section 5
       role: grader_check_package_installed
       vars:
-        name: httpd
+        package: httpd
         task_description_message: Check package httpd installed 
 
     - name: Section 5
       role: grader_check_service_started
       vars:
-        name: httpd
+        service: httpd
         task_description_message: Check service httpd started
 ...
