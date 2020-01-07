@@ -447,28 +447,96 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    - name: Approve CSRs when they appear
-      shell:
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type | grep -v Approved | awk '{ print $1 }' | xargs oc adm certificate approve
-      environment:
-        KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
-      ignore_errors: true
-      register: r_bootstrap_csr
+    - name: Wait for the worker CSRs to have a chance to appear
+      wait_for:
+        timeout: 300
 
-    - debug: 
-        var: r_bootstrap_csr
+    - name: Get bootstrap CSRs waiting for approval
+      shell: >-
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_first_csr
+
+    - name: Approve pending bootstrap CSRs
+      when: r_first_csr.stdout_lines | length > 0
+      shell: oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_first_csr.stdout_lines }}"
+
+    - name: Wait one more time if no initial pending bootstrap CSR
+      when: r_first_csr.stdout_lines | length == 0
+      wait_for:
+        timeout: 150
+
+    - name: Get bootstrap CSRs waiting for approval
+      shell: >-
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_second_csr
+
+    - name: Approve pending bootstrap CSRs
+      when: r_second_csr.stdout_lines | length > 0
+      shell: oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_second_csr.stdout_lines }}"
+
+    - name: Wait for node CSRs
+      wait_for:
+        timeout: 150
+
+    - name: Approve pending node CSRs
+      shell: >-
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_first_node_csr 
+
+    - name: Approve pending node CSRs
+      when: r_first_node_csr.stdout_lines | length > 0
+      shell: oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_first_node_csr.stdout_lines }}"
+
+    - name: Wait one more time if no initial pending node CSR
+      when: r_first_node_csr.stdout_lines | length == 0
+      wait_for:
+        timeout: 150
+
+    - name: Get node CSRs waiting for approval
+      shell: >-
+        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_second_node_csr
+
+    - name: Approve pending node CSRs
+      when: r_second_node_csr.stdout_lines | length > 0
+      shell: oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_second_node_csr.stdout_lines }}"
 
     - name: Check for two worker nodes
-      shell: oc get nodes
+      shell: oc get node -l node-role.kubernetes.io/worker --no-headers
       register: r_nodes
       environment:
-        KUBECONFIG: "$HOME/openstack-upi/auth/kubeconfig"
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
 
     - debug:
         var: r_nodes
 
-    - debug:
-        msg: "You must approve the worker CSRs before finishing the installation"
+    - name: Check for two worker nodes
+      assert:
+        that: r_nodes.stdout_lines | length == 2
 
-    # - name: Finish installation
-      # shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
+    - name: Finish installation
+      shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi

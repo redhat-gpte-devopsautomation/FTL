@@ -5,30 +5,33 @@
   become: false
 
   tasks:
-  - name: Get infra_id
-    shell: jq -r .infraID $HOME/openstack-upi/metadata.json
-    register: r_infra_id
-    ignore_errors: true
+    - set_fact:
+        ansible_python_interpreter: /usr/bin/python3
 
-  - name: Delete servers
-    shell: openstack server list --name $INFRA_ID -f value -c ID | xargs openstack server delete
-    ignore_errors: true
-    environment:
-      INFRA_ID: "{{ r_infra_id.stdout }}"
+    - name: Get infra_id
+      shell: jq -r .infraID $HOME/openstack-upi/metadata.json
+      register: r_infra_id
+      ignore_errors: true
 
-  - name: Delete ports
-    shell: openstack port list --tags openshiftClusterID="$INFRA_ID" -f value -c ID | xargs openstack port delete
-    ignore_errors: true
-    environment:
-      INFRA_ID: "{{ r_infra_id.stdout }}"
+    - name: Delete servers
+      shell: openstack server list -f value | egrep -v "bastion|utilityvm" | awk '{ print $1 }' | xargs openstack server delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
 
-  - name: Delete volumes
-    shell: openstack volume list | grep $INFRA_ID | awk '{ print $2 }' | xargs openstack volume delete
-    ignore_errors: true
-    environment:
-      INFRA_ID: "{{ r_infra_id.stdout }}"
+    - name: Delete ports
+      shell: openstack port list --tags openshiftClusterID="$INFRA_ID" -f value -c ID | xargs openstack port delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
 
-  - name: Cleanup install directory
-    file:
-      state: absent
-      path: $HOME/openstack-upi
+    - name: Delete volumes
+      shell: openstack volume list | grep $INFRA_ID | awk '{ print $2 }' | xargs openstack volume delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Cleanup install directory
+      file:
+        state: absent
+        path: $HOME/openstack-upi
