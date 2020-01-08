@@ -162,6 +162,10 @@
     RELEASE_NAME: "ocp-release"
 
   tasks:
+    - set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+      tags: test
+        
     - name: Copy certificate from utility VM
       command: scp utilityvm.example.com:/opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
       become: true
@@ -541,17 +545,27 @@
     - name: Create registry PV
       k8s:
         state: present
-        src: "$HOME/resources/pv-registry.yaml"
+        src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
 
     - name: Create registry PVC
       k8s:
         state: present
         src: "$HOME/resources/pvc-registry.yaml"
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
 
     - name: Patch registry for new storage
       shell: >-
         oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
         '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
 
     - name: Finish installation
       shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
+      tags: test
