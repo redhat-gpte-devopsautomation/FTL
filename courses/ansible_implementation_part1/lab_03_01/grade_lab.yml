@@ -3,7 +3,7 @@
   hosts: apps
   gather_facts: false
 
-  roles:      # All lab tests go here
+  tasks:      # All lab tests go here
 
     - name: Section 5
       import_role: 
