@@ -16,4 +16,10 @@
       vars:
         service: httpd
         task_description_message: Check service httpd started
+
+    - name: Section 5
+      role: grader_check_service_enabled
+      vars:
+        service: httpd
+        task_description_message: Check service httpd enabled
 ...
