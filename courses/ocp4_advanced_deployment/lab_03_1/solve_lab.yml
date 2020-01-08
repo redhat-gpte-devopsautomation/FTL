@@ -447,9 +447,9 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    - name: Wait 5 min for the worker CSRs to have a chance to appear
+    - name: Wait 7 min for the worker CSRs to have a chance to appear
       wait_for:
-        timeout: 300
+        timeout: 620
 
     - name: Get bootstrap CSRs waiting for approval
       shell: >-
@@ -467,7 +467,7 @@
       loop: "{{ r_first_csr.stdout_lines }}"
 
     - name: Wait 2.5 min if no initial pending bootstrap CSR
-      when: r_first_csr.stdout_lines | length == 0
+      when: r_first_csr.stdout_lines | length < 2
       wait_for:
         timeout: 150
 
@@ -490,7 +490,7 @@
       wait_for:
         timeout: 150
 
-    - name: Approve pending node CSRs
+    - name: Get pending node CSRs
       shell: >-
         oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
         | grep -v Approved | awk '{ print $1 }'
@@ -506,7 +506,7 @@
       loop: "{{ r_first_node_csr.stdout_lines }}"
 
     - name: Wait 2.5 min if no initial pending node CSR
-      when: r_first_node_csr.stdout_lines | length == 0
+      when: r_first_node_csr.stdout_lines | length < 2
       wait_for:
         timeout: 150
 
@@ -524,6 +524,9 @@
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_second_node_csr.stdout_lines }}"
+
+    - pause:
+        seconds: 15
 
     - name: Check for two worker nodes
       shell: oc get node -l node-role.kubernetes.io/worker --no-headers
