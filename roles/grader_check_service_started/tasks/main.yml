@@ -25,9 +25,8 @@
 ######################################################
 
 - name: Import logging role
-  import_role:
+  include_role:
     name: ftl_run_log_grade_to_log
-   vars:
+  vars:
     grader_output_message: "{{ task_description_message }}"
-
 ...
