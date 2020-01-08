@@ -2,8 +2,8 @@
 - name: "Check service {{ service }} enabled"
   service:
     name: "{{ service }}"
-    state: enabled
-  check_mode: True
+    enabled: true
+  check_mode: true
   register: r_state
 
 - when: not r_state.changed | bool
