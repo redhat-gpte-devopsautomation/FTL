@@ -5,15 +5,13 @@
       name: Create Pass logging message
       set_fact:
         grader_log_prefix: "PASS:"
+        student_log_message: "{{ task_description_message }}"
 
     - when: not success | bool
       name: Create Fail logging message
       set_fact:
         grader_log_prefix: "FAIL:"
-
-    - name: Generate student_log_message
-      set_fact:
-        student_log_message: "{{ task_description_message }} | {{ student_error_message | default('') }}"
+        student_log_message: "{{ task_description_message }} {{ student_error_message | default('') }}"
 
     - name: Appends lab check result message to grader log lineinfile
       lineinfile:
