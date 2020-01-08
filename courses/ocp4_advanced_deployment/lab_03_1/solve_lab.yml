@@ -447,7 +447,7 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    - name: Wait for the worker CSRs to have a chance to appear
+    - name: Wait 5 min for the worker CSRs to have a chance to appear
       wait_for:
         timeout: 300
 
@@ -466,7 +466,7 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_first_csr.stdout_lines }}"
 
-    - name: Wait one more time if no initial pending bootstrap CSR
+    - name: Wait 2.5 min if no initial pending bootstrap CSR
       when: r_first_csr.stdout_lines | length == 0
       wait_for:
         timeout: 150
@@ -486,7 +486,7 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_second_csr.stdout_lines }}"
 
-    - name: Wait for node CSRs
+    - name: Wait 2.5 min for node CSRs
       wait_for:
         timeout: 150
 
@@ -505,7 +505,7 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_first_node_csr.stdout_lines }}"
 
-    - name: Wait one more time if no initial pending node CSR
+    - name: Wait 2.5 min if no initial pending node CSR
       when: r_first_node_csr.stdout_lines | length == 0
       wait_for:
         timeout: 150
@@ -530,9 +530,6 @@
       register: r_nodes
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-
-    - debug:
-        var: r_nodes
 
     - name: Check for two worker nodes
       assert:
