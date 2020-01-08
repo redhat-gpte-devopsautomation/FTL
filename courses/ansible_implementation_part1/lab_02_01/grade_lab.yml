@@ -6,7 +6,8 @@
   roles:      # All lab tests go here
 
     - name: Section 3
-      role: grader_check_user_exists
+      include_role: 
+        name: grader_check_user_exists
       vars:
         user: devops
         task_description_message: Check user devops exists
