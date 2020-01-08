@@ -3,7 +3,7 @@
   hosts: 3tierapp
   gather_facts: false
 
-  roles:      # All lab tests go here
+  tasks:      # All lab tests go here
 
     - name: Section 3
       include_role: 
