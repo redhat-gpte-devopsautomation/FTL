@@ -11,17 +11,16 @@
       set_fact:
         grader_log_prefix: "FAIL:"
 
-    - name: Appends lab check result message to grader log
-      shell: >-
-        echo {{ '%-6s %-30s %-50s' | format(grader_log_prefix, inventory_hostname, grader_output_message) }}
-        >> {{ grader_working_dir }}/{{ grader_student_report_file }}
+#    - name: Appends lab check result message to grader log
+#      shell: >-
+#        echo {{ '%-6s %-30s %-50s' | format(grader_log_prefix, inventory_hostname, grader_output_message) }}
+#        >> {{ grader_working_dir }}/{{ grader_student_report_file }}
 
     - name: Appends lab check result message to grader log lineinfile
       lineinfile:
         create: yes
         insertafter: EOF
         path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-#        #        line: "{{ grader_log_prefix }} {{ inventory_hostname }} {{ task_description_message }}"
         line: "{{ '%-6s %-30s %-50s' | format(grader_log_prefix, inventory_hostname, task_description_message) }}"
   delegate_to: localhost
 
