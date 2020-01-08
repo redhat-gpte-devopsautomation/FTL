@@ -11,11 +11,15 @@
       set_fact:
         grader_log_prefix: "FAIL:"
 
+    - name: Generate student_log_message
+      set_fact:
+        student_log_message: "{{ task_description_message }} | {{ student_error_message | default('') }}"
+
     - name: Appends lab check result message to grader log lineinfile
       lineinfile:
         create: yes
         insertafter: EOF
         path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-        line: "{{ '%-6s %-30s %-50s' | format(grader_log_prefix, inventory_hostname, task_description_message) }}"
+        line: "{{ '%-6s %-30s %-50s' | format(grader_log_prefix, inventory_hostname, student_log_message) }}"
   delegate_to: localhost
 ...
