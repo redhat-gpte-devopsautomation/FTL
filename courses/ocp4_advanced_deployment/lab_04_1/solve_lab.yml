@@ -54,16 +54,10 @@
       shell: oc get nodes --no-headers -l node-role.kubernetes.io/general-use
       register: r_worker_nodes
 
-    - debug:
-        var: r_worker_nodes
-
     - name: get current infra nodes
       shell: oc get nodes --no-headers -l node-role.kubernetes.io/infra
       register: r_infra_nodes
       
-    - debug:
-        var: r_infra_nodes
-
     - name: Check for worker nodes
       when: (r_worker_nodes.stdout_lines | length < 2) or (r_infra_nodes.stdout_lines | length < 1)
       block:
