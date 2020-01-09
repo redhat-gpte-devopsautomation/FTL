@@ -50,64 +50,28 @@
         state: present
         src: "$HOME/infra-ms.yaml"
 
-    - name: Get current worker nodes
-      shell: oc get nodes --no-headers -l node-role.kubernetes.io/general-use
-      register: r_worker_nodes
+    - name: Wait for nodes to come online
+      pause:
+        seconds: 300
 
-    - name: get current infra nodes
-      shell: oc get nodes --no-headers -l node-role.kubernetes.io/infra
-      register: r_infra_nodes
+    - name: Check if nodes are available (10m max)
+      k8s_facts:
+        api_version: v1
+        kind: Node
+        label_selectors:
+        - node-role.kubernetes.io/worker
+      register: r_check_nodes
+      retries: 20
+      delay: 30
+      until:
+        - r_check_nodes.resources | json_query(general_use_query) | length >= 2
+        - r_check_nodes.resources | json_query(infra_query) | length >= 1
+      vars:
+        general_use_query: >-
+          [?metadata.labels."node-role.kubernetes.io/general-use" == '']
+        infra_query: >-
+          [?metadata.labels."node-role.kubernetes.io/infra" == '']
       
-    - name: Check for worker nodes
-      when: (r_worker_nodes.stdout_lines | length < 2) or (r_infra_nodes.stdout_lines | length < 1)
-      block:
-        - name: Wait 7 minutes for new worker nodes to come online
-          pause:
-            seconds: 420
-
-        - name: Get worker nodes
-          shell: oc get nodes --no-headers -l node-role.kubernetes.io/general-use
-          register: r_new_worker_nodes
-
-        - name: r_new_worker_nodes debug
-          debug:
-            var: r_new_worker_nodes
-
-        - name: get current infra nodes
-          shell: oc get nodes --no-headers -l node-role.kubernetes.io/infra
-          register: r_new_infra_nodes
-          
-        - name: r_new_infra_nodes debug
-          debug:
-            var: r_new_infra_nodes
-
-        - name: Check that new nodes are online
-          assert:
-            that:
-              - r_new_worker_nodes.stdout_lines | length >= 2
-              - r_new_infra_nodes.stdout_lines | length == 1
-            fail_msg: "Something is wrong and your new machines are not starting"
-
-      rescue:
-        - name: Wait 2 minutes for nodes to appear
-          pause:
-            minutes: 2
-
-        - name: Get worker nodes
-          shell: oc get nodes --no-headers -l node-role.kubernetes.io/general-use
-          register: r_newest_worker_nodes
-
-        - name: get current infra nodes
-          shell: oc get nodes --no-headers -l node-role.kubernetes.io/infra
-          register: r_newest_infra_nodes
-          
-        - name: Check that new nodes are online
-          assert:
-            that:
-              - r_newest_worker_nodes.stdout_lines | length >= 2
-              - r_newest_infra_nodes.stdout_lines | length == 1
-            fail_msg: "Something is wrong and your new machines are not starting. MTFBWY. Always."
-
     - name: Drain and cordon manual workers
       shell: oc adm drain $INFRA_ID-worker-{{ item }} --ignore-daemonsets --delete-local-data --force=true
       environment:
