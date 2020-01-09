@@ -5,14 +5,14 @@ metadata:
     machine.openshift.io/cluster-api-cluster: {{ INFRA_ID }}
     machine.openshift.io/cluster-api-machine-role: worker
     machine.openshift.io/cluster-api-machine-type: worker
-  name: general-purpose-{{ item }}
+  name: infra-1a
   namespace: openshift-machine-api
 spec:
   replicas: 1
   selector:
     matchLabels:
       machine.openshift.io/cluster-api-cluster: {{ INFRA_ID }}
-      machine.openshift.io/cluster-api-machineset: general-purpose-{{ item }}
+      machine.openshift.io/cluster-api-machineset: infra-1a
   template:
     metadata:
       creationTimestamp: null
@@ -20,7 +20,7 @@ spec:
         machine.openshift.io/cluster-api-cluster: {{ INFRA_ID }}
         machine.openshift.io/cluster-api-machine-role: worker
         machine.openshift.io/cluster-api-machine-type: worker
-        machine.openshift.io/cluster-api-machineset: general-purpose-{{ item }}
+        machine.openshift.io/cluster-api-machineset: infra-1a
     spec:
       metadata:
         labels:
@@ -50,6 +50,6 @@ spec:
             openshiftClusterID: {{ INFRA_ID }}
           tags:
           - openshiftClusterID={{ INFRA_ID }}
-          trunk: true
+          trunk: false
           userDataSecret:
             name: worker-user-data
