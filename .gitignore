@@ -2,5 +2,6 @@
 *.swp
 roles/ftl-injector
 .vagrant
+.DS_Store
 #.pre-commit-config.yaml 
 #.yamllint
