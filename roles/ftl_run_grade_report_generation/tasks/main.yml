@@ -35,4 +35,15 @@
     line: |
 
       {{ report_status_message }} {{ student_errors }} Errors
+
+- name: Get report hash
+  stat:
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    checksum_algorithm: sha256
+  register: r_st
+
+- name: Sign student report
+  lineinfile:
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    line: "{{ r_st.stat.checksum }}  {{ grader_student_report_file }}"
 ...
