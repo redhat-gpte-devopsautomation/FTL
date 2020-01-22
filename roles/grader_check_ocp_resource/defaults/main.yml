@@ -4,3 +4,4 @@ resource_api_version: v1
 resource_definition_checks: []
 resource_namespace: ''
 resource_should_exist: True
+validate_certs: True

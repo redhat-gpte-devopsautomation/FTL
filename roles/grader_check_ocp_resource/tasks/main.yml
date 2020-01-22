@@ -17,7 +17,11 @@
     api_version: "{{ resource_api_version }}"
     namespace: "{{ resource_namespace }}"
     name: "{{ resource_name }}"
+    validate_certs: "{{ validate_certs }}"
   register: r_k8s_facts
+
+- debug:
+    var: r_k8s_facts
 
 - name: Check whether the resource exists
   set_fact:
