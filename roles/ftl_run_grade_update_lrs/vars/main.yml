@@ -22,7 +22,7 @@ payload:
         homePage:         "http://redhat.gpte.com/lab_grading"
       objectType:       Agent 
     verb:  
-      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}"
+      id:               "http://redhat.gpte.com/lab_grading/{{ course_id }}/{{ lab_id }}"
       display:
         en-US:            "{{ course_id }}"
         lab-id:           "{{ lab_id }}"
