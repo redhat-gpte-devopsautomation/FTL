@@ -4,7 +4,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.2.10
+    ocp_version: 4.3.0
   environment:
     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
     OCP_RELEASE: "{{ ocp_version }}"
@@ -13,26 +13,19 @@
       include_role:
         name: grader_check_ocp_resource
       vars:
-        task_description_message: Check that the cluster version is correct
-        resource_api_version: config.openshift.io/v1
-        resource_kind: ClusterVersion
-        resource_name: version
+        task_description_message: Check that the correct MachineSet objects exist
+        resource_api_version: machine.openshift.io/v1beta1
+        resource_kind: MachineSet
+        resource_name: "{{ item }}"
+        resource_namespace: "openshift-machine-api"
         kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-        student_error_message: "Cluster Version is not correct"
+        student_error_message: "One or more MachineSet missing"
         validate_certs: False
         resource_definition_checks:
-          - error_message: Cluster not in an available state
-            json_query: "status.conditions[?type=='Available'].status|[0]"
-            value: "True"
-          - error_message: Cluster not at the correct version
-            json_query: "status.conditions[?type=='Available'].message|[0]"
-            value: "Done applying {{ ocp_version }}"
-
-    - name: Verify registry is accessible
-      include_role:
-        name: grader_check_uri_response
-      vars:
-        task_description_message: Check that the mirror registry is accessible
-        url: "https://utilityvm.example.com:5000/v2/_catalog"
-        url_username: "openshift"
-        url_password: "redhat"
+          - error_message: The proper number of replicas are not ready
+            json_query: "status.readyReplicas"
+            value: 1
+      loop:
+        - general-purpose-1a
+        - general-purpose-1b
+        - infra-1a
