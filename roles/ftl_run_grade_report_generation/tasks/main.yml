@@ -21,6 +21,17 @@
     student_errors: "{{ r_lab_pass.found }}"
     report_status_message:  SUCCESS
 
+- name: Get report hash
+  stat:
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    checksum_algorithm: sha256
+  register: st
+
+- name: Sign student report
+  lineinfile:
+    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    line: "{{ st.stat.checksum }}  {{ grader_student_report_file }}"
+
 - name: Output lab status and error count
   debug:
     msg: 
