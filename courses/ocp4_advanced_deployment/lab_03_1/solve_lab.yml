@@ -7,7 +7,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.2.10
+    ocp_version: 4.3.0
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -152,7 +152,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.2.10
+    ocp_version: 4.3.0
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -218,19 +218,19 @@
     - name: Mirror OpenShift content to local registry
       shell: >-
         oc adm -a ${LOCAL_SECRET_JSON} release mirror
-        --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}
+        --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-x86_64
         --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}
-        --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
+        --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64
 
     - name: Verify that images are present and pullable
       podman_image:
-        name: utilityvm.example.com:5000/ocp4/openshift4:operator-lifecycle-manager
+        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.0-operator-lifecycle-manager
         auth_file: "$HOME/merged_pullsecret.json"
 
     - name: Check release info to make sure it works
       shell: >-
         oc adm release info -a ${LOCAL_SECRET_JSON}
-        "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}"
+        "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
       register: release_info
 
     - name: Check release info to make sure it works
@@ -242,7 +242,7 @@
     - name: Extract openshift-install binary
       shell: >-
         /usr/local/sbin/oc adm release extract -a ${LOCAL_SECRET_JSON}
-        --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}"
+        --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
         --to /usr/local/sbin/
       become: true
       environment:
@@ -325,6 +325,9 @@
 
     - name: Copy bootstrap.ign to web server
       command: "scp $HOME/openstack-upi/bootstrap.ign utilityvm.example.com:"
+
+    - name: Fix permissions on bootstrap ignition
+      command: "ssh utilityvm.example.com chmod 644 bootstrap.ign"
 
     - name: Move bootstrap.ign to web dir
       command: "ssh utilityvm.example.com sudo mv bootstrap.ign /var/www/html/"
