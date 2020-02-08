@@ -561,9 +561,9 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test
 
-    - name: Wait 2 minutes to give COs a chance to come alive
+    - name: Wait 5 minutes to give COs a chance to come alive
       pause:
-        seconds: 120
+        seconds: 300
 
     - name: Patch registry for new storage
       shell: >-
