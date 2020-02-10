@@ -73,7 +73,7 @@
           [?metadata.labels."node-role.kubernetes.io/infra" == '']
       
     - name: Drain and cordon manual workers
-      shell: oc adm drain $INFRA_ID-worker-{{ item }} --ignore-daemonsets --delete-local-data --force=true
+      shell: /usr/local/sbin/oc adm drain $INFRA_ID-worker-{{ item }} --ignore-daemonsets --delete-local-data --force=true
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
       loop:
@@ -85,20 +85,20 @@
         seconds: 30
 
     - name: Delete nodes
-      shell: oc delete node {{ r_infra_id.stdout }}-worker-{{ item }}
+      shell: /usr/local/sbin/oc delete node {{ r_infra_id.stdout }}-worker-{{ item }}
       loop:
         - 0
         - 1
 
     - name: Delete OpenStack instances
-      shell: openstack server list --name {{ r_infra_id.stdout }}-worker -f value -c ID | xargs openstack server delete
+      shell: /usr/local/bin/openstack server list --name {{ r_infra_id.stdout }}-worker -f value -c ID | xargs openstack server delete
 
     - name: Wait for the instances to delete
       pause:
         seconds: 30
 
     - name: Make sure instances are gone
-      shell: openstack server list --name {{r_infra_id.stdout }}-worker
+      shell: /usr/local/bin/openstack server list --name {{r_infra_id.stdout }}-worker
       register: r_osp_instances
     
     - debug:
