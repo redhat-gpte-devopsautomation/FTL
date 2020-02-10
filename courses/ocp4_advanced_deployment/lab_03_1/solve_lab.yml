@@ -38,7 +38,7 @@
         fail_msg: "Somehow you don't have a clouds.yaml file..."
 
     - name: Make sure openstack CLI works
-      command: openstack server list -f json
+      shell: /usr/local/bin/openstack server list -f json
       register: cmd_openstack
     
     - name: Add utilityVM to inventory
@@ -217,7 +217,7 @@
 
     - name: Mirror OpenShift content to local registry
       shell: >-
-        oc adm -a ${LOCAL_SECRET_JSON} release mirror
+        /usr/local/sbin/oc adm -a ${LOCAL_SECRET_JSON} release mirror
         --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-x86_64
         --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}
         --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64
@@ -229,7 +229,7 @@
 
     - name: Check release info to make sure it works
       shell: >-
-        oc adm release info -a ${LOCAL_SECRET_JSON}
+        /usr/local/sbin/oc adm release info -a ${LOCAL_SECRET_JSON}
         "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
       register: release_info
 
@@ -276,7 +276,7 @@
         remote_src: true
 
     - name: Create openshift-install manifests
-      shell: openshift-install create manifests --dir $HOME/openstack-upi
+      shell: /usr/local/sbin/openshift-install create manifests --dir $HOME/openstack-upi
 
     - name: Fix the cluster-scheduler manifest
       lineinfile:
@@ -288,7 +288,7 @@
       shell: rm -f $HOME/openshift/99_openshift-cluster-api_master-machines-*.yaml
 
     - name: Create openshift-install ignition files
-      shell: openshift-install create ignition-configs --dir $HOME/openstack-upi
+      shell: /usr/local/sbin/openshift-install create ignition-configs --dir $HOME/openstack-upi
 
     - name: Set infra_id in .bashrc
       lineinfile:
@@ -349,7 +349,7 @@
 
     - name: Create ports for API
       shell: >-
-        openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
         --fixed-ip "subnet=$GUID-ocp-subnet,ip-address=192.168.47.5" --tag openshiftClusterID="$INFRA_ID"
         "$INFRA_ID-api-port"
       environment:
@@ -357,25 +357,25 @@
 
     - name: Create ports for Ingress
       shell: >-
-        openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
         --fixed-ip "subnet=$GUID-ocp-subnet,ip-address=192.168.47.7" --tag openshiftClusterID="$INFRA_ID"
         "$INFRA_ID-ingress-port"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
     - name: Set floating IPs
-      shell: openstack floating ip set --port "$INFRA_ID-api-port" $API_FIP
+      shell: /usr/local/bin/openstack floating ip set --port "$INFRA_ID-api-port" $API_FIP
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
     - name: Set floating IPs
-      shell: openstack floating ip set --port "$INFRA_ID-ingress-port" $INGRESS_FIP
+      shell: /usr/local/bin/openstack floating ip set --port "$INFRA_ID-ingress-port" $INGRESS_FIP
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
     - name: Create bootstrap server port
       shell: >-
-        openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
         --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
         --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap-port"
       environment:
@@ -383,7 +383,7 @@
 
     - name: Create bootstrap server
       shell: >-
-        openstack server create --image rhcos-ocp42 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
+        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
         --port "$INFRA_ID-bootstrap-port" --wait --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
@@ -395,7 +395,7 @@
     - name: Create master server ports
       shell: >-
         for index in $(seq 0 2); do
-        openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
         --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
         --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-master-port-$index";
         done
@@ -405,7 +405,7 @@
     - name: Create master servers
       shell: >-
         for index in $(seq 0 2); do
-        openstack server create --boot-from-volume 30 --image rhcos-ocp42 --flavor 4c16g30d
+        /usr/local/bin/openstack server create --boot-from-volume 30 --image rhcos-ocp42 --flavor 4c16g30d
         --user-data "$HOME/openstack-upi/$INFRA_ID-master-$index-ignition.json" --port "$INFRA_ID-master-port-$index"
         --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-master-$index";
         done
@@ -417,15 +417,15 @@
         timeout: 600
 
     - name: Wait for bootstrap complete
-      shell: openshift-install wait-for bootstrap-complete --dir $HOME/openstack-upi
+      shell: /usr/local/sbin/openshift-install wait-for bootstrap-complete --dir $HOME/openstack-upi
 
     - name: Delete bootstrap node
-      shell: openstack server delete "$INFRA_ID-bootstrap"
+      shell: /usr/local/bin/openstack server delete "$INFRA_ID-bootstrap"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
     - name: Delete bootstrap port
-      shell: openstack port delete "$INFRA_ID-bootstrap-port"
+      shell: /usr/local/bin/openstack port delete "$INFRA_ID-bootstrap-port"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
@@ -438,7 +438,7 @@
     - name: Add worker server ports
       shell: >-
         for index in $(seq 0 1); do
-        openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
         --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
         --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-port-$index";
         done
@@ -448,7 +448,7 @@
     - name: Add worker servers
       shell: >-
         for index in $(seq 0 1); do
-        openstack server create --image rhcos-ocp42 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
+        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
         --port "$INFRA_ID-worker-port-$index" --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-$index";
         done
       environment:
@@ -460,7 +460,7 @@
 
     - name: Get bootstrap CSRs waiting for approval
       shell: >-
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
         | grep -v Approved | awk '{ print $1 }'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
@@ -468,7 +468,7 @@
 
     - name: Approve pending bootstrap CSRs
       when: r_first_csr.stdout_lines | length > 0
-      shell: oc adm certificate approve {{ item }}
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_first_csr.stdout_lines }}"
@@ -480,7 +480,7 @@
 
     - name: Get bootstrap CSRs waiting for approval
       shell: >-
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
         | grep -v Approved | awk '{ print $1 }'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
@@ -488,7 +488,7 @@
 
     - name: Approve pending bootstrap CSRs
       when: r_second_csr.stdout_lines | length > 0
-      shell: oc adm certificate approve {{ item }}
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_second_csr.stdout_lines }}"
@@ -499,7 +499,7 @@
 
     - name: Get pending node CSRs
       shell: >-
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
         | grep -v Approved | awk '{ print $1 }'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
@@ -507,7 +507,7 @@
 
     - name: Approve pending node CSRs
       when: r_first_node_csr.stdout_lines | length > 0
-      shell: oc adm certificate approve {{ item }}
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_first_node_csr.stdout_lines }}"
@@ -519,7 +519,7 @@
 
     - name: Get node CSRs waiting for approval
       shell: >-
-        oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
         | grep -v Approved | awk '{ print $1 }'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
@@ -527,7 +527,7 @@
 
     - name: Approve pending node CSRs
       when: r_second_node_csr.stdout_lines | length > 0
-      shell: oc adm certificate approve {{ item }}
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       loop: "{{ r_second_node_csr.stdout_lines }}"
@@ -536,7 +536,7 @@
         seconds: 15
 
     - name: Check for two worker nodes
-      shell: oc get node -l node-role.kubernetes.io/worker --no-headers
+      shell: /usr/local/sbin/oc get node -l node-role.kubernetes.io/worker --no-headers
       register: r_nodes
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
@@ -567,12 +567,12 @@
 
     - name: Patch registry for new storage
       shell: >-
-        oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+        /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
         '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test
 
     - name: Finish installation
-      shell: openshift-install wait-for install-complete --dir $HOME/openstack-upi
+      shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
       tags: test
