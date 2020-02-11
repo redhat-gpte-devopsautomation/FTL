@@ -1,0 +1,572 @@
+---
+- name: Run reset_lab
+  import_playbook: reset_lab.yml
+
+- name: Solve the OCP4 on OpenStack installation lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    ocp_version: 4.3.0
+  environment:
+    OCP_RELEASE: "{{ ocp_version }}"
+
+  tasks:
+    - name: Set OCP version
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export OCP_RELEASE"
+        line: "export OCP_RELEASE={{ ocp_version }}"
+
+    - name: Get oc binary
+      unarchive:
+        src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$OCP_RELEASE/openshift-client-linux-$OCP_RELEASE.tar.gz
+        dest: /usr/local/sbin
+        remote_src: yes
+        mode: 0555
+      become: true
+    
+    - name: Check for presence of clouds.yaml
+      stat:
+        path: $HOME/.config/openstack/clouds.yaml
+      register: clouds_stat
+
+    - name: Check for presence of clouds.yaml
+      assert:
+        that:
+          - clouds_stat.stat.exists
+        fail_msg: "Somehow you don't have a clouds.yaml file..."
+
+    - name: Make sure openstack CLI works
+      shell: /usr/local/bin/openstack server list -f json
+      register: cmd_openstack
+    
+    - name: Add utilityVM to inventory
+      add_host:
+        hostname: utilityvm.example.com
+
+- name: Solve the OCP4 on OpenStack installation lab
+  hosts: utilityvm.example.com
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Pull UBI 7.7 image
+      podman_image:
+        name: registry.access.redhat.com/ubi7/ubi:7.7
+
+    - name: Test podman with UBI 7.7 image
+      command: "podman run --rm registry.access.redhat.com/ubi7/ubi:7.7 cat /etc/os-release"
+      register: podman_ubi
+
+    - debug:
+        var: podman_ubi
+
+    - name: Make directories for registry contents
+      file:
+        path: "/opt/registry/{{ item }}"
+        state: directory
+        owner: "cloud-user"
+        recurse: true
+      become: true
+      loop:
+        - auth
+        - certs
+        - data
+
+    - name: Create self-signed certificate for registry
+      command: >
+        openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/registry/certs/domain.key
+        -x509 -days 365 -out /opt/registry/certs/domain.crt
+        -subj "/C=US/ST=WA/L=Seattle/O=Red Hat/OU=GPTE/CN=utilityvm.example.com"
+    
+    - name: Create htpasswd file
+      command: htpasswd -bBc /opt/registry/auth/htpasswd openshift redhat
+
+    - name: Stop container if it is running
+      shell: podman stop mirror-registry && podman rm mirror-registry
+      ignore_errors: true
+
+    - name: Stop container if it is running (root)
+      shell: podman stop mirror-registry && podman rm mirror-registry
+      become: true
+      ignore_errors: true
+
+    - name: Start container registry container
+      vars:
+        container_image: docker.io/library/registry:2
+        container_name: mirror-registry
+        container_run_args: >-
+          -p 5000:5000
+          --restart=always 
+          -v /opt/registry/data:/var/lib/registry:z
+          -v /opt/registry/auth:/auth:z
+          -e "REGISTRY_AUTH=htpasswd"
+          -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm"
+          -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd"
+          -v /opt/registry/certs:/certs:z
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt
+          -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key
+        container_state: running
+      import_role:
+        name: ../../../roles/podman_container_systemd
+      become: true
+
+    - name: Stop mirror-registry service if running
+      service:
+        name: mirror-registry-container-pod
+        state: restarted
+      become: true
+      ignore_errors: true
+
+    - name: Move certificate to ca-trust
+      copy:
+        src: /opt/registry/certs/domain.crt
+        dest: /etc/pki/ca-trust/source/anchors/domain.crt
+        remote_src: true
+      become: true
+
+    - name: Update CA trust
+      command: update-ca-trust
+      become: true
+
+    - name: Test to ensure registry is accessible
+      uri:
+        url: https://utilityvm.example.com:5000/v2/_catalog
+        status_code: 200
+        method: GET
+        url_username: openshift
+        url_password: redhat
+
+    - name: Test registry functionality
+      command: podman login -u openshift -p redhat utilityvm.example.com:5000
+
+    - name: Test registry functionality
+      command: podman tag registry.access.redhat.com/ubi7/ubi:7.7 utilityvm.example.com:5000/ubi7/ubi:7.7
+
+    - name: Test registry functionality
+      command: podman push utilityvm.example.com:5000/ubi7/ubi:7.7
+
+- name: Solve the OCP4 on OpenStack installation lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    ocp_version: 4.3.0
+  environment:
+    OCP_RELEASE: "{{ ocp_version }}"
+    LOCAL_REGISTRY: "utilityvm.example.com:5000"
+    LOCAL_REPOSITORY: "ocp4/openshift4"
+    LOCAL_SECRET_JSON: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+    PRODUCT_REPO: "openshift-release-dev"
+    RELEASE_NAME: "ocp-release"
+
+  tasks:
+    - set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+      tags: test
+        
+    - name: Copy certificate from utility VM
+      command: scp utilityvm.example.com:/opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+      become: true
+    
+    - name: Update CA trust
+      command: update-ca-trust
+      become: true
+
+    - name: Verify registry is accessible
+      uri:
+        url: https://utilityvm.example.com:5000/v2/_catalog
+        status_code: 200
+        method: GET
+        url_username: openshift
+        url_password: redhat
+
+    - name: Get podman credentials into file
+      command: podman login -u openshift -p redhat --authfile $HOME/pullsecret_config.json utilityvm.example.com:5000
+
+    - name: Verify pull secret is valid syntax
+      assert:
+        that:
+          lookup('file', HOME ~ '/ocp_pullsecret.json') | from_json is succeeded
+        success_msg: The OCP pull secret has correct syntax
+      vars:
+        HOME: "{{ lookup('env', 'HOME') }}"
+
+    - name: Merge pull secrets
+      shell: >-
+        jq -c --argjson var "$(jq .auths $HOME/pullsecret_config.json)" '.auths += $var'
+        $HOME/ocp_pullsecret.json > $HOME/merged_pullsecret.json
+
+    - name: Add env vars to .bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export {{ item.entry }}"
+        line: "export {{ item.entry }}={{ item.val }}"
+      loop:
+        - entry: "LOCAL_REGISTRY"
+          val: "utilityvm.example.com:5000"
+        - entry: "LOCAL_REPOSITORY"
+          val: "ocp4/openshift4"
+        - entry: "LOCAL_SECRET_JSON"
+          val: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+        - entry: "PRODUCT_REPO"
+          val: "openshift-release-dev"
+        - entry: "RELEASE_NAME"
+          val: "ocp-release"
+
+    - name: Mirror OpenShift content to local registry
+      shell: >-
+        /usr/local/sbin/oc adm -a ${LOCAL_SECRET_JSON} release mirror
+        --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-x86_64
+        --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}
+        --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64
+
+    - name: Verify that images are present and pullable
+      podman_image:
+        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.0-operator-lifecycle-manager
+        auth_file: "$HOME/merged_pullsecret.json"
+
+    - name: Check release info to make sure it works
+      shell: >-
+        /usr/local/sbin/oc adm release info -a ${LOCAL_SECRET_JSON}
+        "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
+      register: release_info
+
+    - name: Check release info to make sure it works
+      assert:
+        that:
+          - not release_info.failed
+          - "'{{ ocp_version }}' in release_info.stdout"
+
+    - name: Extract openshift-install binary
+      shell: >-
+        /usr/local/sbin/oc adm release extract -a ${LOCAL_SECRET_JSON}
+        --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
+        --to /usr/local/sbin/
+      become: true
+      environment:
+        OCP_RELEASE: "{{ ocp_version }}"
+        LOCAL_REGISTRY: "utilityvm.example.com:5000"
+        LOCAL_REPOSITORY: "ocp4/openshift4"
+        LOCAL_SECRET_JSON: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+
+    - name: Create directory for installation artifacts
+      file:
+        state: directory
+        path: $HOME/openstack-upi
+
+    - name: Create the install-config.yaml file
+      template:
+        src: ./files/install-config.yaml.j2
+        dest: $HOME/openstack-upi/install-config.yaml
+      vars:
+        GUID: "{{ lookup('env', 'GUID') }}"
+        HOME: "{{ lookup('env', 'HOME') }}"
+
+    - name: Backup the install-config just in case
+      file:
+        state: directory
+        path: $HOME/backup
+
+    - name: Backup the install-config just in case
+      copy:
+        src: $HOME/openstack-upi/install-config.yaml
+        dest: $HOME/backup/install-config.yaml
+        remote_src: true
+
+    - name: Create openshift-install manifests
+      shell: /usr/local/sbin/openshift-install create manifests --dir $HOME/openstack-upi
+
+    - name: Fix the cluster-scheduler manifest
+      lineinfile:
+        path: $HOME/openstack-upi/manifests/cluster-scheduler-02-config.yml
+        regexp: "^  mastersSchedulable"
+        line: "  mastersSchedulable: false"
+
+    - name: Remove manifests for master machines
+      shell: rm -f $HOME/openshift/99_openshift-cluster-api_master-machines-*.yaml
+
+    - name: Create openshift-install ignition files
+      shell: /usr/local/sbin/openshift-install create ignition-configs --dir $HOME/openstack-upi
+
+    - name: Set infra_id in .bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export INFRA_ID"
+        line: "export INFRA_ID=$(jq -r .infraID $HOME/openstack-upi/metadata.json)"
+
+    - name: Get infra_id
+      shell: jq -r .infraID $HOME/openstack-upi/metadata.json
+      register: r_infra_id
+
+    - debug:
+        var: r_infra_id
+
+    - name: Run python script for bootstrap ignition
+      shell: >-
+        cd $HOME/openstack-upi;
+        python3 $HOME/resources/update_ignition.py
+
+    - name: Update master ignition files
+      shell: |
+        cd $HOME/openstack-upi;
+        MASTER_HOSTNAME="$INFRA_ID-master"
+        python3 -c "import base64, json, sys;
+        ignition = json.load(sys.stdin);
+        files = ignition['storage'].get('files', []);
+        files.append({'path': '/etc/hostname', 'mode': 420, 'contents': {'source': 'data:text/plain;charset=utf-8;base64,' + base64.standard_b64encode(b'$MASTER_HOSTNAME').decode().strip(), 'verification': {}}, 'filesystem': 'root'});
+        ignition['storage']['files'] = files;
+        json.dump(ignition, sys.stdout)" <master.ign >"$INFRA_ID-master-ignition.json";
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Copy bootstrap.ign to web server
+      command: "scp $HOME/openstack-upi/bootstrap.ign utilityvm.example.com:"
+
+    - name: Fix permissions on bootstrap ignition
+      command: "ssh utilityvm.example.com chmod 644 bootstrap.ign"
+
+    - name: Move bootstrap.ign to web dir
+      command: "ssh utilityvm.example.com sudo mv bootstrap.ign /var/www/html/"
+
+    - name: Restorecon selinux context
+      command: "ssh utilityvm.example.com sudo restorecon /var/www/html/bootstrap.ign"
+
+    - name: Test to make sure web server is serving bootstrap.ign
+      get_url:
+        url: http://utilityvm.example.com/bootstrap.ign
+        dest: $HOME/mybootstrap.ign
+
+    - name: Copy bootstrap shim file
+      copy:
+        dest: $HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json
+        src: ./files/bootstrap-ignition.json
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Create ports for API
+      shell: >-
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        --fixed-ip "subnet=$GUID-ocp-subnet,ip-address=192.168.47.5" --tag openshiftClusterID="$INFRA_ID"
+        "$INFRA_ID-api-port"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Create ports for Ingress
+      shell: >-
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
+        --fixed-ip "subnet=$GUID-ocp-subnet,ip-address=192.168.47.7" --tag openshiftClusterID="$INFRA_ID"
+        "$INFRA_ID-ingress-port"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Set floating IPs
+      shell: /usr/local/bin/openstack floating ip set --port "$INFRA_ID-api-port" $API_FIP
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Set floating IPs
+      shell: /usr/local/bin/openstack floating ip set --port "$INFRA_ID-ingress-port" $INGRESS_FIP
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Create bootstrap server port
+      shell: >-
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
+        --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap-port"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Create bootstrap server
+      shell: >-
+        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
+        --port "$INFRA_ID-bootstrap-port" --wait --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Check bootkube to make sure it started
+      debug:
+        msg: stub
+
+    - name: Create master server ports
+      shell: >-
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-master_sg"
+        --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
+        --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-master-port"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Create master servers
+      shell: >-
+        /usr/local/bin/openstack server create --boot-from-volume 30 --image rhcos-ocp42 --flavor 4c16g30d
+        --user-data "$HOME/openstack-upi/$INFRA_ID-master-ignition.json" --port "$INFRA_ID-master-port"
+        --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-master"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Wait 10 minutes for bootstrapping to have a chance at life
+      wait_for:
+        timeout: 600
+
+    - name: Wait for bootstrap complete
+      shell: /usr/local/sbin/openshift-install wait-for bootstrap-complete --dir $HOME/openstack-upi
+
+    - name: Delete bootstrap node
+      shell: /usr/local/bin/openstack server delete "$INFRA_ID-bootstrap"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Delete bootstrap port
+      shell: /usr/local/bin/openstack port delete "$INFRA_ID-bootstrap-port"
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Set KUBECONFIG env var
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export KUBECONFIG"
+        line: "export KUBECONFIG=$HOME/openstack-upi/auth/kubeconfig"
+
+    - name: Add worker server ports
+      shell: >-
+        for index in $(seq 0 1); do
+        /usr/local/bin/openstack port create --network "$GUID-ocp-network" --security-group "$GUID-worker_sg"
+        --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6
+        --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-port-$index";
+        done
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Add worker servers
+      shell: >-
+        for index in $(seq 0 1); do
+        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
+        --port "$INFRA_ID-worker-port-$index" --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-$index";
+        done
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Wait 7 min for the worker CSRs to have a chance to appear
+      wait_for:
+        timeout: 620
+
+    - name: Get bootstrap CSRs waiting for approval
+      shell: >-
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_first_csr
+
+    - name: Approve pending bootstrap CSRs
+      when: r_first_csr.stdout_lines | length > 0
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_first_csr.stdout_lines }}"
+
+    - name: Wait 2.5 min if no initial pending bootstrap CSR
+      when: r_first_csr.stdout_lines | length < 2
+      wait_for:
+        timeout: 150
+
+    - name: Get bootstrap CSRs waiting for approval
+      shell: >-
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_second_csr
+
+    - name: Approve pending bootstrap CSRs
+      when: r_second_csr.stdout_lines | length > 0
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_second_csr.stdout_lines }}"
+
+    - name: Wait 2.5 min for node CSRs
+      wait_for:
+        timeout: 150
+
+    - name: Get pending node CSRs
+      shell: >-
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_first_node_csr 
+
+    - name: Approve pending node CSRs
+      when: r_first_node_csr.stdout_lines | length > 0
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_first_node_csr.stdout_lines }}"
+
+    - name: Wait 2.5 min if no initial pending node CSR
+      when: r_first_node_csr.stdout_lines | length < 2
+      wait_for:
+        timeout: 150
+
+    - name: Get node CSRs waiting for approval
+      shell: >-
+        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
+        | grep -v Approved | awk '{ print $1 }'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      register: r_second_node_csr
+
+    - name: Approve pending node CSRs
+      when: r_second_node_csr.stdout_lines | length > 0
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      loop: "{{ r_second_node_csr.stdout_lines }}"
+
+    - pause:
+        seconds: 15
+
+    - name: Check for two worker nodes
+      shell: /usr/local/sbin/oc get node -l node-role.kubernetes.io/worker --no-headers
+      register: r_nodes
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+
+    - name: Check for two worker nodes
+      assert:
+        that: r_nodes.stdout_lines | length == 2
+
+    - name: Create registry PV
+      k8s:
+        state: present
+        src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
+
+    - name: Create registry PVC
+      k8s:
+        state: present
+        src: "$HOME/resources/pvc-registry.yaml"
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
+
+    - name: Wait 5 minutes to give COs a chance to come alive
+      pause:
+        seconds: 300
+
+    - name: Patch registry for new storage
+      shell: >-
+        /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+        '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
+
+    - name: Finish installation
+      shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
+      tags: test

@@ -1,0 +1,37 @@
+---
+- name: Reset the OCP4 on OpenStack installation lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  tasks:
+    - set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+
+    - name: Get infra_id
+      shell: jq -r .infraID $HOME/openstack-upi/metadata.json
+      register: r_infra_id
+      ignore_errors: true
+
+    - name: Delete servers
+      shell: /usr/local/bin/openstack server list -f value | egrep -v "bastion|utilityvm" | awk '{ print $1 }' | xargs openstack server delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Delete ports
+      shell: /usr/local/bin/openstack port list --tags openshiftClusterID="$INFRA_ID" -f value -c ID | xargs openstack port delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Delete volumes
+      shell: /usr/local/bin/openstack volume list -f json | jq -r '. | map(select(."Status"=="available")) | .[].ID' | xargs openstack volume delete
+      ignore_errors: true
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+
+    - name: Cleanup install directory
+      file:
+        state: absent
+        path: $HOME/openstack-upi
