@@ -285,7 +285,7 @@
         line: "  mastersSchedulable: false"
 
     - name: Remove manifests for master machines
-      shell: rm -f $HOME/openshift/99_openshift-cluster-api_master-machines-*.yaml
+      shell: rm -f $HOME/openstack-upi/openshift/99_openshift-cluster-api_master-machines-*.yaml
 
     - name: Create openshift-install ignition files
       shell: /usr/local/sbin/openshift-install create ignition-configs --dir $HOME/openstack-upi
