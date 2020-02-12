@@ -7,7 +7,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.0
+    ocp_version: 4.3.1
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -152,7 +152,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.0
+    ocp_version: 4.3.1
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -224,7 +224,7 @@
 
     - name: Verify that images are present and pullable
       podman_image:
-        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.0-operator-lifecycle-manager
+        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.1-operator-lifecycle-manager
         auth_file: "$HOME/merged_pullsecret.json"
 
     - name: Check release info to make sure it works
