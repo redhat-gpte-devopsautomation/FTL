@@ -383,7 +383,7 @@
 
     - name: Create bootstrap server
       shell: >-
-        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
+        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
         --port "$INFRA_ID-bootstrap-port" --wait --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
@@ -405,7 +405,7 @@
     - name: Create master servers
       shell: >-
         for index in $(seq 0 2); do
-        /usr/local/bin/openstack server create --boot-from-volume 30 --image rhcos-ocp42 --flavor 4c16g30d
+        /usr/local/bin/openstack server create --boot-from-volume 30 --image rhcos-ocp43 --flavor 4c16g30d
         --user-data "$HOME/openstack-upi/$INFRA_ID-master-$index-ignition.json" --port "$INFRA_ID-master-port-$index"
         --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-master-$index";
         done
@@ -448,7 +448,7 @@
     - name: Add worker servers
       shell: >-
         for index in $(seq 0 1); do
-        /usr/local/bin/openstack server create --image rhcos-ocp42 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
+        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
         --port "$INFRA_ID-worker-port-$index" --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-$index";
         done
       environment:
