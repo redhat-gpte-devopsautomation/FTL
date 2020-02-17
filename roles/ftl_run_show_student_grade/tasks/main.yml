@@ -1,3 +1,7 @@
+---
+# Placeholder task
+
 - name: Show report back to student
   debug:
     msg: cat file? Maybe do it later? Via calling script
+...    
