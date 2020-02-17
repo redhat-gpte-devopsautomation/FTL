@@ -21,6 +21,22 @@
     student_errors: "{{ r_lab_pass.found }}"
     report_status_message:  SUCCESS
 
+- name: Output lab status and error count
+  debug:
+    msg: 
+      - "lab_passed = {{ lab_passed }}"
+      - "Error count = {{ student_errors }}"  
+    verbosity: 2
+
+- name: Finalize lab report with status
+  lineinfile:
+    line: |+
+
+      {{ report_status_message }}:{{ student_errors }} Errors
+
+    dest: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+    insertafter:  EOF
+
 - name: Get report hash
   stat:
     path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
@@ -31,19 +47,4 @@
   lineinfile:
     path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
     line: "{{ st.stat.checksum }}  {{ grader_student_report_file }}"
-
-- name: Output lab status and error count
-  debug:
-    msg: 
-      - "lab_passed = {{ lab_passed }}"
-      - "Error count = {{ student_errors }}"  
-    verbosity: 2
-
-- name: Finalize lab report with status
-  lineinfile:
-    dest:         "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    insertafter:  EOF
-    line: |
-
-      {{ report_status_message }} {{ student_errors }} Errors
 ...
