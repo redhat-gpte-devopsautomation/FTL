@@ -32,19 +32,23 @@
   lineinfile:
     line: |+
 
-      {{ report_status_message }}:{{ student_errors }} Errors
+      {{ report_status_message }}: {{ student_errors }} Errors
 
     dest: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
     insertafter:  EOF
 
-- name: Get report hash
-  stat:
-    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    checksum_algorithm: sha256
-  register: st
+- when: ftl_report_checksum | default(false)
+  name: Add a checksum to grading report
+  block: 
 
-- name: Sign student report
-  lineinfile:
-    path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
-    line: "{{ st.stat.checksum }}  {{ grader_student_report_file }}"
+    - name: Generate a sha256 checksum of grading report
+      stat:
+        path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+        checksum_algorithm: sha256
+      register: r_stat
+
+    - name: Sign student grading report
+      lineinfile:
+        path: "{{ grader_working_dir }}/{{ grader_student_report_file }}"
+        line: "{{ r_stat.stat.checksum }}  {{ grader_student_report_file }}"
 ...
