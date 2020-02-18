@@ -6,15 +6,16 @@ Before we look at creating *grading* playbooks it is valuable to understand the 
 
 === Student Workflow
 
-. Student provisions lab as instructed via http:labs.opentlc.com
-** *FTL* is inserted automatically at provisioing time
+. Student provisions lab as instructed via link:http://labs.opentlc.com[OpenTLC]
+** *FTL* is inserted automatically at provisioning time
 ** *FTL* is fully provisioned with necessary meta-data and utilities
+** *FTL* grading instructions are automatically rendered into the lab
 . Student works through lab
-. Student is prompted at end of lab to grade the lab via a simple copy and paste in terminal window e.g.
+. Student is prompted at end of lab to grade the lab via a simple copy and paste in terminal window including their unique `student_id` e.g.
 +
 [source,bash]
 ----
-$ grade_lab ansible_foundations 03_01
+$ grade_lab ansible_foundations 03_01 my-student-id
 ----
 +
 NOTE:  syntax: `<grade_lab command> <course_name> <lab_and_sub-lab_number`
