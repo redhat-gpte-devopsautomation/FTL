@@ -22,7 +22,7 @@
 
     - name: Lookup Tower Job ID by name
       command: >-
-        awx job_template list 
+        /opt/virtualenvs/venv-grading/bin/awx job_template list 
         --conf.insecure
         --conf.host {{ ftl_tower_host }}
         --conf.token {{ ftl_tower_token }}
