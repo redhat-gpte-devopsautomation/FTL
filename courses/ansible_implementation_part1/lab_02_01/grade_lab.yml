@@ -1,6 +1,6 @@
 ---
 - name: Grade lab 02 01 of Ansible Implementation
-  hosts: 3tierapp
+  hosts: threetierapp
   gather_facts: false
 
   tasks:      # All lab tests go here
