@@ -68,9 +68,9 @@
         - r_check_nodes.resources | json_query(infra_query) | length >= 1
       vars:
         general_use_query: >-
-          [?metadata.labels."node-role.kubernetes.io/general-use" == '']
+          [?metadata.labels."node-role.kubernetes.io/general-use"=='']
         infra_query: >-
-          [?metadata.labels."node-role.kubernetes.io/infra" == '']
+          [?metadata.labels."node-role.kubernetes.io/infra"=='']
       
     - name: Drain and cordon manual workers
       shell: /usr/local/sbin/oc adm drain $INFRA_ID-worker-{{ item }} --ignore-daemonsets --delete-local-data --force=true
