@@ -1,0 +1,46 @@
+apiVersion: v1
+baseDomain: {{ lookup('env', 'OPENSHIFT_DNS_ZONE') }}
+compute:
+- hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  platform:
+    openstack:
+      type: 4c16g30d
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: {{ lookup('env', 'GUID') }}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineCIDR: 192.168.47.0/24
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  openstack:
+    cloud: {{ lookup('env', 'GUID') }}-project
+    computeFlavor: 4c16g30d
+    externalNetwork: external
+    lbFloatingIP: {{ lookup('env', 'API_FIP') }}
+    octaviaSupport: "1"
+    region: ""
+    trunkSupport: "0"
+pullSecret: '{{ lookup('file', HOME ~ '/merged_pullsecret.json') }}'
+sshKey: |
+  {{ lookup('file', HOME ~ '/.ssh/' ~ GUID ~ 'key.pub') | indent(2, true) }}
+imageContentSources:
+- mirrors:
+  - utilityvm.example.com:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - utilityvm.example.com:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+additionalTrustBundle: |
+  {{ lookup('file', '/etc/pki/ca-trust/source/anchors/domain.crt') | indent(2, false) }}
