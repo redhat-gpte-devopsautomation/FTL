@@ -561,9 +561,20 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test
 
-    - name: Wait 5 minutes to give COs a chance to come alive
-      pause:
-        seconds: 300
+    - name: Wait for registry CO to become available
+      k8s_facts:
+        api_version: imageregistry.operator.openshift.io/v1
+        name: cluster
+        kind: Config
+      register: r_image_registry
+      vars:
+        registry_available: >-
+          {{ r_image_registry.resources[0].status.conditions | json_query(registry_query) }}
+        registry_query: >-
+          [?type=='Progressing'][].status|[0]
+      until: registry_available | bool
+      retries: 20
+      delay: 30
 
     - name: Patch registry for new storage
       shell: >-
