@@ -13,7 +13,7 @@
       include_role:
         name: grader_check_ocp_resource
       vars:
-        task_description_message: Check that the cluster version is correct
+        task_description_message: Check that the cluster version is correct.
         resource_api_version: config.openshift.io/v1
         resource_kind: ClusterVersion
         resource_name: version
@@ -21,18 +21,18 @@
         student_error_message: "Cluster Version is not correct"
         validate_certs: False
         resource_definition_checks:
-          - error_message: Cluster not in an available state
-            json_query: "status.conditions[?type=='Available'].status|[0]"
-            value: "True"
-          - error_message: Cluster not at the correct version
-            json_query: "status.conditions[?type=='Available'].message|[0]"
-            value: "Done applying {{ ocp_version }}"
+        - error_message: Cluster not in an available state
+          json_query: "status.conditions[?type=='Available'].status|[0]"
+          value: "True"
+        - error_message: Cluster not at the correct version
+          json_query: "status.conditions[?type=='Available'].message|[0]"
+          value: "Done applying {{ ocp_version }}"
 
     - name: Verify registry is accessible
       include_role:
         name: grader_check_uri_response
       vars:
-        task_description_message: Check that the mirror registry is accessible
+        task_description_message: Check that the mirror registry is accessible.
         url: "https://utilityvm.example.com:5000/v2/_catalog"
         url_username: "openshift"
         url_password: "redhat"
@@ -41,14 +41,15 @@
       include_role:
         name: grader_check_ocp_resource
       vars:
-        task_description_message: Check that the OpenShift registry is available
+        task_description_message: Check that the OpenShift registry is available.
         resource_api_version: extensions/v1beta1
         resource_kind: Deployment
         resource_name: image-registry
+        resource_namespace: openshift-image-registry
         kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
         student_error_message: "OpenShift registry is not available"
         validate_certs: False
         resource_definition_checks:
-          - error_message: OpenShift Image Registry is not available
-            json_query: "status.availableReplicas"
-            value: "1"
+        - error_message: OpenShift Image Registry is not available
+          json_query: "status.availableReplicas"
+          value: 1
