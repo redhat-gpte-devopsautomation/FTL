@@ -575,6 +575,8 @@
       until: registry_available | bool
       retries: 20
       delay: 30
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
 
     - name: Patch registry for new storage
       shell: >-
