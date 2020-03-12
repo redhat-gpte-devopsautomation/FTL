@@ -4,7 +4,7 @@
   command: oc login -u system:admin
 
 - name: get the admin-user SA token into a fact
-  command: oc sa get-token admin-user -n labguide
+  command: oc sa get-token {{ sa_username }} -n {{ labguide_namespace }}
   register: sa_token_out
 
 - name: login with the SA token
