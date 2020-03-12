@@ -1,3 +1,5 @@
 ---
 update_lrs: false
+sa_username: dashboard-user
+labguide_namespace: lab-ocp-cns
 ...
