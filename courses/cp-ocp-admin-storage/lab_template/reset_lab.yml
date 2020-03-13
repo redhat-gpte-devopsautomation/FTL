@@ -10,7 +10,7 @@
     command: oc login -u system:admin
 
   - name: remove the project request template via patch
-    command: oc patch project.config.openshift.io cluster --type='json' -p='[{"op": "replace", "path": "/spec/projectRequestTemplate", "value":{}}]'
+    command: "oc patch project.config.openshift.io cluster --type='json' -p='[{\"op\": \"replace\", \"path\": \"/spec/projectRequestTemplate\", \"value\":{}}]'"
 
   - name: remove the request template
     k8s:
