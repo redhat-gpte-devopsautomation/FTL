@@ -24,4 +24,4 @@
   - name: make sure we start with 3 nodes
     shell: 'oc get node -l node-role.kubernetes.io/worker= --no-headers | wc -l'
     register: nodes_quantity
-    failed_when: 'nodes_out.stdout | int != 3'
+    failed_when: 'nodes_quantity.stdout | int != 3'
