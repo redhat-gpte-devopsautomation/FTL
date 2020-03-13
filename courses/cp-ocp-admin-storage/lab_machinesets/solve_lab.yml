@@ -20,14 +20,14 @@
       - machineset_name: machinesets.resources[0].metadata.name
 
   - name: scale the machineset to 2 replicas
-    command: oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=2
+    command: "oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=2"
 
   - name: wait for 2 ready machine replicas
     k8s_facts:
       api_version: machine.openshift.io/v1beta1
       kind: MachineSet
       namespace: openshift-machine-api
-      name: {{ machineset_name }}
+      name: "{{ machineset_name }}"
     register: machineset_ready
     until:
       - machineset_ready.resources | length | int > 0
@@ -38,14 +38,14 @@
     delay: 15
 
   - name: scale the machineset to 1 replicas
-    command: oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=1
+    command: "oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=1"
 
   - name: wait for 1 ready machine replicas
     k8s_facts:
       api_version: machine.openshift.io/v1beta1
       kind: MachineSet
       namespace: openshift-machine-api
-      name: {{ machineset_name }}
+      name: "{{ machineset_name }}"
     register: machineset_ready
     until:
       - machineset_ready.resources | length | int > 0
