@@ -8,17 +8,32 @@
     - role: '../roles/cp-ocp-admin-storage-prereqs'
   tasks:
 
-  - name: execute infra-nodes.sh
-    command: bash /tmp/content/support/infra-nodes.sh
+  - name: execute the machineset generator
+    shell: "bash /tmp/content/support/machineset-generator.sh 1 infra 0 | oc create -f -"
+
+  - name: grab the machineset name
+    shell: "oc get machineset -n openshift-machine-api -l machine.openshift.io/cluster-api-machine-role=infra -o jsonpath='{.items[0].metadata.name}')"
+    register: infra_set
+
+  - name: patch the set to apply the infra label
+    shell: oc patch machineset "{{ infra_set.stdout }}" -n openshift-machine-api --type='json' -p='[{"op": "add", "path": "/spec/template/spec/metadata/labels", "value":{"node-role.kubernetes.io/worker":"", "node-role.kubernetes.io/infra":""} }]'
+
+  - name: scale the set
+    shell: "oc scale machineset {{ infra_set.stdout }} -n openshift-machine-api --replicas=3"
 
   - name: make sure the machineset is ready
     k8s_facts:
       api_version: machine.openshift.io/v1beta1
       kind: MachineSet
-      name: infra-us-east-2c
+      name: "{{ infra_set.stdout }}"
       namespace: openshift-machine-api
     register: infra_machineset
-    until: infra_machineset.resources[0].status.readyReplicas is defined and infra_machineset.resources[0].status.readyReplicas == 3
+    until: 
+      - infra_machineset.resources | length | int == 1
+      - infra_machineset.resources[0] is defined
+      - infra_machineset.resources[0].status is defined
+      - infra_machineset.resources[0].status.readyReplicas is defined 
+      - infra_machineset.resources[0].status.readyReplicas | int == 3
     retries: 28
     delay: 15
 
