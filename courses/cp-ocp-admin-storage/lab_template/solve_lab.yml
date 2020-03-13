@@ -25,7 +25,6 @@
   # k8s module appears to have issues with template objects
   - name: Create the project-request template in the namespace 'openshift-config'
     command: oc create -f /tmp/content/support/project_request_template.yaml -n openshift-config
-    when: template_out.rc == 1
     tags:
     - quota-deploy
 
