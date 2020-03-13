@@ -16,3 +16,16 @@
     register: namespace_exists
     failed_when:
       - namespace_exists.resources | length | int != 1
+
+  - name: add storage to the app
+    shell: 'oc set volume dc/mapit --add --name=mapit-storage -t pvc --claim-mode=ReadWriteOnce --claim-size=1Gi --claim-name=mapit-storage --mount-path=/app-storage'
+
+  - name: check that we ended up with a volume
+    k8s_facts:
+      api_version: apps.openshift.io/v1
+      kind: DeploymentConfig
+      namespace: app-management
+      name: mapit
+    register: mapit_dc
+    failed_when:
+      - mapit_dc.resources[0].spec.template.spec.volumes | length | int != 1
