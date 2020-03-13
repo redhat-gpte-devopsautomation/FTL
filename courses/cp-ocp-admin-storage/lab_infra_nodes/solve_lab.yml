@@ -12,7 +12,7 @@
     shell: "bash /tmp/content/support/machineset-generator.sh 1 infra 0 | oc create -f -"
 
   - name: grab the machineset name
-    shell: "oc get machineset -n openshift-machine-api -l machine.openshift.io/cluster-api-machine-role=infra -o jsonpath='{.items[0].metadata.name}')"
+    shell: "oc get machineset -n openshift-machine-api -l machine.openshift.io/cluster-api-machine-role=infra -o jsonpath='{.items[0].metadata.name}'"
     register: infra_set
 
   - name: patch the set to apply the infra label
