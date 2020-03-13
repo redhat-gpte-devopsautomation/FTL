@@ -12,10 +12,13 @@
     command: oc adm create-bootstrap-project-template -o yaml
 
   # k8s module appears to have issues with template objects
-  - name: Check for the template's existence before attempting to create
-    command: oc get template project-request -n openshift-config
-    register: template_out
-    failed_when: template_out.rc > 1
+  - name: Delete the template before attempting to create it, just in case
+    k8s:
+      state: absent
+      api_version: template.openshift.io/v1
+      kind: Template
+      name: project-request
+      namespace: openshift-config
     tags:
     - quota-deploy
 
@@ -39,10 +42,14 @@
       seconds: 60
 
   # k8s module appears to have issues with template objects
-  - name: Check for the template's existence before attempting to create
-    command: oc get template project-request -n openshift-config
-    register: template_out
-    failed_when: template_out.rc > 1
+  - name: Check for the template's existence before attempting to create a new project
+    k8s_facts:
+      api_version: template.openshift.io/v1
+      kind: Template
+      name: project-request
+      namespace: openshift-config
+    register: template_exists
+    failed_when: template_exists.resources | length | int != 1
     tags:
     - quota-deploy
     - quota-verify

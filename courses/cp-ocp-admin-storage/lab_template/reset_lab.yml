@@ -1,0 +1,21 @@
+# vim: set ft=ansible
+---
+- name: Reset lab LDAP of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: login as system:admin
+    command: oc login -u system:admin
+
+  - name: remove the project request template via patch
+    command: oc patch project.config.openshift.io cluster --type='json' -p='[{"op": "replace", "path": "/spec/projectRequestTemplate", "value":{}}]'
+
+  - name: remove the request template
+    k8s:
+      state: absent
+      api_version: template.openshift.io/v1
+      kind: Template
+      name: project-request
+      namespace: openshift-config
