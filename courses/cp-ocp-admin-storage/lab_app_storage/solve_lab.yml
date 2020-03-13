@@ -1,0 +1,18 @@
+# vim: set ft=ansible
+---
+- name: Solve lab App Storage Basics of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+
+  - name: check for the app management project (it's a prereq for this lab)
+    k8s_facts:
+      api_version: v1
+      kind: Namespace
+      name: app-management
+    register: namespace_exists
+    failed_when:
+      - namespace_exists.resources | length | int != 1
