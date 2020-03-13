@@ -17,7 +17,7 @@
 
   - name: set the first machineset as a fact
     set_fact:
-      machineset_name: machinesets.resources[0].metadata.name
+      machineset_name: "{{ machinesets.resources[0].metadata.name }}"
 
   - name: scale the machineset to 2 replicas
     command: "oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=2"
