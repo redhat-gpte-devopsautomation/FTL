@@ -29,3 +29,18 @@
     register: mapit_dc
     failed_when:
       - mapit_dc.resources[0].spec.template.spec.volumes | length | int != 1
+
+  - name: make sure the pvc eventually binds
+    k8s_facts:
+      api_version: v1
+      kind: PersistentVolumeClaim
+      namespace: app-management
+      name: mapit-storage
+    register: pvc
+    until:
+      - pvc.resources | length | int > 0
+      - pvc.resources[0].status is defined
+      - pvc.resources[0].status.phase is defined
+      - pvc.resources[0].status.phase == "Bound"
+    delay: 30
+    retries: 10
