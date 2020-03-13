@@ -121,8 +121,12 @@
           'teamuser1'  not in teamedapp_users.stdout or
           'teamuser2'  not in teamedapp_users.stdout
 
+      # if we are too fast, this first login may fail because the auth operator
+      # may not have finished resyncing yet. retry a few times for safety
       - name: Login as normaluser1
         command: oc login -u normaluser1 -p openshift
+        retries: 10
+        delay: 30
 
       - name: Check that normaluser1 cannot see projects
         command: oc get project app-dev
