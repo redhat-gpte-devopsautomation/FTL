@@ -1,0 +1,11 @@
+# vim: set ft=ansible
+---
+- name: Solve all labs of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+  tasks:
+  - include: '../lab_environment/solve_lab.yml'
+  - include: '../lab_environment/solve_lab.yml'
