@@ -1,0 +1,39 @@
+# vim: set ft=ansible
+---
+- name: Solve all labs of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  roles:
+    - role: '../roles/cp-ocp-admin-storage-prereqs'
+
+- name: Environment lab
+  import_playbook: '../lab_environment/solve_lab.yml'
+- name: Installation lab
+  import_playbook: '../lab_installation/solve_lab.yml'
+- name: App management lab
+  import_playbook: '../lab_app_management/solve_lab.yml'
+- name: App storage lab
+  import_playbook: '../lab_app_storage/solve_lab.yml'
+- name: Machinesets lab
+  import_playbook: '../lab_machinesets/solve_lab.yml'
+- name: Machinesets lab
+  import_playbook: '../lab_machinesets/solve_lab.yml'
+- name: Infra nodes lab
+  import_playbook: '../lab_infra_nodes/solve_lab.yml'
+- name: Logging lab
+  import_playbook: '../lab_logging/solve_lab.yml'
+- name: LDAP lab
+  import_playbook: '../lab_ldap/solve_lab.yml'
+#- name: Monitoring lab
+#  import_playbook: '../lab_ldap/solve_lab.yml'
+- name: Template/Quota/Limits lab
+  import_playbook: '../lab_template/solve_lab.yml'
+- name: Networking lab
+  import_playbook: '../lab_networking/solve_lab.yml'
+- name: Project self provisioning lab
+  import_playbook: '../lab_disabling_self_provisioning/solve_lab.yml'
+- name: Cluster Resource Quota lab
+  import_playbook: '../lab_clusterresourcequota/solve_lab.yml'
+- name: Cluster Resource Quota lab
+  import_playbook: '../lab_clusterresourcequota/solve_lab.yml'

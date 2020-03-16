@@ -25,7 +25,6 @@
         kind: DeploymentConfig
         name: ose
         namespace: "{{ item }}"
-      command: oc get dc ose -n {{ item }} -o jsonpath='{.status.readyReplicas}'
       register: result
       until: 
         - result.resources | length | int > 0
