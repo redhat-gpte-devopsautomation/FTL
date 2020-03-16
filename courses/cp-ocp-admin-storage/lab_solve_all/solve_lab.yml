@@ -9,5 +9,31 @@
 
 - name: Environment lab
   include: '../lab_environment/solve_lab.yml'
-- name: Environment lab
-  include: '../lab_environment/solve_lab.yml'
+- name: Installation lab
+  include: '../lab_installation/solve_lab.yml'
+- name: App management lab
+  include: '../lab_app_management/solve_lab.yml'
+- name: App storage lab
+  include: '../lab_app_storage/solve_lab.yml'
+- name: Machinesets lab
+  include: '../lab_machinesets/solve_lab.yml'
+- name: Machinesets lab
+  include: '../lab_machinesets/solve_lab.yml'
+- name: Infra nodes lab
+  include: '../lab_infra_nodes/solve_lab.yml'
+- name: Logging lab
+  include: '../lab_logging/solve_lab.yml'
+- name: LDAP lab
+  include: '../lab_ldap/solve_lab.yml'
+#- name: Monitoring lab
+#  include: '../lab_ldap/solve_lab.yml'
+- name: Template/Quota/Limits lab
+  include: '../lab_template/solve_lab.yml'
+- name: Networking lab
+  include: '../lab_networking/solve_lab.yml'
+- name: Project self provisioning lab
+  include: '../lab_disabling_self_provisioning/solve_lab.yml'
+- name: Cluster Resource Quota lab
+  include: '../lab_clusterresourcequota/solve_lab.yml'
+- name: Cluster Resource Quota lab
+  include: '../lab_clusterresourcequota/solve_lab.yml'
