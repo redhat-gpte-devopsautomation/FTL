@@ -6,8 +6,8 @@
   become: false
   roles:
     - role: '../roles/cp-ocp-admin-storage-prereqs'
-  tasks:
-    - name: Environment lab
-      include: '../lab_environment/solve_lab.yml'
-    - name: Environment lab
-      include: '../lab_environment/solve_lab.yml'
+
+- name: Environment lab
+  include: '../lab_environment/solve_lab.yml'
+- name: Environment lab
+  include: '../lab_environment/solve_lab.yml'
