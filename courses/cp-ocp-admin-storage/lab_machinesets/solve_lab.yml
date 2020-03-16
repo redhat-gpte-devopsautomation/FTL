@@ -8,27 +8,50 @@
     - role: '../roles/cp-ocp-admin-storage-prereqs'
   tasks:
 
-  - name: get the 2c machineset name
-    shell: oc get machineset -n openshift-machine-api -o json | jq -r '.items[] | select(.metadata.name | endswith("east-2c")) | .metadata.name'
-    register: machineset_name
+  - name: get a machineset
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: MachineSet
+      namespace: openshift-machine-api
+    register: machinesets
+
+  - name: set the first machineset as a fact
+    set_fact:
+      machineset_name: "{{ machinesets.resources[0].metadata.name }}"
 
   - name: scale the machineset to 2 replicas
-    command: oc scale machineset {{ machineset_name.stdout }} -n openshift-machine-api --replicas=2
+    command: "oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=2"
 
   - name: wait for 2 ready machine replicas
-    command: oc get machineset {{ machineset_name.stdout }} -n openshift-machine-api -o jsonpath='{.status.readyReplicas}'
-    register: number_machine_replicas
-    until: number_machine_replicas.stdout | int == 2
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: MachineSet
+      namespace: openshift-machine-api
+      name: "{{ machineset_name }}"
+    register: machineset_ready
+    until:
+      - machineset_ready.resources | length | int > 0
+      - machineset_ready.resources[0].status is defined
+      - machineset_ready.resources[0].status.readyReplicas is defined
+      - machineset_ready.resources[0].status.readyReplicas | int == 2
     retries: 28
     delay: 15
 
   - name: scale the machineset to 1 replicas
-    command: oc scale machineset {{ machineset_name.stdout }} -n openshift-machine-api --replicas=1
+    command: "oc scale machineset {{ machineset_name }} -n openshift-machine-api --replicas=1"
 
   - name: wait for 1 ready machine replicas
-    command: oc get machineset {{ machineset_name.stdout }} -n openshift-machine-api -o jsonpath='{.status.readyReplicas}'
-    register: number_machine_replicas
-    until: number_machine_replicas.stdout | int == 1
+    k8s_facts:
+      api_version: machine.openshift.io/v1beta1
+      kind: MachineSet
+      namespace: openshift-machine-api
+      name: "{{ machineset_name }}"
+    register: machineset_ready
+    until:
+      - machineset_ready.resources | length | int > 0
+      - machineset_ready.resources[0].status is defined
+      - machineset_ready.resources[0].status.readyReplicas is defined
+      - machineset_ready.resources[0].status.readyReplicas | int == 1
     retries: 28
     delay: 15
 

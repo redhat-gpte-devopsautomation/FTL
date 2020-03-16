@@ -9,5 +9,8 @@
   - name: login as system:admin
     command: oc login -u system:admin
 
-  - name: delete app-management project
-    command: oc delete project app-management
+  - name: remove the volume from the app
+    command: oc set volume -n app-management dc/mapit --remove --name=mapit-storage
+
+  - name: delete the pvc that was created
+    command: oc delete -n app-management pvc mapit-storage

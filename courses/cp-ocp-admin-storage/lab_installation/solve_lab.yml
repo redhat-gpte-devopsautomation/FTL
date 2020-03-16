@@ -11,7 +11,7 @@
   - name: get clusterversion
     command: oc get clusterversion
     register: clusterversion_out
-    failed_when: '"4.1.3" not in clusterversion_out.stdout'
+    failed_when: '"4.3.1" not in clusterversion_out.stdout'
 
   - name: describe clusterversion
     command: oc describe clusterversion
@@ -19,4 +19,9 @@
   - name: get nodes
     command: oc get nodes
     register: nodes_out
-    failed_when: '"v1.13.4+9b19d73a0" not in nodes_out.stdout'
+    failed_when: '"v1.16.2" not in nodes_out.stdout'
+
+  - name: make sure we start with 3 nodes
+    shell: 'oc get node -l node-role.kubernetes.io/worker= --no-headers | wc -l'
+    register: nodes_quantity
+    failed_when: 'nodes_quantity.stdout | int != 3'

@@ -20,9 +20,18 @@
       - networking_test
 
     - name: Wait for ose pods to be running
+      k8s_facts:
+        api_version: apps.openshift.io/v1
+        kind: DeploymentConfig
+        name: ose
+        namespace: "{{ item }}"
       command: oc get dc ose -n {{ item }} -o jsonpath='{.status.readyReplicas}'
       register: result
-      until: '"1" in result.stdout'
+      until: 
+        - result.resources | length | int > 0
+        - result.resources[0].status is defined
+        - result.resources[0].status.readyReplicas is defined
+        - result.resources[0].status.readyReplicas | int 
       retries: 2
       delay: 60
       with_items:

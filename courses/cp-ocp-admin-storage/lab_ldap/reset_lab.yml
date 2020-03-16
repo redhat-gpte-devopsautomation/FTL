@@ -1,0 +1,47 @@
+# vim: set ft=ansible
+---
+- name: Reset lab LDAP of cp-ocp-admin-storage workshop
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: login as system:admin
+    command: oc login -u system:admin
+
+  - name: remove the LDAP bindPassword secret if it already exists
+    k8s:
+      state: absent
+      kind: Secret
+      name: ldap-secret
+      namespace: openshift-config
+
+  - name: remove the ca.crt configmap if it already exists
+    k8s:
+      state: absent
+      kind: ConfigMap
+      name: ca-config-map
+      namespace: openshift-config
+
+  - name: cleanup the created projects
+    k8s:
+      api_version: project.openshift.io/v1
+      kind: Project
+      name: "{{ item }}"
+      state: absent
+    loop:
+      - "app-dev"
+      - "app-test"
+      - "app-prod"
+
+  - name: cleanup the created groups
+    k8s:
+      api_version: user.openshift.io/v1
+      kind: Group
+      name: "{{ item }}"
+      state: absent
+    loop:
+      - "ose-fancy-dev"
+      - "ose-normal-dev"
+      - "ose-teamed-app"
+      - "ose-user"

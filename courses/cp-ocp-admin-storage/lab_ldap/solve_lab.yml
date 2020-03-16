@@ -42,31 +42,37 @@
         command: oc adm groups sync --sync-config=/tmp/content/support/groupsync.yaml --confirm
 
       - name: Check for app-dev project
-        command: oc get project app-dev
+        k8s_facts:
+          api_version: project.openshift.io/v1
+          kind: Project
+          name: app-dev
         register: project_out
-        ignore_errors: true
 
       - name: Create app-dev project
         command: oc adm new-project app-dev --display-name="Application Development"
-        when: project_out | failed
+        when: project_out.resources | length | int == 0
 
       - name: Check for app-test project
-        command: oc get project app-test
+        k8s_facts:
+          api_version: project.openshift.io/v1
+          kind: Project
+          name: app-test
         register: project_out
-        ignore_errors: true
 
       - name: Create app-dev project
         command: oc adm new-project app-test --display-name="Application Test"
-        when: project_out | failed
+        when: project_out.resources | length | int == 0
 
       - name: Check for app-prod project
-        command: oc get project app-prod
+        k8s_facts:
+          api_version: project.openshift.io/v1
+          kind: Project
+          name: app-prod
         register: project_out
-        ignore_errors: true
 
       - name: Create app-prod project
         command: oc adm new-project app-prod --display-name="Application Production"
-        when: project_out | failed
+        when: project_out.resources | length | int == 0
 
       - name: Give cluster-reader to fancy-dev
         command: oc adm policy add-cluster-role-to-group cluster-reader ose-fancy-dev
@@ -121,8 +127,12 @@
           'teamuser1'  not in teamedapp_users.stdout or
           'teamuser2'  not in teamedapp_users.stdout
 
+      # if we are too fast, this first login may fail because the auth operator
+      # may not have finished resyncing yet. retry a few times for safety
       - name: Login as normaluser1
         command: oc login -u normaluser1 -p openshift
+        retries: 10
+        delay: 30
 
       - name: Check that normaluser1 cannot see projects
         command: oc get project app-dev
