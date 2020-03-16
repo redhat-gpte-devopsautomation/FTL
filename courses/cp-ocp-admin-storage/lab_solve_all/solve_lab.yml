@@ -7,5 +7,7 @@
   roles:
     - role: '../roles/cp-ocp-admin-storage-prereqs'
   tasks:
-    - include: '../lab_environment/solve_lab.yml'
-    - include: '../lab_environment/solve_lab.yml'
+    - name: Environment lab
+      include: '../lab_environment/solve_lab.yml'
+    - name: Environment lab
+      include: '../lab_environment/solve_lab.yml'
