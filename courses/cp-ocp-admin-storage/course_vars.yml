@@ -2,4 +2,5 @@
 update_lrs: false
 sa_username: dashboard-user
 labguide_namespace: lab-ocp-cns
+content_branch: ocp4-prod
 ...

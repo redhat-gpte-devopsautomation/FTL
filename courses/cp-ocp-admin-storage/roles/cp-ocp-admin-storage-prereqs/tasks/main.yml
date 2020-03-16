@@ -16,6 +16,6 @@
   register: p
 
 - name: Clone lab content to /tmp/content
-  command: git clone https://github.com/openshift/openshift-cns-testdrive.git -b ocp4-prod /tmp/content
+  command: "git clone https://github.com/openshift/openshift-cns-testdrive.git -b {{ content_branch }} /tmp/content"
   when: not p.stat.exists
 

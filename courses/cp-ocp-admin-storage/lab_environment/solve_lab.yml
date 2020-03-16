@@ -27,5 +27,5 @@
   - name: oc whoami
     command: oc whoami
 
-  - name: check the dashboard-cluster-admin clusterrolebinding
+  - name: check the clusterrolebinding
     command: oc get clusterrolebinding dashboard-cluster-admin -o yaml
