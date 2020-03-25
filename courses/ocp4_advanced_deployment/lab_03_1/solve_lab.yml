@@ -7,7 +7,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.3
+    ocp_version: 4.3.5
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -152,7 +152,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.3
+    ocp_version: 4.3.5
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -224,7 +224,7 @@
 
     - name: Verify that images are present and pullable
       podman_image:
-        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.3-operator-lifecycle-manager
+        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.5-operator-lifecycle-manager
         auth_file: "$HOME/merged_pullsecret.json"
 
     - name: Check release info to make sure it works
@@ -454,83 +454,61 @@
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
 
-    - name: Wait 7 min for the worker CSRs to have a chance to appear
-      wait_for:
-        timeout: 620
-
-    - name: Get bootstrap CSRs waiting for approval
-      shell: >-
-        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
-        | grep -v Approved | awk '{ print $1 }'
+    - name: Get current bootstrap CSRs (10m max)
+      k8s_facts:
+        api_version: certificates.k8s.io/v1beta1
+        kind: CertificateSigningRequest
+        validate_certs: false
+      register: r_bootstrap_csr
+      retries: 20
+      delay: 30
+      until: r_bootstrap_csr.resources | json_query(bootstrap_csr_query) | length >= 2
+      vars:
+        bootstrap_csr_query: >-
+          [?!(status.conditions)]
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      register: r_first_csr
+
+    - name: dump r_bootstrap_csr
+      debug:
+        var: r_bootstrap_csr
 
     - name: Approve pending bootstrap CSRs
-      when: r_first_csr.stdout_lines | length > 0
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      loop: "{{ r_first_csr.stdout_lines }}"
+      loop: "{{ r_bootstrap_csr.resources | json_query(bootstrap_pending_query) }}"
+      vars:
+        bootstrap_pending_query: >-
+          [?!(status.conditions)].metadata.name
 
-    - name: Wait 2.5 min if no initial pending bootstrap CSR
-      when: r_first_csr.stdout_lines | length < 2
-      wait_for:
-        timeout: 150
-
-    - name: Get bootstrap CSRs waiting for approval
-      shell: >-
-        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
-        | grep -v Approved | awk '{ print $1 }'
+    - name: Get current node CSRs (10m max)
+      k8s_facts:
+        api_version: certificates.k8s.io/v1beta1
+        kind: CertificateSigningRequest
+        validate_certs: false
+      register: r_node_csr
+      retries: 20
+      delay: 30
+      until: r_node_csr.resources | to_json | from_json | json_query(node_csr_query) | length >= 2
+      vars:
+        node_csr_query: >-
+          [?!(status.conditions) && contains(spec.username, 'worker')]
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      register: r_second_csr
 
-    - name: Approve pending bootstrap CSRs
-      when: r_second_csr.stdout_lines | length > 0
-      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      loop: "{{ r_second_csr.stdout_lines }}"
-
-    - name: Wait 2.5 min for node CSRs
-      wait_for:
-        timeout: 150
-
-    - name: Get pending node CSRs
-      shell: >-
-        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
-        | grep -v Approved | awk '{ print $1 }'
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      register: r_first_node_csr 
+    - name: dump r_node_csr
+      debug:
+        var: r_node_csr
 
     - name: Approve pending node CSRs
-      when: r_first_node_csr.stdout_lines | length > 0
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      loop: "{{ r_first_node_csr.stdout_lines }}"
-
-    - name: Wait 2.5 min if no initial pending node CSR
-      when: r_first_node_csr.stdout_lines | length < 2
-      wait_for:
-        timeout: 150
-
-    - name: Get node CSRs waiting for approval
-      shell: >-
-        /usr/local/sbin/oc get csr --no-headers -o custom-columns=:metadata.name,:status.conditions[].type
-        | grep -v Approved | awk '{ print $1 }'
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      register: r_second_node_csr
-
-    - name: Approve pending node CSRs
-      when: r_second_node_csr.stdout_lines | length > 0
-      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      loop: "{{ r_second_node_csr.stdout_lines }}"
+      loop: "{{ r_node_csr.resources | to_json | from_json | json_query(node_pending_query) }}"
+      vars:
+        node_pending_query: >-
+          [?!(status.conditions) && contains(spec.username, 'worker')].metadata.name
 
     - pause:
         seconds: 15
