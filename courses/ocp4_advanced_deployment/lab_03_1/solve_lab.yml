@@ -448,7 +448,7 @@
     - name: Add worker servers
       shell: >-
         for index in $(seq 0 1); do
-        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c8g30d --user-data "$HOME/openstack-upi/worker.ign"
+        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c16g30d --user-data "$HOME/openstack-upi/worker.ign"
         --port "$INFRA_ID-worker-port-$index" --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-$index";
         done
       environment:
