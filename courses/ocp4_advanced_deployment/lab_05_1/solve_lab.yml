@@ -1,0 +1,108 @@
+---
+- name: Solve the OCP4 on OpenStack authentication and security lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
+
+  tasks:
+  - name: Set python version
+    set_fact:
+      ansible_python_interpreter: /usr/bin/python3
+    tags: test
+
+  - name: Get API_HOSTNAME
+    command: oc whoami --show-server | sed -r 's|.*//(.*):.*|\1|'
+    register: r_api_hostname
+
+  - name: Get INGRESS_DOMAIN
+    command: oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')'
+    register: r_ingress_domain
+
+  - name: Print variables
+    debug:
+      msg: "API_HOSTNAME: {{ r_api_hostname.stdout }}, INGRESS_DOMAIN: {{r_ingress_domain.stdout }}"
+
+  - name: Set API_HOSTNAME in .bashrc
+    lineinfile:
+      path: $HOME/.bashrc
+      regexp: "^export API_HOSTNAME"
+      line: "export API_HOSTNAME={{ r_api_hostname.stdout }}"
+
+  - name: Set INGRESS_DOMAIN in .bashrc
+    lineinfile:
+      path: $HOME/.bashrc
+      regexp: "^export INGRESS_DOMAIN"
+      line: "export INGRESS_DOMAIN={{ r_ingress_domain.stdout }}"
+
+  - name: Create clusteer-apiserver-tls secret
+    command: oc create secret tls cluster-apiserver-tls --cert=$HOME/certificates/cert.pem --key=$HOME/certificates/privkey.pem -n openshift-config
+
+  - name: Update API Servers to use new secret
+    command: "oc patch apiservers.config.openshift.io cluster --type=merge -p '{\"spec\":{\"servingCerts\": {\"namedCertificates\": [{\"names\": [\"'{{ r_api_hostname.stdout }}'\"], \"servingCertificate\": {\"name\": \"cluster-apiserver-tls\"}}]}}}'"
+
+  - name: Sleep 10 minutes for API Servers to rotate
+    pause:
+      minutes: 10
+
+  - name: Fix kube config
+    command: oc config set-cluster $GUID --certificate-authority=$HOME/certificates/chain.pem
+
+  - name: Log back in as system:admin
+    command: oc login -u system:admin
+
+  - name: Create Ingress tls secret
+    command: oc create secret tls default-ingress-tls --cert=$HOME/certificates/fullchain.pem --key=$HOME/certificates/privkey.pem -n openshift-ingress
+
+  - name: Update Ingress Controller configuration to use new secret
+    command: "oc patch ingresscontroller.operator default --type=merge -p '{\"spec\":{\"defaultCertificate\": {\"name\": \"default-ingress-tls\"}}}' -n openshift-ingress-operator"
+
+  - name: Create htpasswd file
+    command: touch $HOME/htpasswd
+
+  - name: Add users to htpasswd
+    command: "htpasswd -Bb $HOME/htpasswd {{ item }} openshift"
+    loop:
+    - "andrew"
+    - "david"
+    - "karla"
+
+  - name: Create htpasswd secret
+    command: oc create secret generic htpasswd --from-file=$HOME/htpasswd -n openshift-config
+
+  - name: Configure htpasswd identity provider
+    k8s:
+      state: present
+      definition: "{{ lookup('file', './files/oauth.yaml' ) | from_yaml }}"
+
+  - name: Create lab-cluster-admins group
+    command: oc adm groups new lab-cluster-admins david karla
+  
+  - name: Grant cluster-admin to lab-cluster-admins group
+    command: oc adm policy add-cluster-role-to-group cluster-admin lab-cluster-admins --rolebinding-name=lab-cluster-admins
+  
+  - name: Disable the kubeadmin user
+    command: oc delete secret kubeadmin -n kube-system
+
+  - name: Expose the integrated container registry
+    command: "oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{\"spec\":{\"defaultRoute\":true}}'"
+
+  - name: Add simple route to acces the integrated container registry
+    command: "oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{\"spec\":{\"routes\":[{\"name\":\"image-registry\", \"hostname\":\"image-registry.'{{ r_ingress_domain.stdout }}'\"}]}}'"
+  
+  - name: Create registry-admin service account
+    command: oc create serviceaccount registry-admin -n openshift-config
+
+  - name: Grant Service Account permissions
+    command: oc adm policy add-cluster-role-to-user registry-admin system:serviceaccount:openshift-config:registry-admin
+
+  - name: Create ubi8 imagestream in openshit namespace
+    command: oc create imagestream ubi8 -n openshift
+
+  - name: Install skopeo
+    package:
+      name: skopeo
+      state: present
+  
