@@ -14,11 +14,11 @@
     tags: test
 
   - name: Get API_HOSTNAME
-    command: oc whoami --show-server | sed -r 's|.*//(.*):.*|\1|'
+    shell: "oc whoami --show-server | sed -r 's|.*//(.*):.*|\\1|'"
     register: r_api_hostname
 
   - name: Get INGRESS_DOMAIN
-    command: oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')'
+    command: "oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}'"
     register: r_ingress_domain
 
   - name: Print variables
@@ -36,6 +36,10 @@
       path: $HOME/.bashrc
       regexp: "^export INGRESS_DOMAIN"
       line: "export INGRESS_DOMAIN={{ r_ingress_domain.stdout }}"
+
+  # --------------------------
+  # Configure TLS Certificates
+  # --------------------------
 
   - name: Create clusteer-apiserver-tls secret
     command: oc create secret tls cluster-apiserver-tls --cert=$HOME/certificates/cert.pem --key=$HOME/certificates/privkey.pem -n openshift-config
@@ -59,6 +63,11 @@
   - name: Update Ingress Controller configuration to use new secret
     command: "oc patch ingresscontroller.operator default --type=merge -p '{\"spec\":{\"defaultCertificate\": {\"name\": \"default-ingress-tls\"}}}' -n openshift-ingress-operator"
 
+
+  # -------------------------------
+  # Delegating Cluster Admin Rights
+  # -------------------------------
+
   - name: Create htpasswd file
     command: touch $HOME/htpasswd
 
@@ -72,10 +81,24 @@
   - name: Create htpasswd secret
     command: oc create secret generic htpasswd --from-file=$HOME/htpasswd -n openshift-config
 
+  - name: Write htpasswd identity provider
+    copy:
+      content: |
+        apiVersion: config.openshift.io/v1
+        kind: OAuth
+        metadata:
+          name: cluster
+        spec:
+          identityProviders:
+          - name: Local Password
+            mappingMethod: claim
+            type: HTPasswd
+            htpasswd:
+              fileData:
+                name: htpasswd       
+      dest: $HOME/oauth-htpasswd.yaml
   - name: Configure htpasswd identity provider
-    k8s:
-      state: present
-      definition: "{{ lookup('file', './files/oauth.yaml' ) | from_yaml }}"
+    command: oc apply -f $HOME/oauth-htpasswd.yaml
 
   - name: Create lab-cluster-admins group
     command: oc adm groups new lab-cluster-admins david karla
@@ -85,6 +108,10 @@
   
   - name: Disable the kubeadmin user
     command: oc delete secret kubeadmin -n kube-system
+
+  # --------------------------------------
+  # Configure the Container Image Registry
+  # --------------------------------------
 
   - name: Expose the integrated container registry
     command: "oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{\"spec\":{\"defaultRoute\":true}}'"
@@ -102,7 +129,110 @@
     command: oc create imagestream ubi8 -n openshift
 
   - name: Install skopeo
-    package:
-      name: skopeo
-      state: present
+    become: yes
+    command: yum -y install skopeo
+
+  - name: Get Registry Admin Token
+    command: oc sa get-token -n openshift-config registry-admin
+    register: r_registry_admin_token
   
+  - name: Copy UBI8 Image to OpenShift
+    command: "skopeo copy docker://registry.access.redhat.com/ubi8:latest docker://image-registry.{{ r_ingress_domain.stdout }}/openshift/ubi8:latest --dest-creds -:{{ r_registry_admin_token.stdout }}"
+
+  - name: Pull image to bastion
+    command: "podman pull image-registry.{{ r_ingress_domain.stdout }}/openshift/ubi8:latest --creds -:{{ r_registry_admin_token.stdout }}"
+
+  # -----------------------------
+  # Configure SSH access to nodes
+  # -----------------------------
+
+  - name: Create project node-ssh
+    command: oc new-project node-ssh
+
+  - name: Create new build
+    shell: |
+      oc new-build openshift/ubi8:latest --name=node-ssh --dockerfile - <<EOF
+      FROM unused
+      RUN dnf install -y openssh-clients
+      CMD ["sleep", "infinity"]
+      EOF
+
+  - name: Wait for Build to finish
+    shell: oc get pod node-ssh-1-build -n node-ssh | grep -v STATUS | awk -c '{print $3}'
+    register: r_build_pod
+    retries: 20
+    delay: 5
+    until: r_build_pod.stdout is match( 'Completed' )
+
+  - name: Get GUID
+    command: echo $GUID
+    register: r_guid
+  
+  - name: Create node-ssh secret
+    command: "oc create secret generic node-ssh --from-file=id_rsa=$HOME/.ssh/{{ r_guid.stdout }}key.pem -n node-ssh"
+  
+  - name: Create Deployment File
+    copy:
+      content: |
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: node-ssh
+          name: node-ssh
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: node-ssh
+          strategy: {}
+          template:
+            metadata:
+              creationTimestamp: null
+              labels:
+                app: node-ssh
+            spec:
+              containers:
+              - image: image-registry.openshift-image-registry.svc:5000/node-ssh/node-ssh:latest
+                name: node-ssh
+                resources: {}
+                volumeMounts:
+                - name: node-ssh
+                  mountPath: /.ssh
+              volumes:
+              - name: node-ssh
+                secret:
+                  secretName: node-ssh
+                  defaultMode: 0600
+      dest: "$HOME/node-ssh.deployment.yaml"
+  
+  - name: Create Deployment
+    command: oc create -f $HOME/node-ssh.deployment.yaml
+  
+  - name: Create new SSH Key
+    command: ssh-keygen -t rsa -f $HOME/.ssh/node.id_rsa -N ''
+  
+  - name: Read SSH Key
+    slurp:
+      src: $HOME/.ssh/node.id_rsa.pub
+    register: r_id_rsa_pub
+
+  - name: Update machineconfig 99-worker-ssh
+    shell: "oc patch machineconfig 99-worker-ssh --type=json --patch='[{\"op\":\"add\", \"path\":\"/spec/config/passwd/users/0/sshAuthorizedKeys/-\", \"value\":\"{{ r_id_rsa_pub['content'] | b64decode }}\"}]'"
+
+  - name: Update machineconfig master-99-ssh
+    shell: "oc patch machineconfig 99-master-ssh --type=json --patch='[{\"op\":\"add\", \"path\":\"/spec/config/passwd/users/0/sshAuthorizedKeys/-\", \"value\":\"{{ r_id_rsa_pub['content'] | b64decode }}\"}]'"
+
+  - name: Delete SSH Secret in node-ssh
+    command: oc delete secret node-ssh -n node-ssh
+
+  - name: Create new SSH Secret in node-ssh
+    command: oc create secret generic node-ssh --from-file=id_rsa=$HOME/.ssh/node.id_rsa -n node-ssh
+
+  - name: Kill node-ssh pod to force reload of secret
+    command: oc delete pod -l app=node-ssh -n node-ssh
+
+  - name: Print finish statement
+    debug:
+      msg: "Wait until all nodes have finished redeploying. This takes 10-15 minutes. Then you can try connecting to your nodes."
