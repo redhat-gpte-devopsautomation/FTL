@@ -14,7 +14,7 @@ controlPlane:
   replicas: 3
 metadata:
   creationTimestamp: null
-  name: {{ lookup('env', 'GUID') }}
+  name: cluster-{{ lookup('env', 'GUID') }}
 networking:
   clusterNetwork:
   - cidr: 10.128.0.0/14
