@@ -1,31 +1,63 @@
 ---
-- name: Grade lab 04_1 of ocp4_advanced_deployment
+- name: Grade lab 05_1 of ocp4_advanced_deployment
   hosts: localhost
   gather_facts: false
   become: false
-  vars:
-    ocp_version: 4.3.0
   environment:
     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
     OCP_RELEASE: "{{ ocp_version }}"
   tasks:
-    - name: Check the worker machinesets
-      include_role:
-        name: grader_check_ocp_resource
-      vars:
-        task_description_message: Check that the correct MachineSet objects exist
-        resource_api_version: machine.openshift.io/v1beta1
-        resource_kind: MachineSet
-        resource_name: "{{ item }}"
-        resource_namespace: "openshift-machine-api"
-        kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-        student_error_message: "One or more MachineSet missing"
-        validate_certs: False
-        resource_definition_checks:
-          - error_message: The proper number of replicas are not ready
-            json_query: "status.readyReplicas"
-            value: 1
-      loop:
-        - general-purpose-1a
-        - general-purpose-1b
-        - infra-1a
+  - name: Check that API Servers have a servingCertificate
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that API Servers have a servingCertificate
+      resource_api_version: config.openshift.io
+      resource_kind: ApiServers
+      resource_name: cluster
+      kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      student_error_message: "One or more MachineSet missing"
+      validate_certs: False
+      resource_definition_checks:
+        - error_message: The proper number of replicas are not ready
+          json_query: "status.readyReplicas"
+          value: 1
+
+  # Check that Ingress Controllers have a certificate
+
+  # Check that Identity Provider is htpasswd
+
+
+  # Check that users andrew, david and karla exist and can login
+
+  # Check that david and karla are in group lab-cluster-admins
+
+
+  # Check that lab-cluster-admins has cluster-admin permission
+
+  # Check that there are two routes in the openshift-image-registry project
+
+
+  # Check that the node-ssh deployment is running and ready
+
+
+  - name: Check the worker machinesets
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      task_description_message: Check that the correct MachineSet objects exist
+      resource_api_version: machine.openshift.io/v1beta1
+      resource_kind: MachineSet
+      resource_name: "{{ item }}"
+      resource_namespace: "openshift-machine-api"
+      kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      student_error_message: "One or more MachineSet missing"
+      validate_certs: False
+      resource_definition_checks:
+        - error_message: The proper number of replicas are not ready
+          json_query: "status.readyReplicas"
+          value: 1
+    loop:
+      - general-purpose-1a
+      - general-purpose-1b
+      - infra-1a
