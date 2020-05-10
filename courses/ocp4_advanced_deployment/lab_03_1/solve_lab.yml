@@ -551,7 +551,7 @@
         registry_query: >-
           [?type=='Progressing'][].status|[0]
       until: registry_available | bool
-      retries: 20
+      retries: 30
       delay: 30
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
