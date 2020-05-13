@@ -6,48 +6,32 @@
 
   # All lab tests go here
   tasks:
-  - name: Set success flag to false
+  - name: Set fact success = false
     set_fact:
       success: false
+      task_description_message: Check for existence of exactly one machine of type m5.2xlarge
 
-  # oc get machines -l machine.openshift.io/cluster-api-machine-type=worker -n openshift-machine-api
-  - name: Get Machines
+  - name: Get Machines in us-east-2c
     k8s_facts:
       api_version: machine.openshift.io/v1beta1
       kind: Machine
       namespace: openshift-machine-api
       label_selectors:
       - machine.openshift.io/cluster-api-machine-type=worker
+      - machine.openshift.io/instance-type=m5.2xlarge
     register: r_machines
 
-  # Check for a machine with instanceType m5.2xlarge
-  - name: Check machine types
+  - name: Set fact success = true
+    when: r_machines.resources | length == 1
     set_fact:
       success: true
-    when:
-    - item.spec.providerSpec.value.instanceType is match('m5.2xlarge')
-    loop: "{{ r_machines.resources }}"
 
-  ######################################################
-  #                                                    #
-  # Common boiler plate logging logic - Do not modify  #
-  #                                                    #
-  ######################################################
+######################################################
+#                                                    #
+# Common boiler plate logging logic - Do not modify  #
+#                                                    #
+######################################################
 
-  - name: Create Pass logging message
-    when: success | bool
-    set_fact:
-      output_message: "PASS: MachineSet with instanceType m5.2xlarge found"
-    delegate_to: localhost
-
-  - name: Create Fail logging message
-    when: not success | bool
-    set_fact:
-      output_message: "FAIL: MachineSet with instanceType m5.2xlarge not found"
-    delegate_to: localhost
-
-  - name: Import logging tasks
+  - name: Import logging role
     import_role:
       name: ftl_run_log_grade_to_log
-    vars:
-      grader_output_message: "{{ output_message }}"
