@@ -539,6 +539,14 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test
 
+    - name: Patch registry for new storage
+      shell: >-
+        /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+        '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test
+
     - name: Wait for registry CO to become available
       k8s_facts:
         api_version: imageregistry.operator.openshift.io/v1
@@ -555,14 +563,6 @@
       delay: 30
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-
-    - name: Patch registry for new storage
-      shell: >-
-        /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
-        '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test
 
     - name: Finish installation
       shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
