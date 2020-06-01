@@ -8,13 +8,9 @@
     msg: "Checking if Quay user {{ quay_user_name }} exists"
     verbosity: 2
 
-- debug:
-    msg: quay is {{ guid }}
-
 - name: Look up user
   uri:
-    url: https://quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
-    #url: https://myquayuser:'r3dh4t1'@quay-{{ guid }}.apps.shared.na.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
+    url: https://quay-{{ guid }}.apps.shared-na4.na4.openshift.opentlc.com/api/v1/users/{{ quay_user_name }}
     validate_certs: no
   register: r_quay_user
   ignore_errors: true
