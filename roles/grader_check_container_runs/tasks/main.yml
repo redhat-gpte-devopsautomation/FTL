@@ -9,12 +9,9 @@
     verbosity: 2
 
 - name: Run container
-  shell: "podman run {{ runtime_args }} {{ image_name }}"
+  shell: "podman run {{ runtime_args | default('') }} {{ image_name }}"
   register: r_run_container
   ignore_errors: true
-
-# - debug:
-#     var: r_run_container
 
 - name: Test application
   uri:
@@ -23,9 +20,6 @@
   when: url_to_check is defined
   register: r_container_output
   ignore_errors: true
-
-# - debug:
-#     var: r_container_output
 
 - name: Stop container
   command: "podman rm {{ r_run_container.stdout }} --force"

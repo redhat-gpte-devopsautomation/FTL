@@ -8,18 +8,16 @@
     msg: "Checking if container image {{ image_name }} exists locally"
     verbosity: 2
 
-# This needs Ansible 2.8
 - name: Look up image
-#  podman_image:
-#    name: "{{ image_name }}"
-  command: podman images
+  podman_image_info:
+    name: "{{ image_name }}"
   register: r_image
 
 - name: Check that the image exists
   set_fact:
     success: true
   when:
-  - r_image.stdout.find(image_name) != -1
+  - r_image.images | length == 1
 
 ######################################################
 #                                                    #
