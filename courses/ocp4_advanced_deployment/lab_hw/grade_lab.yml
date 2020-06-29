@@ -42,19 +42,19 @@
       name: grader_check_ocp_pod_node
     vars:
       node_label: node-role.kubernetes.io/infra=
-      pod_label: docker-registry=default 
+      pod_label: docker-registry=default
       task_description_message: Check if image registry is running on infra nodes
       student_error_message: "The image registry is not running on infra nodes"
-      
+
   - name: Check if cluster monitoring is running on infra nodes
     include_role:
       name: grader_check_ocp_pod_node
     vars:
       node_label: node-role.kubernetes.io/infra=
-      pod_label: app=prometheus 
+      pod_label: app=prometheus
       task_description_message: Check if cluster monitoring is running on infra nodes
       student_error_message: "Cluster monitoring is not running on infra nodes"
-    
+
   - name: Check if Elasticsearch is running on infra nodes
     include_role:
       name: grader_check_ocp_pod_node
@@ -63,7 +63,7 @@
       pod_label: component=elasticsearch
       task_description_message: Check if Elasticsearch is running on infra nodes
       student_error_message: "Elasticsearch is not running on infra nodes"
-    
+
   - name: Check if the CPU request is 500m for Elasticsearch
     include_role:
       name: grader_check_ocp_resource
@@ -111,7 +111,7 @@
       name: grader_check_ocp_pod_label
     vars:
       pod_label: ingresscontroller.operator.openshift.io/deployment-ingresscontroller=default
-      pod_count: 2 
+      pod_count: 2
       task_description_message: Check if the cluster has 2 router pods
       student_error_message: "The cluster doesn't have 2 router pods"
 
@@ -123,7 +123,6 @@
       pod_label: ingresscontroller.operator.openshift.io/deployment-ingresscontroller=default
       task_description_message: Check if the routers are running on infra nodes
       student_error_message: "The routers are not running on infra nodes"
-      
 
   - name: Check if 5 user identities exist
     include_role:
@@ -241,7 +240,7 @@
       task_description_message: Check NetworkPolicy allow-from-openshift-ingress in project george-test
       student_error_message: "NetworkPolicy allow-from-openshift-ingress doesn't exist in project george-test"
 
-  - name: Delete project george-test 
+  - name: Delete project george-test
     command: oc delete project george-test
     ignore_errors: yes
 
