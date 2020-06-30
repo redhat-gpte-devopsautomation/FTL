@@ -34,9 +34,9 @@
 
 - name: Output lab status and error count
   debug:
-    msg: 
+    msg:
       - "lab_passed = {{ lab_passed }}"
-      - "Error count = {{ student_errors }}"  
+      - "Error count = {{ student_errors }}"
     verbosity: 2
 
 - name: Finalize lab report with status
