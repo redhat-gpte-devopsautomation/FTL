@@ -166,6 +166,7 @@
     - set_fact:
         ansible_python_interpreter: /usr/bin/python3
       tags: test
+
         
     - name: Copy certificate from utility VM
       command: scp utilityvm.example.com:/opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
@@ -466,13 +467,15 @@
       until: r_bootstrap_csr.resources | json_query(bootstrap_csr_query) | length >= 2
       vars:
         bootstrap_csr_query: >-
-          [?!(status.conditions)]
+          [?!(status) && contains(spec.username, 'bootstrap')]
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      #tags: csr_check
 
     - name: dump r_bootstrap_csr
       debug:
         var: r_bootstrap_csr
+      #tags: csr_check
 
     - name: Approve pending bootstrap CSRs
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
@@ -481,7 +484,8 @@
       loop: "{{ r_bootstrap_csr.resources | json_query(bootstrap_pending_query) }}"
       vars:
         bootstrap_pending_query: >-
-          [?!(status.conditions)].metadata.name
+          [?!(status)]
+      #tags: csr_check
 
     - name: Get current node CSRs (10m max)
       k8s_facts:
@@ -494,13 +498,15 @@
       until: r_node_csr.resources | to_json | from_json | json_query(node_csr_query) | length >= 2
       vars:
         node_csr_query: >-
-          [?!(status.conditions) && contains(spec.username, 'worker')]
+          [?contains(spec.username, 'worker')]
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: csr_check
 
     - name: dump r_node_csr
       debug:
         var: r_node_csr
+      tags: csr_check
 
     - name: Approve pending node CSRs
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
@@ -509,7 +515,11 @@
       loop: "{{ r_node_csr.resources | to_json | from_json | json_query(node_pending_query) }}"
       vars:
         node_pending_query: >-
-          [?!(status.conditions) && contains(spec.username, 'worker')].metadata.name
+          [?!(status) && contains(spec.username, 'worker')].metadata.name
+          
+         
+         
+          #[?!(status) && contains(spec.username, 'worker')].metadata.name
 
     - pause:
         seconds: 15
