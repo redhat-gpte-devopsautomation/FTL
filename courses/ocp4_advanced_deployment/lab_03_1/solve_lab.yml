@@ -7,7 +7,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.13
+    ocp_version: 4.4.3
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -152,7 +152,8 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.3.13
+    ocp_version: 4.4.3
+    rhcos_image_version: "rhcos-ocp44"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -224,7 +225,7 @@
 
     - name: Verify that images are present and pullable
       podman_image:
-        name: utilityvm.example.com:5000/ocp4/openshift4:4.3.13-operator-lifecycle-manager
+        name: "utilityvm.example.com:5000/ocp4/openshift4:${OCP_RELEASE}-operator-lifecycle-manager"
         auth_file: "$HOME/merged_pullsecret.json"
 
     - name: Check release info to make sure it works
@@ -383,7 +384,7 @@
 
     - name: Create bootstrap server
       shell: >-
-        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
+        /usr/local/bin/openstack server create --image {{ rhcos_image_version }} --flavor 4c16g30d --user-data "$HOME/openstack-upi/$INFRA_ID-bootstrap-ignition.json"
         --port "$INFRA_ID-bootstrap-port" --wait --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-bootstrap"
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
@@ -405,7 +406,7 @@
     - name: Create master servers
       shell: >-
         for index in $(seq 0 2); do
-        /usr/local/bin/openstack server create --boot-from-volume 30 --image rhcos-ocp43 --flavor 4c16g30d
+        /usr/local/bin/openstack server create --boot-from-volume 30 --image {{ rhcos_image_version }} --flavor 4c16g30d
         --user-data "$HOME/openstack-upi/$INFRA_ID-master-$index-ignition.json" --port "$INFRA_ID-master-port-$index"
         --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-master-$index";
         done
@@ -448,7 +449,7 @@
     - name: Add worker servers
       shell: >-
         for index in $(seq 0 1); do
-        /usr/local/bin/openstack server create --image rhcos-ocp43 --flavor 4c16g30d --user-data "$HOME/openstack-upi/worker.ign"
+        /usr/local/bin/openstack server create --image {{ rhcos_image_version }} --flavor 4c16g30d --user-data "$HOME/openstack-upi/worker.ign"
         --port "$INFRA_ID-worker-port-$index" --property openshiftClusterID="$INFRA_ID" "$INFRA_ID-worker-$index";
         done
       environment:
@@ -523,6 +524,22 @@
       assert:
         that: r_nodes.stdout_lines | length == 2
 
+    - name: Delete registry PVC on cinder
+      k8s:
+        state: absent
+        api_version: v1
+        kind: PersistentVolumeClaim
+        name: "image-registry-storage"
+
+
+    - name: Delete registry pod to free PVC
+      k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+      
+
+
     - name: Create registry PV
       k8s:
         state: present
@@ -538,6 +555,8 @@
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test
+
+    #- name: Scale up registry
 
     - name: Wait for registry CO to become available
       k8s_facts:
