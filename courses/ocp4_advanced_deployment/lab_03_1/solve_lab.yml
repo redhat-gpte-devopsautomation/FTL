@@ -165,7 +165,7 @@
   tasks:
     - set_fact:
         ansible_python_interpreter: /usr/bin/python3
-      tags: test
+      tags: test_prep
 
         
     - name: Copy certificate from utility VM
@@ -464,28 +464,28 @@
       register: r_bootstrap_csr
       retries: 20
       delay: 30
-      until: r_bootstrap_csr.resources | json_query(bootstrap_csr_query) | length >= 2
+      until: r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_csr_query) | length >= 2
       vars:
         bootstrap_csr_query: >-
-          [?!(status) && contains(spec.username, 'bootstrap')]
+          [?!(status) && contains(spec.username, `bootstrap`)] | []
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      #tags: csr_check
+      tags: bootstrap_csr_check
 
     - name: dump r_bootstrap_csr
       debug:
         var: r_bootstrap_csr
-      #tags: csr_check
+      tags: bootstrap_csr_check
 
     - name: Approve pending bootstrap CSRs
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      loop: "{{ r_bootstrap_csr.resources | json_query(bootstrap_pending_query) }}"
+      loop: "{{ r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_pending_query) }}"
       vars:
         bootstrap_pending_query: >-
-          [?!(status)]
-      #tags: csr_check
+          [?!(status) && contains(spec.username, `bootstrap`)].metadata.name
+      tags: bootstrap_csr_check
 
     - name: Get current node CSRs (10m max)
       k8s_facts:
@@ -498,15 +498,15 @@
       until: r_node_csr.resources | to_json | from_json | json_query(node_csr_query) | length >= 2
       vars:
         node_csr_query: >-
-          [?contains(spec.username, 'worker')]
+          [?!(status) && contains(spec.username, `worker`)] | []
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: csr_check
+      tags: node_csr_check
 
     - name: dump r_node_csr
       debug:
         var: r_node_csr
-      tags: csr_check
+      tags: node_csr_check
 
     - name: Approve pending node CSRs
       shell: /usr/local/sbin/oc adm certificate approve {{ item }}
@@ -516,10 +516,7 @@
       vars:
         node_pending_query: >-
           [?!(status) && contains(spec.username, 'worker')].metadata.name
-          
-         
-         
-          #[?!(status) && contains(spec.username, 'worker')].metadata.name
+      tags: node_csr_check
 
     - pause:
         seconds: 15
@@ -556,7 +553,7 @@
         src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test
+      tags: test_csv
 
     - name: Create registry PVC
       k8s:
@@ -564,7 +561,7 @@
         src: "$HOME/resources/pvc-registry.yaml"
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test
+      tags: test_csv
 
     #- name: Scale up registry
 
@@ -591,8 +588,8 @@
         '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test
+      tags: test_csv
 
     - name: Finish installation
       shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
-      tags: test
+      tags: test_csv
