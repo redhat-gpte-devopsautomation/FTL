@@ -536,16 +536,40 @@
         state: absent
         api_version: v1
         kind: PersistentVolumeClaim
-        name: "image-registry-storage"
+        name: image-registry-storage
+        namespace: openshift-image-registry
+      tags: test_csv
 
+    - name: Get registry pod info
+      k8s_facts:
+        kind: Pod
+        namespace: openshift-image-registry
+        label_selectors:
+          - docker-registry=default
+      register: r_pods
+      tags: test_csv
 
     - name: Delete registry pod to free PVC
       k8s:
         state: absent
         api_version: v1
         kind: Pod
-      
+        namespace: "openshift-image-registry"
+        name: "{{ r_pods.resources[0].metadata.name }}"
+      tags: test_csv
 
+
+#    - name: Wait until PVC is gone
+#      k8s_facts:
+#        kind: PersistentVolumeClaim
+#        namespace: openshift-image-registry
+#      register: r_pvcs
+#      retries: 20
+#      delay: 30
+#      until: r_pvc.resources | to_json | from_json | length == 0
+#      environment:
+#        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+#      tags: test_csv
 
     - name: Create registry PV
       k8s:
@@ -563,29 +587,10 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test_csv
 
-    #- name: Scale up registry
-
-    - name: Wait for registry CO to become available
-      k8s_facts:
-        api_version: imageregistry.operator.openshift.io/v1
-        name: cluster
-        kind: Config
-      register: r_image_registry
-      vars:
-        registry_available: >-
-          {{ r_image_registry.resources[0].status.conditions | json_query(registry_query) }}
-        registry_query: >-
-          [?type=='Progressing'][].status|[0]
-      until: registry_available | bool
-      retries: 30
-      delay: 30
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-
-    - name: Patch registry for new storage
+    - name: Patch registry to scale to two pods
       shell: >-
         /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
-        '[{"op": "replace", "path": "/spec/storage", "value": {"pvc": {"claim": "image-registry-storage"}}}]'
+        '[{"op": "replace", "path": "/spec/replicas", "value": 2}]'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test_csv
