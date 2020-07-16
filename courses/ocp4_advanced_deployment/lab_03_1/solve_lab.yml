@@ -531,6 +531,22 @@
       assert:
         that: r_nodes.stdout_lines | length == 2
 
+#
+## Switch Image Registry from PVC RWO Cinder to PVC RWX NFS
+#
+
+    - name: Wait until wrong PVC exists as installed by the installer
+      k8s_facts:
+        kind: PersistentVolumeClaim
+        namespace: openshift-image-registry
+      register: r_pvcs
+      retries: 20
+      delay: 30
+      until: r_pvcs.resources | length == 1
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      # tags: test_csv
+
     - name: Delete registry PVC on cinder
       k8s:
         state: absent
@@ -558,18 +574,17 @@
         name: "{{ r_pods.resources[0].metadata.name }}"
       tags: test_csv
 
-
-#    - name: Wait until PVC is gone
-#      k8s_facts:
-#        kind: PersistentVolumeClaim
-#        namespace: openshift-image-registry
-#      register: r_pvcs
-#      retries: 20
-#      delay: 30
-#      until: r_pvc.resources | to_json | from_json | length == 0
-#      environment:
-#        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-#      tags: test_csv
+    - name: Wait until PVC is gone
+      k8s_facts:
+        kind: PersistentVolumeClaim
+        namespace: openshift-image-registry
+      register: r_pvcs
+      retries: 20
+      delay: 30
+      until: r_pvcs.resources | length == 0
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test_csv
 
     - name: Create registry PV
       k8s:
@@ -597,4 +612,4 @@
 
     - name: Finish installation
       shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
-      tags: test_csv
+      #tags: test_csv
