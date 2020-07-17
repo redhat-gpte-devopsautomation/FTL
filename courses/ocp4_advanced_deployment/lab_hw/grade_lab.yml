@@ -10,6 +10,16 @@
     set_fact:
       guid: "{{ lookup('env','GUID') }}"
 
+  - name: Check if I can login as cluster admin
+    include_role:
+      name: grader_check_oc_command
+    vars:
+      oc_command: "whoami --show-server"
+      task_description_message: Check if I can access the cluster
+      student_error_message: |-
+        There is no cluster access.  
+        Do you have environment variable KUBECONFIG defined?
+
   - name: Check if there are 3 masters
     include_role:
       name: grader_check_ocp_node_label
