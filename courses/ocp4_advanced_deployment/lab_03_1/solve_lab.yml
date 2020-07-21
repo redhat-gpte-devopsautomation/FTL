@@ -1,4 +1,20 @@
 ---
+- name: Check Solver Prereqs
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Check for presence of $HOME/ocp_pullsecret.json
+      stat:
+        path: $HOME/ocp_pullsecret.json
+      register: r_pullsecret_stat
+    
+    - name: assert presence of ocp_pullsecret.json
+      assert:
+        that:
+          - r_pullsecret_stat.stat.exists
+        fail_msg: "You must have your pull secret from Red Hat to install OpenShift."
+
 - name: Run reset_lab
   import_playbook: reset_lab.yml
 
@@ -12,13 +28,13 @@
     OCP_RELEASE: "{{ ocp_version }}"
 
   tasks:
-    - name: Set OCP version
+    - name: Set OCP version in bashrc
       lineinfile:
         path: $HOME/.bashrc
         regexp: "^export OCP_RELEASE"
         line: "export OCP_RELEASE={{ ocp_version }}"
 
-    - name: Get oc binary
+    - name: Install oc binary
       unarchive:
         src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$OCP_RELEASE/openshift-client-linux-$OCP_RELEASE.tar.gz
         dest: /usr/local/sbin
@@ -543,9 +559,29 @@
       retries: 20
       delay: 30
       until: r_pvcs.resources | length == 1
+      # TODO is this really ready?
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       # tags: test_csv
+
+ # oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
+ # oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch '[{ "op": "remove", "path": "/spec/storage/pvc" }, { "op": "add", "path": "/spec/storage/emptydir", "value": "{}" }]'
+
+    - name: patch registry to scale to 0
+      shell: >-
+        oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
+        '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+
+#    - name: patch registry to use emptydir, scale to 0
+#      shell: >-
+#        oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
+#        '[{ "op": "remove", "path": "/spec/storage/pvc" }, 
+#          { "op": "add", "path": "/spec/storage/emptydir", "value": "{}" },
+#          { "op": "replace", "path": "/spec/replicas", "value": 0}]'
+#      environment:
+#        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
 
     - name: Delete registry PVC on cinder
       k8s:
@@ -556,23 +592,23 @@
         namespace: openshift-image-registry
       tags: test_csv
 
-    - name: Get registry pod info
-      k8s_facts:
-        kind: Pod
-        namespace: openshift-image-registry
-        label_selectors:
-          - docker-registry=default
-      register: r_pods
-      tags: test_csv
-
-    - name: Delete registry pod to free PVC
-      k8s:
-        state: absent
-        api_version: v1
-        kind: Pod
-        namespace: "openshift-image-registry"
-        name: "{{ r_pods.resources[0].metadata.name }}"
-      tags: test_csv
+#    - name: Get registry pod info
+#      k8s_facts:
+#        kind: Pod
+#        namespace: openshift-image-registry
+#        label_selectors:
+#          - docker-registry=default
+#      register: r_pods
+#      tags: test_csv
+#
+#    - name: Delete registry pod to free PVC
+#      k8s:
+#        state: absent
+#        api_version: v1
+#        kind: Pod
+#        namespace: "openshift-image-registry"
+#        name: "{{ r_pods.resources[0].metadata.name }}"
+#      tags: test_csv
 
     - name: Wait until PVC is gone
       k8s_facts:
