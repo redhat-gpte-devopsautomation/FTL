@@ -23,7 +23,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.4.3
+    ocp_version: 4.5.3
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -168,8 +168,8 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.4.3
-    rhcos_image_version: "rhcos-ocp44"
+    ocp_version: 4.5.3
+    rhcos_image_version: "rhcos-ocp45"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -479,7 +479,7 @@
         validate_certs: false
       register: r_bootstrap_csr
       retries: 20
-      delay: 30
+      delay: 60
       until: r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_csr_query) | length >= 2
       vars:
         bootstrap_csr_query: >-
@@ -562,7 +562,7 @@
       # TODO is this really ready?
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      # tags: test_csv
+      tags: test_csv
 
  # oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
  # oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch '[{ "op": "remove", "path": "/spec/storage/pvc" }, { "op": "add", "path": "/spec/storage/emptydir", "value": "{}" }]'
@@ -573,6 +573,7 @@
         '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      tags: test_csv
 
 #    - name: patch registry to use emptydir, scale to 0
 #      shell: >-
@@ -584,13 +585,21 @@
 #        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
 
     - name: Delete registry PVC on cinder
-      k8s:
-        state: absent
-        api_version: v1
-        kind: PersistentVolumeClaim
-        name: image-registry-storage
-        namespace: openshift-image-registry
-      tags: test_csv
+      shell: >-
+        oc delete pvc --all -n openshift-image-registry
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+
+
+#    - name: Delete registry PVC on cinder
+#      k8s:
+#        state: absent
+#        api_version: v1
+#        kind: PersistentVolumeClaim
+#        name: image-registry-storage
+#        namespace: openshift-image-registry
+#      register: r_pvc_delete
+#      tags: test_csv
 
 #    - name: Get registry pod info
 #      k8s_facts:
