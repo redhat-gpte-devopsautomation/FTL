@@ -20,7 +20,7 @@
         validate_certs: False
         resource_definition_checks:
           - error_message: The proper number of replicas are not ready
-            json_query: "status.readyReplicas"
+            json_query: "status.replicas"
             value: 1
       loop:
         - general-purpose-1a
