@@ -41,7 +41,11 @@
   # Configure TLS Certificates
   # --------------------------
 
-  - name: Create clusteer-apiserver-tls secret
+  - name: Delete cluster-apiserver-tls secret
+    command: oc delete secret cluster-apiserver-tls -n openshift-config
+    ignore_errors: true
+
+  - name: Create cluster-apiserver-tls secret
     command: oc create secret tls cluster-apiserver-tls --cert=$HOME/certificates/cert.pem --key=$HOME/certificates/privkey.pem -n openshift-config
 
   - name: Update API Servers to use new secret
@@ -71,21 +75,12 @@
       regexp: "^ +certificate-authority-data:.*"
     loop: "{{r_config_files.files}}"
 
-  - name: Make sure API Calls succeed
-    k8s_facts:
-      api_version: config.openshift.io/v1
-      kind: Ingress
-      name: cluster
-    register: r_ingress_config
-    retries: 30
-    delay: 10
-    until: not r_ingress_config.failed
-
-  - name: Fix kube config
-    command: oc config set-cluster $GUID --certificate-authority=$HOME/certificates/chain.pem
-
   - name: Log back in as system:admin
     command: oc login -u system:admin
+
+  - name: Delete Ingress tls secret if it exists
+    command: oc delete secret default-ingress-tls -n openshift-ingress
+    ignore_errors: true
 
   - name: Create Ingress tls secret
     command: oc create secret tls default-ingress-tls --cert=$HOME/certificates/fullchain.pem --key=$HOME/certificates/privkey.pem -n openshift-ingress
@@ -111,6 +106,10 @@
     - "david"
     - "karla"
 
+  - name: Delete htpasswd secret if it exists
+    command: oc delete secret htpasswd -n openshift-config
+    ignore_errors: true
+
   - name: Create htpasswd secret
     command: oc create secret generic htpasswd --from-file=$HOME/htpasswd -n openshift-config
 
@@ -130,8 +129,13 @@
               fileData:
                 name: htpasswd       
       dest: $HOME/oauth-htpasswd.yaml
+
   - name: Configure htpasswd identity provider
     command: oc apply -f $HOME/oauth-htpasswd.yaml
+
+  - name: Delete group lab-cluster-admins if it exists
+    command: oc adm groups delete lab-cluster-admins
+    ignore_errors: true
 
   - name: Create lab-cluster-admins group
     command: oc adm groups new lab-cluster-admins david karla
@@ -141,6 +145,7 @@
   
   - name: Disable the kubeadmin user
     command: oc delete secret kubeadmin -n kube-system
+    ignore_errors: true
 
   # --------------------------------------
   # Configure the Container Image Registry
@@ -151,7 +156,10 @@
 
   - name: Add simple route to acces the integrated container registry
     command: "oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{\"spec\":{\"routes\":[{\"name\":\"image-registry\", \"hostname\":\"image-registry.'{{ r_ingress_domain.stdout }}'\"}]}}'"
-  
+
+  - name: Delete registry-admin service account if it exists
+    command: oc delete serviceaccount registry-admin -n openshift-config
+
   - name: Create registry-admin service account
     command: oc create serviceaccount registry-admin -n openshift-config
 
