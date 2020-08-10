@@ -47,9 +47,39 @@
   - name: Update API Servers to use new secret
     command: "oc patch apiservers.config.openshift.io cluster --type=merge -p '{\"spec\":{\"servingCerts\": {\"namedCertificates\": [{\"names\": [\"'{{ r_api_hostname.stdout }}'\"], \"servingCertificate\": {\"name\": \"cluster-apiserver-tls\"}}]}}}'"
 
-  - name: Sleep 10 minutes for API Servers to rotate
+  - name: Sleep 12 minutes for API Servers to rotate
     pause:
-      minutes: 10
+      minutes: 12
+
+  - name: Find all Kube Configs
+    become: yes
+    find:
+      file_type: file
+      hidden: true
+      paths:
+      - /root
+      - /home
+      contains: "^ +certificate-authority-data:"
+      patterns: "*config*"
+      recurse: yes
+    register: r_config_files
+
+  - name: Fix Kube Configs
+    become: yes
+    replace:
+      path: "{{ item.path }}"
+      regexp: "^ +certificate-authority-data:.*"
+    loop: "{{r_config_files.files}}"
+
+  - name: Make sure API Calls succeed
+    k8s_info:
+      api_version: config.openshift.io/v1
+      kind: Ingress
+      name: cluster
+    register: r_ingress_config
+    retries: 30
+    delay: 10
+    until: not r_ingress_config.failed
 
   - name: Fix kube config
     command: oc config set-cluster $GUID --certificate-authority=$HOME/certificates/chain.pem
@@ -63,6 +93,9 @@
   - name: Update Ingress Controller configuration to use new secret
     command: "oc patch ingresscontroller.operator default --type=merge -p '{\"spec\":{\"defaultCertificate\": {\"name\": \"default-ingress-tls\"}}}' -n openshift-ingress-operator"
 
+  - name: Sleep 1 minute for ingress controllers to rotate
+    pause:
+      minutes: 1
 
   # -------------------------------
   # Delegating Cluster Admin Rights
