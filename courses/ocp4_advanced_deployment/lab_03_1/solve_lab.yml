@@ -23,7 +23,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.3
+    ocp_version: 4.5.5
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -168,7 +168,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.3
+    ocp_version: 4.5.5
     rhcos_image_version: "rhcos-ocp45"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
@@ -564,10 +564,7 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test_csv
 
- # oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
- # oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch '[{ "op": "remove", "path": "/spec/storage/pvc" }, { "op": "add", "path": "/spec/storage/emptydir", "value": "{}" }]'
-
-    - name: patch registry to scale to 0
+    - name: Patch registry to scale to 0
       shell: >-
         oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
         '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
@@ -575,49 +572,11 @@
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       tags: test_csv
 
-#    - name: patch registry to use emptydir, scale to 0
-#      shell: >-
-#        oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
-#        '[{ "op": "remove", "path": "/spec/storage/pvc" }, 
-#          { "op": "add", "path": "/spec/storage/emptydir", "value": "{}" },
-#          { "op": "replace", "path": "/spec/replicas", "value": 0}]'
-#      environment:
-#        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-
     - name: Delete registry PVC on cinder
       shell: >-
         oc delete pvc --all -n openshift-image-registry
       environment:
         KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-
-
-#    - name: Delete registry PVC on cinder
-#      k8s:
-#        state: absent
-#        api_version: v1
-#        kind: PersistentVolumeClaim
-#        name: image-registry-storage
-#        namespace: openshift-image-registry
-#      register: r_pvc_delete
-#      tags: test_csv
-
-#    - name: Get registry pod info
-#      k8s_facts:
-#        kind: Pod
-#        namespace: openshift-image-registry
-#        label_selectors:
-#          - docker-registry=default
-#      register: r_pods
-#      tags: test_csv
-#
-#    - name: Delete registry pod to free PVC
-#      k8s:
-#        state: absent
-#        api_version: v1
-#        kind: Pod
-#        namespace: "openshift-image-registry"
-#        name: "{{ r_pods.resources[0].metadata.name }}"
-#      tags: test_csv
 
     - name: Wait until PVC is gone
       k8s_facts:
@@ -657,4 +616,3 @@
 
     - name: Finish installation
       shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
-      #tags: test_csv

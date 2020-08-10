@@ -13,7 +13,6 @@ controlPlane:
       type: 4c16g30d
   replicas: 3
 metadata:
-  creationTimestamp: null
   name: cluster-{{ lookup('env', 'GUID') }}
 networking:
   clusterNetwork:
@@ -25,13 +24,16 @@ networking:
   - 172.30.0.0/16
 platform:
   openstack:
+    apiVIP: 192.168.47.5
     cloud: {{ lookup('env', 'GUID') }}-project
     computeFlavor: 4c16g30d
     externalNetwork: external
+    ingressVIP: 192.168.47.7
     lbFloatingIP: {{ lookup('env', 'API_FIP') }}
     octaviaSupport: "1"
     region: ""
     trunkSupport: "0"
+publish: External
 pullSecret: '{{ lookup('file', HOME ~ '/merged_pullsecret.json') }}'
 sshKey: |
   {{ lookup('file', HOME ~ '/.ssh/' ~ GUID ~ 'key.pub') | indent(2, true) }}
