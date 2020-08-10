@@ -3,11 +3,8 @@
   hosts: localhost
   gather_facts: false
   become: false
-  vars:
-    ocp_version: 4.3.0
   environment:
     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-    OCP_RELEASE: "{{ ocp_version }}"
   tasks:
     - name: Check the worker machinesets
       include_role:
