@@ -134,7 +134,7 @@
     command: oc apply -f $HOME/oauth-htpasswd.yaml
 
   - name: Delete group lab-cluster-admins if it exists
-    command: oc adm groups delete lab-cluster-admins
+    command: oc delete group lab-cluster-admins
     ignore_errors: true
 
   - name: Create lab-cluster-admins group
@@ -159,6 +159,7 @@
 
   - name: Delete registry-admin service account if it exists
     command: oc delete serviceaccount registry-admin -n openshift-config
+    ignore_errors: true
 
   - name: Create registry-admin service account
     command: oc create serviceaccount registry-admin -n openshift-config
