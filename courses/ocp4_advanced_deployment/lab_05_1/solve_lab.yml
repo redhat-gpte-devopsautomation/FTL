@@ -72,7 +72,7 @@
     loop: "{{r_config_files.files}}"
 
   - name: Make sure API Calls succeed
-    k8s_info:
+    k8s_facts:
       api_version: config.openshift.io/v1
       kind: Ingress
       name: cluster
