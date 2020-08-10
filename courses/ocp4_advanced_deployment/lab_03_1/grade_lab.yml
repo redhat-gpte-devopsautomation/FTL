@@ -42,7 +42,7 @@
         name: grader_check_ocp_resource
       vars:
         task_description_message: Check that the OpenShift registry is available.
-        resource_api_version: extensions/v1beta1
+        resource_api_version: apps/v1
         resource_kind: Deployment
         resource_name: image-registry
         resource_namespace: openshift-image-registry
@@ -50,6 +50,6 @@
         student_error_message: "OpenShift registry is not available"
         validate_certs: False
         resource_definition_checks:
-        - error_message: OpenShift Image Registry is not available
+        - error_message: OpenShift Image Registry is not available or does not have 2 replicas
           json_query: "status.availableReplicas"
-          value: 1
+          value: 2
