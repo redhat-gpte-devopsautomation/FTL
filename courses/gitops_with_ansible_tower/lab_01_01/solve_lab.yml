@@ -107,8 +107,6 @@
 
     - shell: tower-cli job_template list | egrep "^[[:digit:]]" |cut -f1 -d " "
       register: jt_list
-           
-    # - debug: var=jt_list
-           
+   
     - command: tower-cli job_template modify --credential host_credential {{ item }}
       loop: "{{ jt_list.stdout_lines }}"           
