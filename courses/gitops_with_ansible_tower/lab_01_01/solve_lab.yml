@@ -1,0 +1,47 @@
+---        
+- name: Grade for logins
+  hosts: utilities
+  gather_facts: false
+  become: true    
+  tasks:   
+    - name: Setup strong passwords
+      set_fact:
+        gitlab_server_user_token: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
+           
+    - command: >-
+        gitlab-rails runner "
+        token = User.find_by_username('devops').personal_access_tokens.create(scopes: [:read_api, :read_repository], 
+        name: 'Automation token'); 
+        token.set_token('{{ gitlab_server_user_token }}'); 
+        token.save!
+        "  
+       
+- name: Grade for logins
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:   
+    - set_fact:
+        gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
+    - name: cred
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/credentials/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: POST
+        body_format: json
+        force_basic_auth: yes
+        validate_certs: false
+        status_code: 201
+        body: >-
+          {
+              "name": "gitlab_token",
+              "description": "Gitlab Personal Access Token",
+              "organization": 1,
+              "credential_type": 13,
+              "inputs": {
+                  "token": "{{ gitlab_server_user_token }}"
+              },
+              "user": null,
+              "team": null
+          }

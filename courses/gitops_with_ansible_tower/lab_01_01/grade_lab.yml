@@ -1,0 +1,24 @@
+---
+- name: Grade for logins
+  hosts: bastions
+  gather_facts: false
+  become: false
+  vars: 
+    tower_hostname: http://tower.f693.red.osp.opentlc.com
+    tower_admin_name: devops
+    tower_admin_password: 6LV5o21VHyI9
+  tasks:
+        
+   - uri:
+        url: "https://{{ tower_hostname }}/api/v2/users/"
+        user: "{{ tower_admin_name }}"
+        password: "{{ tower_admin_password }}"
+        method: POST
+        body_format: json
+        force_basic_auth: yes
+        validate_certs: false
+      register: auth_status
+
+    - debug: var=auth_status 
+
+...
