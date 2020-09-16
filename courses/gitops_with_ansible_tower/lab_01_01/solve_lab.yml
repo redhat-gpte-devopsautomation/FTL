@@ -45,3 +45,70 @@
               "user": null,
               "team": null
           }
+
+    - shell: tower-cli job_template list | egrep "^[[:digit:]]" |cut -f1 -d " "
+      register: jt_list
+           
+    # - debug: var=jt_list
+           
+    - command: tower-cli job_template delete {{ item }}
+      loop: "{{ jt_list.stdout_lines }}"
+           
+    - name: Jobtemplate
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/job_templates/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: POST
+        body_format: json
+        force_basic_auth: yes
+        validate_certs: false
+        status_code: 201
+        body: >-
+          {
+            "credentials": 3,
+            "name": "test3",
+            "description": "",
+            "job_type": "run",
+            "inventory": 3,
+            "project": 11,
+            "playbook": "playbook.yml",
+            "scm_branch": "",
+            "forks": 0,
+            "limit": "",
+            "verbosity": 0,
+            "extra_vars": "",
+            "job_tags": "",
+            "force_handlers": false,
+            "skip_tags": "",
+            "start_at_task": "",
+            "timeout": 0,
+            "use_fact_cache": false,
+            "host_config_key": "",
+            "ask_scm_branch_on_launch": false,
+            "ask_diff_mode_on_launch": false,
+            "ask_variables_on_launch": false,
+            "ask_limit_on_launch": false,
+            "ask_tags_on_launch": false,
+            "ask_skip_tags_on_launch": false,
+            "ask_job_type_on_launch": false,
+            "ask_verbosity_on_launch": false,
+            "ask_inventory_on_launch": false,
+            "ask_credential_on_launch": false,
+            "survey_enabled": false,
+            "become_enabled": true,
+            "diff_mode": false,
+            "allow_simultaneous": true,
+            "custom_virtualenv": null,
+            "job_slice_count": 1,
+            "webhook_service": "gitlab",
+            "webhook_credential": 10
+          }
+
+    - shell: tower-cli job_template list | egrep "^[[:digit:]]" |cut -f1 -d " "
+      register: jt_list
+           
+    # - debug: var=jt_list
+           
+    - command: tower-cli job_template modify --credential host_credential {{ item }}
+      loop: "{{ jt_list.stdout_lines }}"           
