@@ -20,6 +20,8 @@
   hosts: localhost
   gather_facts: false
   become: false
+  vars_files:
+    - vars.yml
   tasks:   
     - set_fact:
         gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
@@ -54,7 +56,9 @@
     - command: tower-cli job_template delete {{ item }}
       loop: "{{ jt_list.stdout_lines }}"
            
-    - name: Jobtemplate
+    - name: Create Jobtemplate
+      loop: "{{ tower_job_templates }}"
+      register: jt_output
       uri: 
         url: https://{{ tower_hostname }}/api/v2/job_templates/
         user: devops
@@ -66,47 +70,46 @@
         status_code: 201
         body: >-
           {
-            "credentials": 3,
-            "name": "test3",
-            "description": "",
+            "name": "{{ item.name }}",
+            "description": "{{ item.description }}",
             "job_type": "run",
             "inventory": 3,
             "project": 11,
             "playbook": "playbook.yml",
-            "scm_branch": "",
-            "forks": 0,
-            "limit": "",
-            "verbosity": 0,
-            "extra_vars": "",
-            "job_tags": "",
-            "force_handlers": false,
-            "skip_tags": "",
-            "start_at_task": "",
-            "timeout": 0,
-            "use_fact_cache": false,
-            "host_config_key": "",
-            "ask_scm_branch_on_launch": false,
-            "ask_diff_mode_on_launch": false,
-            "ask_variables_on_launch": false,
-            "ask_limit_on_launch": false,
-            "ask_tags_on_launch": false,
-            "ask_skip_tags_on_launch": false,
-            "ask_job_type_on_launch": false,
-            "ask_verbosity_on_launch": false,
-            "ask_inventory_on_launch": false,
-            "ask_credential_on_launch": false,
-            "survey_enabled": false,
             "become_enabled": true,
-            "diff_mode": false,
             "allow_simultaneous": true,
-            "custom_virtualenv": null,
-            "job_slice_count": 1,
             "webhook_service": "gitlab",
             "webhook_credential": 10
+           
           }
+           
+    #- debug: var=jt_output
+    - name: Associate host credential to Jobtemplate
+      loop: "{{ jt_output.results }}"
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.json.id }}/credentials/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: POST
+        body_format: json
+        force_basic_auth: yes
+        validate_certs: false
+        status_code: 204
+        body: '{ "id": 3 }'
 
-    - shell: tower-cli job_template list | egrep "^[[:digit:]]" |cut -f1 -d " "
-      register: jt_list
-   
-    - command: tower-cli job_template modify --credential host_credential {{ item }}
-      loop: "{{ jt_list.stdout_lines }}"           
+    - name: Jobtemplate
+      loop: "{{ jt_output.results }}"
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.json.id }}/webhook_key/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: GET
+        force_basic_auth: yes
+        validate_certs: false
+        body_format: json
+        status_code: 200
+      register: jt_webhook
+           
+    - debug:
+        msg: "{{ item.json.webhook_key }}"
+      loop: "{{ jt_webhook.results }}"
