@@ -122,11 +122,12 @@
         status_code: 200
       register: jt_webhook
            
-    - debug:
-        msg: "{{ item.json.webhook_key }}"
+    - set_fact:
+        jobtemplate_webhooks : "{{ jobtemplate_webhooks |d([]) + [ item.json.webhook_key | string + ', ' + item.url | replace('webhook_key','gitlab')  ] }}"
       loop: "{{ jt_webhook.results }}"
-
+           
     - debug: var=project_names
     - debug: var=inventory_names
-    - debug:  var=credential_names  
-    - debug:  var=jobtemplate_names
+    - debug: var=credential_names  
+    - debug: var=jobtemplate_names
+    - debug: var=jobtemplate_webhooks
