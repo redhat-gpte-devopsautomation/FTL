@@ -26,7 +26,7 @@
     - set_fact:
         gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
 
-        - name: project
+    - name: project
       uri: 
         url: https://{{ tower_hostname }}/api/v2/projects/
         user: devops
@@ -90,10 +90,8 @@
     - set_fact:
         jobtemplate_names : "{{ jobtemplate_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
       loop: "{{ jobtemplate_list.json.results }}"
-
-
-           
-    - name: Jobtemplate
+   
+    - name: Jobtemplate update with webhook
       loop: "{{ jobtemplate_list.json.results }}"
       register: jt_output
       uri: 
@@ -111,7 +109,7 @@
             "webhook_credential": 10
           }
            
-    - name: Jobtemplate
+    - name: Jobtemplate webhook key
       loop: "{{ jobtemplate_list.json.results }}"
       uri: 
         url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/webhook_key/
@@ -127,7 +125,7 @@
     - debug:
         msg: "{{ item.json.webhook_key }}"
       loop: "{{ jt_webhook.results }}"
-      
+
     - debug: var=project_names
     - debug: var=inventory_names
     - debug:  var=credential_names  
