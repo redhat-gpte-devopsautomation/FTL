@@ -25,82 +25,96 @@
   tasks:   
     - set_fact:
         gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
-    - name: cred
+
+        - name: project
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/projects/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: GET
+        force_basic_auth: yes
+        validate_certs: false
+        body_format: json
+        status_code: 200
+      register: project_list
+           
+    - set_fact:
+        project_names : "{{ project_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+      loop: "{{ project_list.json.results }}"
+           
+    - name: inventory
+      uri: 
+        url: https://{{ tower_hostname }}/api/v2/inventories/
+        user: devops
+        password: "{{ tower_admin_password }}"
+        method: GET
+        force_basic_auth: yes
+        validate_certs: false
+        body_format: json
+        status_code: 200
+      register: inventory_list
+           
+    - set_fact:
+        inventory_names : "{{ inventory_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+      loop: "{{ inventory_list.json.results }}"
+           
+           
+    - name: Credentials
       uri: 
         url: https://{{ tower_hostname }}/api/v2/credentials/
         user: devops
         password: "{{ tower_admin_password }}"
-        method: POST
-        body_format: json
+        method: GET
         force_basic_auth: yes
         validate_certs: false
-        status_code: 201
-        body: >-
-          {
-              "name": "gitlab_token",
-              "description": "Gitlab Personal Access Token",
-              "organization": 1,
-              "credential_type": 13,
-              "inputs": {
-                  "token": "{{ gitlab_server_user_token }}"
-              },
-              "user": null,
-              "team": null
-          }
+        body_format: json
+        status_code: 200
+      register: credential_list
+           
+    - set_fact:
+        credential_names : "{{ credential_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+      loop: "{{ credential_list.json.results }}"
 
-    - shell: tower-cli job_template list | egrep "^[[:digit:]]" |cut -f1 -d " "
-      register: jt_list
-           
-    # - debug: var=jt_list
-           
-    - command: tower-cli job_template delete {{ item }}
-      loop: "{{ jt_list.stdout_lines }}"
-           
-    - name: Create Jobtemplate
-      loop: "{{ tower_job_templates }}"
-      register: jt_output
+    - name: Jobtemplate list
       uri: 
         url: https://{{ tower_hostname }}/api/v2/job_templates/
         user: devops
         password: "{{ tower_admin_password }}"
-        method: POST
-        body_format: json
+        method: GET
         force_basic_auth: yes
         validate_certs: false
-        status_code: 201
-        body: >-
-          {
-            "name": "{{ item.name }}",
-            "description": "{{ item.description }}",
-            "job_type": "run",
-            "inventory": 3,
-            "project": 11,
-            "playbook": "playbook.yml",
-            "become_enabled": true,
-            "allow_simultaneous": true,
-            "webhook_service": "gitlab",
-            "webhook_credential": 10
+        body_format: json
+        status_code: 200
+      register: jobtemplate_list
            
-          }
+    - set_fact:
+        jobtemplate_names : "{{ jobtemplate_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+      loop: "{{ jobtemplate_list.json.results }}"
+
+
            
-    #- debug: var=jt_output
-    - name: Associate host credential to Jobtemplate
-      loop: "{{ jt_output.results }}"
+    - name: Jobtemplate
+      loop: "{{ jobtemplate_list.json.results }}"
+      register: jt_output
       uri: 
-        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.json.id }}/credentials/
+        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/
         user: devops
         password: "{{ tower_admin_password }}"
-        method: POST
+        method: PATCH
         body_format: json
         force_basic_auth: yes
         validate_certs: false
-        status_code: 204
-        body: '{ "id": 3 }'
-
+        status_code: 200
+        body: >-
+          {
+            "webhook_service": "gitlab",
+            "webhook_credential": 10
+          }
+           
     - name: Jobtemplate
-      loop: "{{ jt_output.results }}"
+      loop: "{{ jobtemplate_list.json.results }}"
       uri: 
-        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.json.id }}/webhook_key/
+        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/webhook_key/
         user: devops
         password: "{{ tower_admin_password }}"
         method: GET
@@ -113,3 +127,8 @@
     - debug:
         msg: "{{ item.json.webhook_key }}"
       loop: "{{ jt_webhook.results }}"
+      
+    - debug: var=project_names
+    - debug: var=inventory_names
+    - debug:  var=credential_names  
+    - debug:  var=jobtemplate_names
