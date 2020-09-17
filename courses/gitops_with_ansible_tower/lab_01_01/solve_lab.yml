@@ -18,7 +18,7 @@
         "  
        
 - name: Grade for logins
-  hosts: localhost
+  hosts: bastions
   gather_facts: false
   become: false
   vars_files:
