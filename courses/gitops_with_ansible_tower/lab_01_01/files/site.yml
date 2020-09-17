@@ -24,7 +24,7 @@
   hosts: apps
   tasks:
     - debug:
-      msg: "Start Apache server setup"
+        msg: "Start Apache server setup"
 
     - name: Setup firewall
       include_role:
@@ -46,7 +46,7 @@
   hosts: frontends
   tasks:
     - debug:
-      msg: "Start HAproxy server setup"
+        msg: "Start HAproxy server setup"
 
     - name: Setup firewall
       include_role:
@@ -62,6 +62,5 @@
         name: haproxy
 
     - debug:
-      msg: "Finished HAproxy server setup"
-
+        msg: "Finished HAproxy server setup"
 ...

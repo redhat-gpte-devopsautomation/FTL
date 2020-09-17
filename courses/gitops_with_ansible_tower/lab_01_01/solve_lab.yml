@@ -221,7 +221,7 @@
 #### gitlab commands
     - name: copy site.yml playbook to materials
       copy:
-        src: site.yml
+        src: ./file/site.yml
         dest: /home/devops/materials
         owner: devops
         mode: 0644
