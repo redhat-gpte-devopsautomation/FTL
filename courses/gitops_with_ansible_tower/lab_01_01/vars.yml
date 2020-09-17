@@ -5,7 +5,7 @@ tower_job_templates:
     description: "GitOps App deployer for Test environment"
     inventory: "GitOps inventory - Test Env"
     project: "Project gitOps - Test"
-    playbook: playbook.yml
+    playbook: site.yml
     credential: host_credential
     become: yes
     ask_extra_vars: no
@@ -14,7 +14,7 @@ tower_job_templates:
     description: "GitOps App deployer for Prod environment"
     inventory: "GitOps inventory - Prod Env"
     project: "Project gitOps - Prod"
-    playbook: playbook.yml
+    playbook: site.yml
     credential: host_credential
     become: yes
     ask_extra_vars: no

@@ -8,7 +8,8 @@
       set_fact:
         gitlab_server_user_token: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
            
-    - command: >-
+    - name: Generate gitlab token
+      command: >-
         gitlab-rails runner "
         token = User.find_by_username('devops').personal_access_tokens.create(scopes: [:api, :read_api, :read_repository], 
         name: 'Automation token'); 
@@ -209,9 +210,49 @@
         status_code: 201
         body:
           enable_ssl_verification: false
-          push_events: false
+          push_events: true
+          push_events_branch_filter: prod
           merge_requests_events: true
           url: "{{ item.split('--')[1] }}"
           token: "{{ item.split('--')[0] }}"   
       loop: "{{ jobtemplate_webhooks }}"
       when: '"/" + prod_job_template_id + "/" in item'
+
+#### gitlab commands
+    - name: copy site.yml playbook to materials
+      copy:
+        src: site.yml
+        dest: /home/devops/materials
+        owner: devops
+        mode: 0644
+
+    - name: Gitlab clone project
+      command: git clone git@utility.example.com:ansible/gitops-lab.git
+      args:
+        chdir: /home/devops/
+
+    - name: Gitlab push event
+      command: "{{ __command }}"
+      args:
+        chdir: /home/devops/gitops-lab
+      loop:
+        - git checkout test
+        - cp /home/devops/materials/site.yml .
+        - git add .
+        - git commit -m "site.yml update"
+        - git push 
+      loop_control:
+        loop_var: __command
+
+    - name: Gitlab merge event
+      command: "{{ __command }}"
+      args:
+        chdir: /home/devops/gitops-lab
+      loop: 
+        - git checkout prod
+        - git merge test
+        - git push 
+      loop_control:
+        loop_var: __command
+
+...
