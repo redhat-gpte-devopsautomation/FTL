@@ -10,7 +10,7 @@
            
     - command: >-
         gitlab-rails runner "
-        token = User.find_by_username('devops').personal_access_tokens.create(scopes: [:read_api, :read_repository], 
+        token = User.find_by_username('devops').personal_access_tokens.create(scopes: [:api, :read_api, :read_repository], 
         name: 'Automation token'); 
         token.set_token('{{ gitlab_server_user_token }}'); 
         token.save!
@@ -25,6 +25,8 @@
   tasks:   
     - set_fact:
         gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
+
+    - debug: var=gitlab_server_user_token
 
 ##### credentials section 
     - name: Credential's List
@@ -123,11 +125,19 @@
         body_format: json
         status_code: 200
       register: jobtemplate_list
-           
-    - set_fact:
-        jobtemplate_names : "{{ jobtemplate_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+
+    - name: find id for Prod job template
+      set_fact: 
+        test_job_template_id: "{{ item.id }}"
       loop: "{{ jobtemplate_list.json.results }}"
-   
+      when: '"Test" in item.name' 
+
+    - name: find id for Prod job template
+      set_fact: 
+        prod_job_template_id: "{{ item.id }}"
+      loop: "{{ jobtemplate_list.json.results }}"
+      when: '"Prod" in item.name'    
+
     - name: Jobtemplate update with webhook
       loop: "{{ jobtemplate_list.json.results }}"
       register: jt_output
@@ -160,8 +170,48 @@
       register: jt_webhook
            
     - set_fact:
-        jobtemplate_webhooks : "{{ jobtemplate_webhooks |d([]) + [ item.json.webhook_key | string + ', ' + item.url | replace('webhook_key','gitlab')  ] }}"
+        jobtemplate_webhooks : "{{ jobtemplate_webhooks |d([]) + [ item.json.webhook_key | string + '--' + item.url | replace('webhook_key','gitlab')  ] }}"
       loop: "{{ jt_webhook.results }}"
            
-    - debug: var=jobtemplate_names
+    - debug: 
+        msg: "{{ item.id }}:{{ item.name}}"
+        verbosity: 2
+      loop: "{{ jobtemplate_list.json.results }}"
+
     - debug: var=jobtemplate_webhooks
+
+### gitlab webhooks push and merge events
+
+    - name: Create Test webhook in gitlab
+      uri:
+        url: http://utility.example.com//api/v4/projects/1/hooks/
+        method: POST
+        headers:
+          PRIVATE-TOKEN: "{{ gitlab_server_user_token }}"
+        body_format: form-urlencoded
+        status_code: 201
+        body:
+          enable_ssl_verification: false
+          push_events: true
+          push_events_branch_filter: test
+          url: "{{ item.split('--')[1] }}"
+          token: "{{ item.split('--')[0] }}"     
+      loop: "{{ jobtemplate_webhooks }}"
+      when: '"/" + test_job_template_id + "/" in item'
+
+    - name: Create Test webhook in gitlab
+      uri:
+        url: http://utility.example.com//api/v4/projects/1/hooks/
+        method: POST
+        headers:
+          PRIVATE-TOKEN: "{{ gitlab_server_user_token }}"
+        body_format: form-urlencoded
+        status_code: 201
+        body:
+          enable_ssl_verification: false
+          push_events: false
+          merge_requests_events: true
+          url: "{{ item.split('--')[1] }}"
+          token: "{{ item.split('--')[0] }}"   
+      loop: "{{ jobtemplate_webhooks }}"
+      when: '"/" + prod_job_template_id + "/" in item'
