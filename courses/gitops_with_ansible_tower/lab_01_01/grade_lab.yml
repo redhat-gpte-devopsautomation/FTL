@@ -24,12 +24,12 @@
     - name: "Success - set fact"
       set_fact:
         success: true
-      when: gitlab_webhook_urls > 1
+      when: gitlab_webhook_urls | length > 1
 
     - name: "No Success - set fact"
       set_fact:
         success: false
-      when: gitlab_webhook_urls < 1
+      when: gitlab_webhook_urls | length  < 1
       
     - name: Import logging role
       import_role:
