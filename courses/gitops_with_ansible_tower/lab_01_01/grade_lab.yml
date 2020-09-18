@@ -7,7 +7,7 @@
     - /home/devops/materials/access_details.yml
   
   tasks:
-    - name: Create Test webhook in gitlab
+    - name: List gitlab webhook
       uri: 
         url: http://{{ access_details.gitlab_hostname }}//api/v4/projects/1/hooks/
         method: GET
@@ -19,7 +19,24 @@
         gitlab_webhook_urls: "{{ gitlab_webhook_urls | d([]) + [ item.url ] }}"
       loop: "{{ gitlab_webhook_list.json }}"
            
-    - debug: var=gitlab_webhook_urls
+    # - debug: var=gitlab_webhook_urls
+
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: gitlab_webhook_urls > 1
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: gitlab_webhook_urls < 1
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Gitlab project webhooks"
+        
 
 ### Credentials test  
     - name: Credential's List
