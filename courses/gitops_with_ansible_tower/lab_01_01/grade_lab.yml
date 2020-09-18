@@ -1,38 +1,18 @@
 ---
-- name: Grade for logins
-  hosts: utilities
-  gather_facts: false
-  become: true    
-  tasks:   
-    - name: Setup strong passwords
-      set_fact:
-        gitlab_server_user_token: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
-           
-    - name: Generate gitlab token
-      command: >-
-        gitlab-rails runner "
-        token = User.find_by_username('root').personal_access_tokens.create(scopes: [:api], 
-        name: 'Grade Token'); 
-        token.set_token('{{ gitlab_server_user_token }}'); 
-        token.save!
-        "
-
-- name: Grade playbook
+- name: Run grader
   hosts: bastions
   gather_facts: false
   become: false
+  vars_files:
+    - /home/devops/materials/access_details.yml
+  
   tasks:
-
-### Gitlab test
-    - set_fact:
-        gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
-
     - name: Create Test webhook in gitlab
       uri: 
-        url: http://utility.example.com//api/v4/projects/1/hooks/
+        url: http://{{ access_details.gitlab_hostname }}//api/v4/projects/1/hooks/
         method: GET
         headers:
-          PRIVATE-TOKEN: "{{ gitlab_server_user_token }}"
+          PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
       register: gitlab_webhook_list
            
     - set_fact:
@@ -44,9 +24,9 @@
 ### Credentials test  
     - name: Credential's List
       uri: 
-        url: https://{{ tower_hostname }}/api/v2/credentials/
-        user: devops
-        password: "{{ tower_admin_password }}"
+        url: https://{{ access_details.tower_hostname }}/api/v2/credentials/
+        user: "{{ access_details.tower_admin_user }}"
+        password: "{{ access_details.tower_admin_password }}"
         method: GET
         force_basic_auth: yes
         validate_certs: false
@@ -64,13 +44,12 @@
       loop: "{{ credential_names }}"
       when: '"gitlab_token" in item'
 
-#### Tower webhooks
-          
+#### Tower webhooks       
     - name: Jobtemplate list
       uri: 
-        url: https://{{ tower_hostname }}/api/v2/job_templates/
-        user: devops
-        password: "{{ tower_admin_password }}"
+        url: https://{{ access_details.tower_hostname }}/api/v2/job_templates/
+        user: "{{ access_details.tower_admin_user }}"
+        password: "{{ access_details.tower_admin_password }}"
         method: GET
         force_basic_auth: yes
         validate_certs: false
@@ -93,9 +72,9 @@
     - name: Jobtemplate webhook key
       loop: "{{ jobtemplate_list.json.results }}"
       uri: 
-        url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/webhook_key/
-        user: devops
-        password: "{{ tower_admin_password }}"
+        url: https://{{ access_details.tower_hostname }}/api/v2/job_templates/{{ item.id }}/webhook_key/
+        user: "{{ access_details.tower_admin_user }}"
+        password: "{{ access_details.tower_admin_password }}"
         method: GET
         force_basic_auth: yes
         validate_certs: false
@@ -117,7 +96,7 @@
 ## smoke test
     - name: Smoke test for Test Env
       uri:
-        url: http://testserver.example.com/?name=root
+        url: http://{{ groups['testservers'][0] }}/?name=root
         return_content: yes
       register: test_result
 
@@ -127,7 +106,7 @@
 
     - name: Smoke Test for Prod Env
       uri:
-        url: http://frontend.example.com/?name=root
+        url: http://{{ groups['frontends'][0] }}/?name=root
         return_content: yes
       register: prod_result
 
