@@ -1,13 +1,13 @@
----        
+---
 - name: Grade for logins
   hosts: utilities
   gather_facts: false
-  become: true    
-  tasks:   
+  become: true
+  tasks:
     - name: Setup strong passwords
       set_fact:
         gitlab_server_user_token: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
-           
+
     - name: Generate gitlab token
       command: >-
         gitlab-rails runner "
@@ -15,15 +15,13 @@
         name: 'Gitops Lab'); 
         token.set_token('{{ gitlab_server_user_token }}'); 
         token.save!
-        "  
-       
+        "
+
 - name: Grade for logins
   hosts: bastions
   gather_facts: false
-  become: false
-  vars_files:
-    - vars.yml
-  tasks:   
+  become: true
+  tasks:
     - set_fact:
         gitlab_server_user_token: "{{ hostvars['utility.example.com']['gitlab_server_user_token'] }}"
 
@@ -31,7 +29,7 @@
 
 ##### credentials section 
     - name: Credential's List
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/credentials/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -47,13 +45,13 @@
       loop: "{{ credential_list.json.results }}"
 
     - name: find id of gitlab_token credentials
-      set_fact: 
+      set_fact:
         gitlab_token_id: "{{ item.split(':')[0] }}"
       loop: "{{ credential_names }}"
       when: '"gitlab_token" in item'
 
     - name: Delete credential if already exist
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/credentials/{{ gitlab_token_id }}/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -62,10 +60,10 @@
         force_basic_auth: yes
         validate_certs: false
         status_code: 204
-      when: gitlab_token_id | d('') | length > 0  
+      when: gitlab_token_id | d('') | length > 0
 
     - name: Create gitlab token
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/credentials/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -89,7 +87,7 @@
 
 #### Re run credentials list if gitlab_token
     - name: Credential's List
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/credentials/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -105,18 +103,18 @@
       loop: "{{ credential_list.json.results }}"
 
     - name: find id of gitlab_token credentials
-      set_fact: 
+      set_fact:
         gitlab_token_id: "{{ item.split(':')[0] }}"
       loop: "{{ credential_names }}"
       when: '"gitlab_token" in item'
 
-    - debug: var=credential_names  
+    - debug: var=credential_names
     - debug: var=gitlab_token_id
 ## Credentials section ends here 
 ## Job Template section starts here  
-           
+
     - name: Jobtemplate list
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/job_templates/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -128,21 +126,21 @@
       register: jobtemplate_list
 
     - name: find id for Prod job template
-      set_fact: 
+      set_fact:
         test_job_template_id: "{{ item.id }}"
       loop: "{{ jobtemplate_list.json.results }}"
-      when: '"Test" in item.name' 
+      when: '"Test" in item.name'
 
     - name: find id for Prod job template
-      set_fact: 
+      set_fact:
         prod_job_template_id: "{{ item.id }}"
       loop: "{{ jobtemplate_list.json.results }}"
-      when: '"Prod" in item.name'    
+      when: '"Prod" in item.name'
 
     - name: Jobtemplate update with webhook
       loop: "{{ jobtemplate_list.json.results }}"
       register: jt_output
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -156,10 +154,10 @@
             "webhook_service": "gitlab",
             "webhook_credential": "{{ gitlab_token_id }}"
           }
-           
+
     - name: Jobtemplate webhook key
       loop: "{{ jobtemplate_list.json.results }}"
-      uri: 
+      uri:
         url: https://{{ tower_hostname }}/api/v2/job_templates/{{ item.id }}/webhook_key/
         user: devops
         password: "{{ tower_admin_password }}"
@@ -169,12 +167,12 @@
         body_format: json
         status_code: 200
       register: jt_webhook
-           
+
     - set_fact:
         jobtemplate_webhooks : "{{ jobtemplate_webhooks |d([]) + [ item.json.webhook_key | string + '--' + item.url | replace('webhook_key','gitlab')  ] }}"
       loop: "{{ jt_webhook.results }}"
-           
-    - debug: 
+
+    - debug:
         msg: "{{ item.id }}:{{ item.name}}"
         verbosity: 2
       loop: "{{ jobtemplate_list.json.results }}"
@@ -196,7 +194,7 @@
           push_events: true
           push_events_branch_filter: test
           url: "{{ item.split('--')[1] }}"
-          token: "{{ item.split('--')[0] }}"     
+          token: "{{ item.split('--')[0] }}"
       loop: "{{ jobtemplate_webhooks }}"
       when: '"/" + test_job_template_id + "/" in item'
 
@@ -214,22 +212,24 @@
           push_events_branch_filter: prod
           merge_requests_events: true
           url: "{{ item.split('--')[1] }}"
-          token: "{{ item.split('--')[0] }}"   
+          token: "{{ item.split('--')[0] }}"
       loop: "{{ jobtemplate_webhooks }}"
       when: '"/" + prod_job_template_id + "/" in item'
 
 #### gitlab commands
     - name: copy site.yml playbook to materials
       copy:
-        src: ./file/site.yml
+        src: ./files/site.yml
         dest: /home/devops/materials
         owner: devops
         mode: 0644
 
-    - name: Gitlab clone project
-      command: git clone git@utility.example.com:ansible/gitops-lab.git
-      args:
-        chdir: /home/devops/
+    - name: Clone gitops-lab project
+      git:
+        repo:       git@utility.example.com:ansible/gitops-lab.git
+        dest:       /home/devops/gitops-lab
+        version:    "{{ ftl_git_branch | default('master') }}"
+        force:      yes
 
     - name: Gitlab push event
       command: "{{ __command }}"
@@ -240,7 +240,7 @@
         - cp /home/devops/materials/site.yml .
         - git add .
         - git commit -m "site.yml update"
-        - git push 
+        - git push
       loop_control:
         loop_var: __command
 
@@ -248,11 +248,11 @@
       command: "{{ __command }}"
       args:
         chdir: /home/devops/gitops-lab
-      loop: 
+      loop:
         - git checkout prod
         - git merge test
-        - git push 
+        - git push
       loop_control:
         loop_var: __command
 
-...
+...                                     
