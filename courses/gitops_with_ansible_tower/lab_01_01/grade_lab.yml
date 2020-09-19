@@ -7,6 +7,7 @@
     - /home/devops/materials/access_details.yml
   
   tasks:
+##### Gitlab project webhook check #####
     - name: List gitlab webhook
       uri: 
         url: http://{{ access_details.gitlab_hostname }}//api/v4/projects/1/hooks/
@@ -20,7 +21,7 @@
       loop: "{{ gitlab_webhook_list.json }}"
            
     # - debug: var=gitlab_webhook_urls
-
+##### Result for Gitlab webhook #####
     - name: "Success - set fact"
       set_fact:
         success: true
@@ -35,11 +36,11 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Gitlab project webhooks"
-        
+        task_description_message: "Check if gitlab project has 2 webhooks"
 
-### Credentials test  
-    - name: Credential's List
+
+##### Credentials check #####  
+    - name: List Credentials
       uri: 
         url: https://{{ access_details.tower_hostname }}/api/v2/credentials/
         user: "{{ access_details.tower_admin_user }}"
@@ -52,17 +53,42 @@
       register: credential_list
 
     - set_fact:
-        credential_names : "{{ credential_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+        tower_gitlab_token_credential: "{{  item.name }}"
       loop: "{{ credential_list.json.results }}"
+      when: '"gitlab_token" in item.name'
 
-    - name: find id of gitlab_token credentials
-      set_fact: 
-        gitlab_token_id: "{{ item.split(':')[0] }}"
-      loop: "{{ credential_names }}"
-      when: '"gitlab_token" in item'
+    # - set_fact:
+    #     credential_names : "{{ credential_names |d([]) + [ item.id  | string + ':' + item.name ] }}"
+    #   loop: "{{ credential_list.json.results }}"
+    #   when: '"gitlab_token" in item'
+
+    # - name: find id of gitlab_token credentials
+    #   set_fact: 
+    #     gitlab_token_id: "{{ item.split(':')[0] }}"
+    #   loop: "{{ credential_names }}"
+    #   when: '"gitlab_token" in item'
+
+    - debug: var=tower_gitlab_token_credential
+
+##### Result for Tower gitlab token #####
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: tower_gitlab_token_credential | d('') | length > 0
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when:  tower_gitlab_token_credential | d('') | length == 0
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Check if Ansible Tower has gitlab token credential"
 
 #### Tower webhooks       
-    - name: Jobtemplate list
+    - name: List Jobtemplate
       uri: 
         url: https://{{ access_details.tower_hostname }}/api/v2/job_templates/
         user: "{{ access_details.tower_admin_user }}"
@@ -100,34 +126,111 @@
       register: jt_webhook
            
     - set_fact:
-        jobtemplate_webhooks : "{{ jobtemplate_webhooks |d([]) + [ item.json.webhook_key | string + '--' + item.url | replace('webhook_key','gitlab')  ] }}"
+        test_jobtemplate_webhooks : "{{ item.json.webhook_key }}"
       loop: "{{ jt_webhook.results }}"
-           
-    - debug: 
-        msg: "{{ item.id }}:{{ item.name}}"
-        verbosity: 2
-      loop: "{{ jobtemplate_list.json.results }}"
+      when: '"/" + test_job_template_id + "/" in item.url'
 
-    - debug: var=jobtemplate_webhooks
+    - set_fact:
+        prod_jobtemplate_webhooks : "{{ item.json.webhook_key }}"
+      loop: "{{ jt_webhook.results }}"
+      when: '"/" + prod_job_template_id + "/" in item.url'
 
-## smoke test
+    # - debug: 
+    #     msg: "{{ item.id }}:{{ item.name}}"
+    #     verbosity: 2
+    #   loop: "{{ jobtemplate_list.json.results }}"
+
+    # - debug: var=jobtemplate_webhooks
+
+##### Result for Tower Job template webhook #####
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: test_jobtemplate_webhooks | d('') | length > 0
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when:  test_jobtemplate_webhooks | d('') | length == 0
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Check if 'App deployer - Test Env' Job template has webhook enabled"
+
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: prod_jobtemplate_webhooks | d('') | length > 0
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when:  prod_jobtemplate_webhooks | d('') | length == 0
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Check if 'App deployer - Prod Env' Job template has webhook enabled"
+
+##### Smote test for Test Env webhook events #####
     - name: Smoke test for Test Env
       uri:
         url: http://{{ groups['testservers'][0] }}/?name=root
         return_content: yes
       register: test_result
 
-    - debug:
-        msg: "Test Env Success"
+    # - debug:
+    #     msg: "Test Env Success"
+    #   when: '"root redhat /bin/bash /root" in test_result.content'
+
+##### Result smoke test for Test Env #####
+    - name: "Success - set fact"
+      set_fact:
+        success: true
       when: '"root redhat /bin/bash /root" in test_result.content'
 
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"root redhat /bin/bash /root" not in test_result.content'
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Check if Test Env website is accessible"
+
+##### Smote test for Prod Env webhook events #####
     - name: Smoke Test for Prod Env
       uri:
         url: http://{{ groups['frontends'][0] }}/?name=root
         return_content: yes
       register: prod_result
 
-    - debug:
-        msg: "Prod Env Success"
+    # - debug:
+    #     msg: "Prod Env Success"
+    #   when: '"root redhat /bin/bash /root" in prod_result.content'
+
+##### Result smoke test for Test Env #####
+    - name: "Success - set fact"
+      set_fact:
+        success: true
       when: '"root redhat /bin/bash /root" in prod_result.content'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"root redhat /bin/bash /root" not in prod_result.content'
+      
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: |
+          "Check if Prod Env website is accessible"
+          " "
+
 ...
