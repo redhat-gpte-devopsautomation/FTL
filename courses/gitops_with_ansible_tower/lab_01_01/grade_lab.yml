@@ -180,6 +180,9 @@
       uri:
         url: http://{{ groups['testservers'][0] }}/?name=root
         return_content: yes
+        status_code: 
+          - -1
+          - 200
       register: test_result
 
     # - debug:
@@ -208,6 +211,9 @@
       uri:
         url: http://{{ groups['frontends'][0] }}/?name=root
         return_content: yes
+        status_code: 
+          - -1
+          - 200
       register: prod_result
       ignore_errors: yes
 
