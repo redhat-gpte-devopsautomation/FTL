@@ -30,8 +30,8 @@
     - name: "No Success - set fact"
       set_fact:
         success: false
-      when: gitlab_webhook_urls | length  < 1
-      
+      when: gitlab_webhook_urls | length  <= 1
+
     - name: Import logging role
       import_role:
         name: ftl_run_log_grade_to_log
@@ -209,6 +209,7 @@
         url: http://{{ groups['frontends'][0] }}/?name=root
         return_content: yes
       register: prod_result
+      ignore_errors: yes
 
     # - debug:
     #     msg: "Prod Env Success"
@@ -229,8 +230,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: |
-          "Check if Prod Env website is accessible"
-          " "
+        task_description_message: Check if Prod Env website is accessible
+
 
 ...
