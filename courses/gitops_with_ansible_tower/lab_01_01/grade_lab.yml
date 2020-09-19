@@ -183,6 +183,7 @@
         status_code: 
           - -1
           - 200
+          - 503
       register: test_result
 
     # - debug:
@@ -214,6 +215,7 @@
         status_code: 
           - -1
           - 200
+          - 503
       register: prod_result
       ignore_errors: yes
 
