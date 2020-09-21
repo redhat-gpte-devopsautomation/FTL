@@ -250,5 +250,7 @@
         - git push
       loop_control:
         loop_var: __command
+    - pause:
+        minutes: 5
 
 ...                                     
