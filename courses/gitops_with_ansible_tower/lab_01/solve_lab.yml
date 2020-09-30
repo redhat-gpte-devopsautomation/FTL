@@ -160,9 +160,28 @@
 ## Job Template section ends here  
 
 ### gitlab webhooks push and merge events
+    - name: List gitlab  projects
+      uri:
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/
+        method: GET
+        headers:
+          PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
+      register: gitlab_project_list
+
+    - name: Get gitlab project id
+      set_fact:
+        gitlab_project_id: '{{ item.id }}'
+      loop: "{{ gitlab_project_list.json }}"
+      when: 'item.name == "gitops-lab"'
+
+    - name: Print gitlab project id for gitops-lab project
+      debug:
+        var: gitlab_project_id
+        verbosity: 2
+
     - name: List gitlab  webhook
       uri:
-        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/1/hooks/
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/{{ gitlab_project_id }}/hooks/
         method: GET
         headers:
           PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
@@ -170,7 +189,7 @@
 
     - name: Delete gitlab webhook
       uri:
-        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/1/hooks/{{ item.id }}
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/{{ gitlab_project_id }}/hooks/{{ item.id }}
         method: DELETE
         headers:
           PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
@@ -179,7 +198,7 @@
 
     - name: Create Test webhook in gitlab
       uri:
-        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/1/hooks/
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/{{ gitlab_project_id }}/hooks/
         method: POST
         headers:
           PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
@@ -194,9 +213,9 @@
       loop: "{{ jobtemplate_webhooks }}"
       when: '"/" + test_job_template_id + "/" in item'
 
-    - name: Create Test webhook in gitlab
+    - name: Create Prod webhook in gitlab
       uri:
-        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/1/hooks/
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/{{ gitlab_project_id }}/hooks/
         method: POST
         headers:
           PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
@@ -250,7 +269,9 @@
         - git push
       loop_control:
         loop_var: __command
-    - pause:
+       
+    - name: Wait for Job template to be finished
+      pause:
         minutes: 5
 
 ...                                     
