@@ -8,14 +8,34 @@
   
   tasks:
 ##### Gitlab project webhook check #####
+
+    - name: List gitlab  projects
+      uri:
+        url: http://{{ access_details.gitlab_hostname }}/api/v4/projects/
+        method: GET
+        headers:
+          PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
+      register: gitlab_project_list
+
+    - name: Get gitlab project id
+      set_fact:
+        gitlab_project_id: '{{ item.id }}'
+      loop: "{{ gitlab_project_list.json }}"
+      when: 'item.name == "gitops-lab"'
+
+    - name: Print gitlab project id for gitops-lab project
+      debug:
+        var: gitlab_project_id
+        verbosity: 2
+
     - name: List gitlab webhook
       uri: 
-        url: http://{{ access_details.gitlab_hostname }}//api/v4/projects/1/hooks/
+        url: http://{{ access_details.gitlab_hostname }}//api/v4/projects/{{ gitlab_project_id }}/hooks/
         method: GET
         headers:
           PRIVATE-TOKEN: "{{ access_details.gitlab_root_token }}"
       register: gitlab_webhook_list
-           
+
     - set_fact:
         gitlab_webhook_urls: "{{ gitlab_webhook_urls | d([]) + [ item.url ] }}"
       loop: "{{ gitlab_webhook_list.json }}"
