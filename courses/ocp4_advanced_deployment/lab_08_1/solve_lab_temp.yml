@@ -79,3 +79,45 @@
               name: pod-autoscale
             targetCPUUtilizationPercentage: 60
 
+- name: Solve OCP4 Custom HPA
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
+
+  tasks:
+    - name: Create Prometheus project
+      k8s:
+        state: present
+        name: my-prometheus
+        kind: Namespace
+
+    - name: Creating OperatorGroup
+      k8s:
+        state: present
+        definition:
+          apiVersion: operators.coreos.com/v1
+          kind: OperatorGroup
+          metadata:
+            name: prometheus
+            namespace: my-prometheus
+          spec:
+            targetNamespaces:
+            - my-prometheus
+
+    - name: Create subscription object
+      k8s:
+        state: present
+        definition:
+          apiVersion: operators.coreos.com/v1alpha1
+          kind: Subscription
+          metadata:
+            name: prometheus
+            namespace: my-prometheus
+          spec:
+            channel: beta
+            name: prometheus
+            source: community-operators
+            sourceNamespace: openshift-marketplace
