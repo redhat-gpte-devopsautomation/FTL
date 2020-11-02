@@ -1,0 +1,81 @@
+---
+- name: Solve the OCP4 on OpenStack limit ranges and Horizontal Pod Autoscaler Lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
+
+  tasks:
+    - name: Set python version
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+      tags: test
+
+    - name: Delete previous project
+      k8s:
+        name: my-hpa
+        kind: Namespace
+        state: absent
+        wait: yes
+
+    - name: Create new project
+      k8s:
+        name: my-hpa
+        kind: Namespace 
+        state: present
+      
+    - name: Deploy application
+      command: "oc new-app quay.io/gpte-devops-automation/pod-autoscale-lab:rc0 --name=pod-autoscale -n my-hpa"
+
+    - name: Expose service
+      command: "oc expose svc/pod-autoscale -n my-hpa"
+
+    - name: Create LimitRange
+      k8s:
+        state: present
+        definition:
+          kind: LimitRange
+          apiVersion: v1
+          metadata:
+            name: limits
+            namespace: my-hpa
+          spec:
+            limits:
+            - type: Pod
+              max:
+                cpu: 100m
+                memory: 750Mi
+              min:
+                cpu: 10m
+                memory: 5Mi
+            - type: Container
+              max:
+                cpu: 100m
+                memory: 750Mi
+              min:
+                cpu: 10m
+              memory: 5Mi
+              default:
+                cpu: 50m
+                memory: 100Mi
+
+    - name: Create Horizontal Pod Autoscaler
+      k8s:
+        state: present
+        definition:
+          kind: HorizontalPodAutoscaler
+          apiVersion: autoscaling/v2beta2
+          metadata:
+            name: pod-autoscale
+            namespace: my-hpa
+          spec:
+            maxReplicas: 5
+            minReplicas: 1
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: pod-autoscale
+            targetCPUUtilizationPercentage: 60
+
