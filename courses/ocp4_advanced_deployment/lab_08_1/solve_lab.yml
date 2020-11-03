@@ -15,16 +15,22 @@
 
     - name: Delete previous project
       k8s:
-        name: my-hpa
+        name: "{{ item }}"
         kind: Namespace
         state: absent
         wait: yes
+      loop:
+        - my-hpa
+        - my-prometheus
 
     - name: Create new project
       k8s:
-        name: my-hpa
+        name: "{{ item }}"
         kind: Namespace 
         state: present
+      loop:
+        - my-hpa
+        - my-prometheus
       
     - name: Deploy application
       command: "oc new-app quay.io/gpte-devops-automation/pod-autoscale-lab:rc0 --name=pod-autoscale -n my-hpa"
@@ -88,12 +94,6 @@
     INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
 
   tasks:
-    - name: Create Prometheus project
-      k8s:
-        state: present
-        name: my-prometheus
-        kind: Namespace
-
     - name: Creating OperatorGroup
       k8s:
         state: present
@@ -164,8 +164,14 @@
               matchLabels:
                 lab: custom-hpa
 
-    - pause:
-        seconds: 10
+    - name: Wait until service is available
+      k8s_facts:
+        kind: Service
+        name: prometheus-operated
+        namespace: my-prometheus
+      register: prom_svc
+      until:
+      - prom_svc.resources | length > 0
 
     - name: Expose the service
       command: "oc expose svc prometheus-operated -n my-prometheus"
@@ -191,9 +197,15 @@
     - name: Create custom k8s adapter
       command: "oc create -f https://raw.githubusercontent.com/redhat-gpte-devopsautomation/ocp_advanced_deployment_resources/master/ocp4_adv_deploy_lab/custom_hpa/custom_adapter_kube_objects.yaml"
 
-    - name: Pausing 1 minute (best effort so far)
-      pause:
-        minutes: 1
+    - name: Wait until custom adapter is available
+      k8s_facts:
+        api_version: apps/v1
+        kind: Deployment
+        name: custom-metrics-apiserver
+        namespace: my-prometheus
+      register: r_custom_adapter
+      until:
+      - r_custom_adapter | length > 0
 
     - name: Create custom hpa
       k8s:
