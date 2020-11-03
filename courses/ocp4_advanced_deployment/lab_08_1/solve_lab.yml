@@ -169,7 +169,7 @@
         kind: Service
         name: prometheus-operated
         namespace: my-prometheus
-      register: prom_svc
+      register: r_prom_svc
       until:
       - prom_svc.resources | length > 0
 
