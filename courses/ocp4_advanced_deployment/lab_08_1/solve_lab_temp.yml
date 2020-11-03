@@ -121,3 +121,102 @@
             name: prometheus
             source: community-operators
             sourceNamespace: openshift-marketplace
+
+    - name: Create Prometheus Service Monitor
+      k8s:
+        state: present
+        definition:
+          apiVersion: monitoring.coreos.com/v1
+          kind: ServiceMonitor
+          metadata:
+            name: pod-autoscale
+            namespace: my-prometheus
+            labels:
+              lab: custom-hpa
+          spec:
+            namespaceSelector:
+              matchNames:
+                - my-prometheus
+                - my-hpa
+            selector:
+              matchLabels:
+                app: pod-autoscale
+            endpoints:
+            - port: 8080-tcp
+              interval: 30s
+
+    - name: Create Prometheus instance
+      k8s: 
+        state: present
+        definition:
+          apiVersion: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            name: my-prometheus
+            labels:
+              prometheus: my-prometheus
+            namespace: my-prometheus
+          spec:
+            replicas: 2
+            serviceAccountName: prometheus-k8s
+            securityContext: {}
+            serviceMonitorSelector:
+              matchLabels:
+                lab: custom-hpa
+
+    - pause:
+        seconds: 10
+
+    - name: Expose the service
+      command: "oc expose svc prometheus-operated -n my-prometheus"
+
+    - name: Create my-prometheus-hpa RoleBinding
+      k8s:
+        state: present
+        definition:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata:
+            name: my-prometheus-hpa
+            namespace: my-hpa
+          subjects:
+            - kind: ServiceAccount
+              name: prometheus-k8s
+              namespace: my-prometheus
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: view
+
+    - name: Create custom k8s adapter
+      command: "oc create -f https://raw.githubusercontent.com/redhat-gpte-devopsautomation/ocp_advanced_deployment_resources/master/ocp4_adv_deploy_lab/custom_hpa/custom_adapter_kube_objects.yaml"
+
+    - name: Pausing 1 minute (best effort so far)
+      pause:
+        minutes: 1
+
+    - name: Create custom hpa
+      k8s:
+        state: present
+        definition:
+          kind: HorizontalPodAutoscaler
+          apiVersion: autoscaling/v2beta1
+          metadata:
+            name: pod-autoscale-custom
+            namespace: my-hpa
+          spec:
+            scaleTargetRef:
+              kind: Deployment
+              name: pod-autoscale
+              apiVersion: apps/v1
+            minReplicas: 1
+            maxReplicas: 5
+            metrics:
+              - type: Pods
+                pods:
+                  metricName: http_requests
+                  targetAverageValue: 500m
+
+    - name: Finished
+      debug:
+        msg: "Follow 5.4.2 if you want to test custom HPA"
