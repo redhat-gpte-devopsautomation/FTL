@@ -197,13 +197,6 @@
     - name: Create custom k8s adapter
       command: "oc create -f https://raw.githubusercontent.com/redhat-gpte-devopsautomation/ocp_advanced_deployment_resources/master/ocp4_adv_deploy_lab/custom_hpa/custom_adapter_kube_objects.yaml"
 
-        #    - name: Wait for custom adapter
-        #      k8s_facts:
-        #        api_version: apiregistration.k8s.io/v1beta1
-        #        kind: APIService
-        #        name: v1beta1.custom.metrics.k8s.io
-        #      register: r_custom_adapter
-
     - name: Wait until custom adapter is available
       shell: oc get --raw /apis/custom.metrics.k8s.io/v1beta1/ | jq -r '.resources[] | select(.name | contains("pods/http"))'
       register: r_custom_adapter
@@ -213,16 +206,6 @@
 
     - debug:
         var: r_custom_adapter
-
-        #    - name: Wait until custom adapter is available
-        #      k8s_facts:
-        #        api_version: apps/v1
-        #        kind: Deployment
-        #        name: custom-metrics-apiserver
-        #        namespace: my-prometheus
-        #      register: r_custom_adapter
-        #      until:
-        #      - r_custom_adapter | length > 0
 
     - name: Create custom hpa
       k8s:
