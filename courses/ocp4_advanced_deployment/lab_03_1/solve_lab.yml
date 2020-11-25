@@ -23,7 +23,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.5
+    ocp_version: 4.5.18
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -168,7 +168,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.5
+    ocp_version: 4.5.18
     rhcos_image_version: "rhcos-ocp45"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
@@ -480,7 +480,10 @@
       register: r_bootstrap_csr
       retries: 20
       delay: 60
-      until: r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_csr_query) | length >= 2
+      until:
+      - r_bootstrap_csr.resources is defined
+      - r_bootstrap_csr.resources | length > 0
+      - r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_csr_query) | length >= 2      
       vars:
         bootstrap_csr_query: >-
           [?!(status) && contains(spec.username, `bootstrap`)] | []
@@ -552,16 +555,17 @@
 #
 
     - name: Wait until wrong PVC exists as installed by the installer
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
       k8s_facts:
         kind: PersistentVolumeClaim
         namespace: openshift-image-registry
       register: r_pvcs
       retries: 20
       delay: 30
-      until: r_pvcs.resources | length == 1
-      # TODO is this really ready?
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+      until:
+      - r_pvcs.resources is defined
+      - r_pvcs.resources | length == 1
       tags: test_csv
 
     - name: Patch registry to scale to 0
