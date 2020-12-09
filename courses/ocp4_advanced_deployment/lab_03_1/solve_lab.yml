@@ -552,71 +552,72 @@
 
 #
 ## Switch Image Registry from PVC RWO Cinder to PVC RWX NFS
+## WK: No longer necessary when running on Orange
 #
 
-    - name: Wait until wrong PVC exists as installed by the installer
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      k8s_facts:
-        kind: PersistentVolumeClaim
-        namespace: openshift-image-registry
-      register: r_pvcs
-      retries: 20
-      delay: 30
-      until:
-      - r_pvcs.resources is defined
-      - r_pvcs.resources | length == 1
-      tags: test_csv
+    # - name: Wait until wrong PVC exists as installed by the installer
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   k8s_facts:
+    #     kind: PersistentVolumeClaim
+    #     namespace: openshift-image-registry
+    #   register: r_pvcs
+    #   retries: 20
+    #   delay: 30
+    #   until:
+    #   - r_pvcs.resources is defined
+    #   - r_pvcs.resources | length == 1
+    #   tags: test_csv
 
-    - name: Patch registry to scale to 0
-      shell: >-
-        oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
-        '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test_csv
+    # - name: Patch registry to scale to 0
+    #   shell: >-
+    #     oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch 
+    #     '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   tags: test_csv
 
-    - name: Delete registry PVC on cinder
-      shell: >-
-        oc delete pvc --all -n openshift-image-registry
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    # - name: Delete registry PVC on cinder
+    #   shell: >-
+    #     oc delete pvc --all -n openshift-image-registry
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
 
-    - name: Wait until PVC is gone
-      k8s_facts:
-        kind: PersistentVolumeClaim
-        namespace: openshift-image-registry
-      register: r_pvcs
-      retries: 20
-      delay: 30
-      until: r_pvcs.resources | length == 0
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test_csv
+    # - name: Wait until PVC is gone
+    #   k8s_facts:
+    #     kind: PersistentVolumeClaim
+    #     namespace: openshift-image-registry
+    #   register: r_pvcs
+    #   retries: 20
+    #   delay: 30
+    #   until: r_pvcs.resources | length == 0
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   tags: test_csv
 
-    - name: Create registry PV
-      k8s:
-        state: present
-        src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test_csv
+    # - name: Create registry PV
+    #   k8s:
+    #     state: present
+    #     src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   tags: test_csv
 
-    - name: Create registry PVC
-      k8s:
-        state: present
-        src: "$HOME/resources/pvc-registry.yaml"
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test_csv
+    # - name: Create registry PVC
+    #   k8s:
+    #     state: present
+    #     src: "$HOME/resources/pvc-registry.yaml"
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   tags: test_csv
 
-    - name: Patch registry to scale to two pods
-      shell: >-
-        /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
-        '[{"op": "replace", "path": "/spec/replicas", "value": 2}]'
-      environment:
-        KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
-      tags: test_csv
+    # - name: Patch registry to scale to two pods
+    #   shell: >-
+    #     /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+    #     '[{"op": "replace", "path": "/spec/replicas", "value": 2}]'
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    #   tags: test_csv
 
     - name: Finish installation
       shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/openstack-upi
