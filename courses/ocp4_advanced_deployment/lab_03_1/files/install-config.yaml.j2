@@ -45,4 +45,4 @@ imageContentSources:
   - utilityvm.example.com:5000/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 additionalTrustBundle: |
-  {{ lookup('file', '/etc/pki/ca-trust/source/anchors/domain.crt') | indent(2, false) }}
+  {{ lookup('file', '/etc/pki/ca-trust/source/anchors/ca.pem') | indent(2, false) }}

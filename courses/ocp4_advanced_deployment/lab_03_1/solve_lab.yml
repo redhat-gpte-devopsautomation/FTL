@@ -23,7 +23,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.18
+    ocp_version: 4.6.4
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -67,12 +67,12 @@
   become: false
 
   tasks:
-    - name: Pull UBI 7.7 image
+    - name: Pull UBI 8.3 image
       podman_image:
-        name: registry.access.redhat.com/ubi7/ubi:7.7
+        name: registry.access.redhat.com/ubi8/ubi:8.3
 
-    - name: Test podman with UBI 7.7 image
-      command: "podman run --rm registry.access.redhat.com/ubi7/ubi:7.7 cat /etc/os-release"
+    - name: Test podman with UBI 8.3 image
+      command: "podman run --rm registry.access.redhat.com/ubi8/ubi:8.3 cat /etc/os-release"
       register: podman_ubi
 
     - debug:
@@ -90,12 +90,35 @@
         - certs
         - data
 
-    - name: Create self-signed certificate for registry
-      command: >
-        openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/registry/certs/domain.key
-        -x509 -days 365 -out /opt/registry/certs/domain.crt
-        -subj "/C=US/ST=WA/L=Seattle/O=Red Hat/OU=GPTE/CN=utilityvm.example.com"
+    - name: Getting required binaries
+      get_url:
+        url: "{{ item.url }}"
+        dest: "/usr/local/sbin/{{ item.name }}"
+        mode: 0555
+      become: true
+      loop:
+        - { url: 'https://github.com/cloudflare/cfssl/releases/download/v1.5.0/cfssljson_1.5.0_linux_amd64', name: cfssljson }
+        - { url: 'https://github.com/cloudflare/cfssl/releases/download/v1.5.0/cfssl_1.5.0_linux_amd64', name: cfssl }
     
+    - name: Creating required files
+      copy:
+        src: "./files/{{ item }}"
+        dest: "/opt/registry/certs/{{ item }}"
+        remote_src: no
+      become: yes
+      loop:
+        - ca-config.json
+        - ca-csr.json
+        - server.json
+
+    - name: Create self-signed certificate for registry
+      shell: "{{ item }}"
+      args:
+        chdir: /opt/registry/certs/
+      loop:
+        - "cfssl gencert -initca /opt/registry/certs/ca-csr.json | cfssljson -bare ca -"
+        - "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=/opt/registry/certs/ca-config.json -profile=server /opt/registry/certs/server.json | cfssljson -bare server"
+
     - name: Create htpasswd file
       command: htpasswd -bBc /opt/registry/auth/htpasswd openshift redhat
 
@@ -121,8 +144,8 @@
           -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm"
           -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd"
           -v /opt/registry/certs:/certs:z
-          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt
-          -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/server.pem
+          -e REGISTRY_HTTP_TLS_KEY=/certs/server-key.pem
         container_state: running
       import_role:
         name: ../../../roles/podman_container_systemd
@@ -137,8 +160,8 @@
 
     - name: Move certificate to ca-trust
       copy:
-        src: /opt/registry/certs/domain.crt
-        dest: /etc/pki/ca-trust/source/anchors/domain.crt
+        src: /opt/registry/certs/ca.pem
+        dest: /etc/pki/ca-trust/source/anchors/ca.pem
         remote_src: true
       become: true
 
@@ -158,18 +181,18 @@
       command: podman login -u openshift -p redhat utilityvm.example.com:5000
 
     - name: Test registry functionality
-      command: podman tag registry.access.redhat.com/ubi7/ubi:7.7 utilityvm.example.com:5000/ubi7/ubi:7.7
+      command: podman tag registry.access.redhat.com/ubi8/ubi:8.3 utilityvm.example.com:5000/ubi8/ubi:8.3
 
     - name: Test registry functionality
-      command: podman push utilityvm.example.com:5000/ubi7/ubi:7.7
+      command: podman push utilityvm.example.com:5000/ubi8/ubi:8.3
 
 - name: Solve the OCP4 on OpenStack installation lab
   hosts: localhost
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.5.18
-    rhcos_image_version: "rhcos-ocp45"
+    ocp_version: 4.6.4
+    rhcos_image_version: "rhcos-ocp46"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
     LOCAL_REGISTRY: "utilityvm.example.com:5000"
@@ -185,7 +208,7 @@
 
         
     - name: Copy certificate from utility VM
-      command: scp utilityvm.example.com:/opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+      command: scp utilityvm.example.com:/opt/registry/certs/ca.pem /etc/pki/ca-trust/source/anchors/
       become: true
     
     - name: Update CA trust
@@ -330,13 +353,15 @@
       shell: |
         cd $HOME/openstack-upi;
         for index in $(seq 0 2); do
-        MASTER_HOSTNAME="$INFRA_ID-master-$index"
-        python3 -c "import base64, json, sys;
+        MASTER_HOSTNAME="$INFRA_ID-master-$index\n"
+        python -c "import base64, json, sys;
         ignition = json.load(sys.stdin);
-        files = ignition['storage'].get('files', []);
+        storage = ignition.get('storage', {});
+        files = storage.get('files', []);
         files.append({'path': '/etc/hostname', 'mode': 420, 'contents': {'source': 'data:text/plain;charset=utf-8;base64,' + base64.standard_b64encode(b'$MASTER_HOSTNAME').decode().strip(), 'verification': {}}, 'filesystem': 'root'});
-        ignition['storage']['files'] = files;
-        json.dump(ignition, sys.stdout)" <master.ign >"$INFRA_ID-master-$index-ignition.json";
+        storage['files'] = files;
+        ignition['storage'] = storage
+        json.dump(ignition, sys.stdout)" <master.ign >"$INFRA_ID-master-$index-ignition.json"
         done
       environment:
         INFRA_ID: "{{ r_infra_id.stdout }}"
