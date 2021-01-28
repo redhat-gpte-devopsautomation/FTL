@@ -1,19 +1,11 @@
 {
   "ignition": {
     "config": {
-      "append": [
-        {
-          "source": "http://utilityvm.example.com/bootstrap.ign",
-          "verification": {}
-        }
-      ]
+      "merge": [{
+        "source": "http://utilityvm.example.com/bootstrap.ign"
+      }]
     },
     "security": {},
-    "timeouts": {},
-    "version": "2.2.0"
-  },
-  "networkd": {},
-  "passwd": {},
-  "storage": {},
-  "systemd": {}
+    "version": "3.1.0"
+  }
 }
