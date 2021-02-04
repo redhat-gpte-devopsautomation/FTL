@@ -23,7 +23,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.6.4
+    ocp_version: 4.6.3
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
 
@@ -191,7 +191,7 @@
   gather_facts: false
   become: false
   vars:
-    ocp_version: 4.6.4
+    ocp_version: 4.6.3
     rhcos_image_version: "rhcos-ocp46"
   environment:
     OCP_RELEASE: "{{ ocp_version }}"
