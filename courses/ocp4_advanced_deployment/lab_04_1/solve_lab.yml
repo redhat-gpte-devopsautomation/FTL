@@ -55,7 +55,7 @@
         seconds: 300
 
     - name: Check if nodes are available (10m max)
-      k8s_facts:
+      k8s_info:
         api_version: v1
         kind: Node
         label_selectors:
