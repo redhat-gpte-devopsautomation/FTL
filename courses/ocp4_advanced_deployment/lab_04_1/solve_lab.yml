@@ -52,7 +52,7 @@
 
     - name: Wait for nodes to come online
       pause:
-        seconds: 300
+        seconds: 500
 
     - name: Check if nodes are available (10m max)
       k8s_info:
