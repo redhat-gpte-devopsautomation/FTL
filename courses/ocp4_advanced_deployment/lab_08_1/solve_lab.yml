@@ -1,0 +1,234 @@
+---
+- name: Solve the OCP4 on OpenStack limit ranges and Horizontal Pod Autoscaler Lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
+
+  tasks:
+    - name: Set python version
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+      tags: test
+
+    - name: Delete previous project
+      k8s:
+        name: "{{ item }}"
+        kind: Namespace
+        state: absent
+        wait: yes
+      loop:
+        - my-prometheus
+        - my-hpa
+
+    - name: Create new project
+      k8s:
+        name: "{{ item }}"
+        kind: Namespace 
+        state: present
+      loop:
+        - my-hpa
+        - my-prometheus
+      
+    - name: Deploy application
+      command: "oc new-app quay.io/gpte-devops-automation/pod-autoscale-lab:rc0 --name=pod-autoscale -n my-hpa"
+
+    - name: Expose service
+      command: "oc expose svc/pod-autoscale -n my-hpa"
+
+    - name: Create LimitRange
+      k8s:
+        state: present
+        definition:
+          kind: LimitRange
+          apiVersion: v1
+          metadata:
+            name: limits
+            namespace: my-hpa
+          spec:
+            limits:
+            - type: Pod
+              max:
+                cpu: 100m
+                memory: 750Mi
+              min:
+                cpu: 10m
+                memory: 5Mi
+            - type: Container
+              max:
+                cpu: 100m
+                memory: 750Mi
+              min:
+                cpu: 10m
+              memory: 5Mi
+              default:
+                cpu: 50m
+                memory: 100Mi
+
+    - name: Create Horizontal Pod Autoscaler
+      k8s:
+        state: present
+        definition:
+          kind: HorizontalPodAutoscaler
+          apiVersion: autoscaling/v2beta2
+          metadata:
+            name: pod-autoscale
+            namespace: my-hpa
+          spec:
+            maxReplicas: 5
+            minReplicas: 1
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: pod-autoscale
+            targetCPUUtilizationPercentage: 60
+
+- name: Solve OCP4 Custom HPA
+  hosts: localhost
+  gather_facts: false
+  become: false
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    INFRA_ID: "INFRA_ID=$(jq -r .infraID {{ lookup('env', 'HOME') }}/openstack-upi/metadata.json)"
+
+  tasks:
+    - name: Creating OperatorGroup
+      k8s:
+        state: present
+        definition:
+          apiVersion: operators.coreos.com/v1
+          kind: OperatorGroup
+          metadata:
+            name: prometheus
+            namespace: my-prometheus
+          spec:
+            targetNamespaces:
+            - my-prometheus
+
+    - name: Create subscription object
+      k8s:
+        state: present
+        definition:
+          apiVersion: operators.coreos.com/v1alpha1
+          kind: Subscription
+          metadata:
+            name: prometheus
+            namespace: my-prometheus
+          spec:
+            channel: beta
+            name: prometheus
+            source: community-operators
+            sourceNamespace: openshift-marketplace
+
+    - name: Create Prometheus Service Monitor
+      k8s:
+        state: present
+        definition:
+          apiVersion: monitoring.coreos.com/v1
+          kind: ServiceMonitor
+          metadata:
+            name: pod-autoscale
+            namespace: my-prometheus
+            labels:
+              lab: custom-hpa
+          spec:
+            namespaceSelector:
+              matchNames:
+                - my-prometheus
+                - my-hpa
+            selector:
+              matchLabels:
+                app: pod-autoscale
+            endpoints:
+            - port: 8080-tcp
+              interval: 30s
+
+    - name: Create Prometheus instance
+      k8s: 
+        state: present
+        definition:
+          apiVersion: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            name: my-prometheus
+            labels:
+              prometheus: my-prometheus
+            namespace: my-prometheus
+          spec:
+            replicas: 2
+            serviceAccountName: prometheus-k8s
+            securityContext: {}
+            serviceMonitorSelector:
+              matchLabels:
+                lab: custom-hpa
+
+    - name: Wait until service is available
+      k8s_facts:
+        kind: Service
+        name: prometheus-operated
+        namespace: my-prometheus
+      register: r_prom_svc
+      until:
+      - r_prom_svc.resources | length > 0
+
+    - name: Expose the service
+      command: "oc expose svc prometheus-operated -n my-prometheus"
+
+    - name: Create my-prometheus-hpa RoleBinding
+      k8s:
+        state: present
+        definition:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata:
+            name: my-prometheus-hpa
+            namespace: my-hpa
+          subjects:
+            - kind: ServiceAccount
+              name: prometheus-k8s
+              namespace: my-prometheus
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: view
+
+    - name: Create custom k8s adapter
+      command: "oc create -f https://raw.githubusercontent.com/redhat-gpte-devopsautomation/ocp_advanced_deployment_resources/master/ocp4_adv_deploy_lab/custom_hpa/custom_adapter_kube_objects.yaml"
+
+    - name: Wait until custom adapter is available
+      shell: oc get --raw /apis/custom.metrics.k8s.io/v1beta1/ | jq -r '.resources[] | select(.name | contains("pods/http"))'
+      register: r_custom_adapter
+      until: '"pods/http" in r_custom_adapter.stdout'
+      retries: 5
+      delay: 20
+
+    - debug:
+        var: r_custom_adapter
+
+    - name: Create custom hpa
+      k8s:
+        state: present
+        definition:
+          kind: HorizontalPodAutoscaler
+          apiVersion: autoscaling/v2beta1
+          metadata:
+            name: pod-autoscale-custom
+            namespace: my-hpa
+          spec:
+            scaleTargetRef:
+              kind: Deployment
+              name: pod-autoscale
+              apiVersion: apps/v1
+            minReplicas: 1
+            maxReplicas: 5
+            metrics:
+              - type: Pods
+                pods:
+                  metricName: http_requests
+                  targetAverageValue: 500m
+
+    - name: Finished
+      debug:
+        msg: "Follow 5.4.2 if you want to test custom HPA"
