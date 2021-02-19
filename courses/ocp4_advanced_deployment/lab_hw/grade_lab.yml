@@ -142,13 +142,13 @@
       task_description_message: Check if 5 user identities exist
       student_error_message: ": The cluster doesn't have 5 user identities"
 
-  - name: Check if john is a cluster admin
+  - name: Check if john is a member of lab-cluster-admins with cluster-admin authorization
     include_role:
       name: grader_check_oc_command
     vars:
-      oc_command: "auth can-i list nodes --as john"
-      task_description_message: Check if john is a cluster admin
-      student_error_message: ": User john is not a cluster admin"
+      oc_command: "auth can-i delete nodes -A --as-group=lab-cluster-admins --as john"
+      task_description_message: Check if john is a member of group lab-cluster-admins
+      student_error_message: ": User john is not a in the lab-cluster-admins group"
 
   - name: Create a project george-test
     command: oc new-project george-test
