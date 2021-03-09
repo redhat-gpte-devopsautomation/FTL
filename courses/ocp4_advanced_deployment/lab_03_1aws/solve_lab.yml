@@ -1,0 +1,949 @@
+# vim:ft=yaml.ansible:
+---
+- name: Check Solver Prereqs
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    guid: "{{ lookup('env', 'GUID') }}"
+  tasks:
+    - name: Check for presence of GUID in environment
+      assert:
+       that:
+         guid is defined
+
+    - name: Check for presence of $HOME/.aws/credentials
+      stat:
+        path: $HOME/.aws/credentials
+      register: r_awscreds_stat
+
+    - name: assert presence of $HOME/.aws/credentials
+      assert:
+        that:
+          - r_awscreds_stat.stat.exists
+        fail_msg: "You must have your AWS credentials '$HOME/.aws/credentials' from OpenTLC to install OpenShift on AWS."
+
+    - name: Check for presence of $HOME/ocp_pullsecret.json
+      stat:
+        path: $HOME/ocp_pullsecret.json
+      register: r_pullsecret_stat
+
+    - name: assert presence of ocp_pullsecret.json
+      assert:
+        that:
+          - r_pullsecret_stat.stat.exists
+        fail_msg: "You must have your pull secret from Red Hat to install OpenShift."
+
+- name: run reset playbook if there's an infraid
+  hosts: localhost
+  gather_facts: no
+  run_once: true
+  tasks:
+
+   - name: get infraid
+     shell: |
+       jq -r .infraID $HOME/aws-upi/metadata.json
+     ignore_errors: true
+     register: r_infra_id
+
+   - name: what is going on
+     when: r_infra_id.stdout != ""
+     set_fact:
+       infra_id: "{{ r_infra_id.stdout }}"
+     delegate_to: localhost
+     delegate_facts: yes
+
+- name: Run reset_lab
+  import_playbook: reset_lab.yml
+  when: infra_id is defined
+
+
+- name: Solve the OCP4 on AWS installation lab - bastion prep
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    ocp_version: 4.6.18
+  environment:
+    OCP_RELEASE: "{{ ocp_version }}"
+
+  tasks:
+
+    - name: Remove old ~/aws-upi directory
+      file:
+        state: absent
+        path: "$HOME/aws-upi/"
+
+    - name: cleanup resources files that were created in previous runs
+      file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "~/resources/*.txt"
+        - "~/resources/*.json"
+        - "~/resources/cluster_vars.yaml"
+
+    - name: Set OCP version in bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export OCP_RELEASE"
+        line: "export OCP_RELEASE={{ ocp_version }}"
+
+    - name: Install oc binary
+      unarchive:
+        src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$OCP_RELEASE/openshift-client-linux-$OCP_RELEASE.tar.gz
+        dest: /usr/local/sbin
+        remote_src: yes
+        mode: 0555
+      become: true
+
+    - name: Download aws binary
+      unarchive:
+        src: https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
+        dest: $HOME/
+        remote_src: yes
+      become: true
+
+    - name: Install aws binary
+      become: yes
+      command: '/root/awscli-bundle/install -i /usr/local/aws -b /bin/aws'
+      args:
+        creates: /usr/local/aws
+
+    - name: Cleanup aws archive
+      file:
+        path: $HOME/awscli-bundle
+        state: absent
+      become: true
+
+    - name: Add utilityVM to inventory
+      add_host:
+        hostname: utilityvm
+
+- name: Solve the OCP4 on OpenStack installation lab - UtilityVM
+  vars:
+    guid: "{{ lookup('env', 'GUID') }}"
+  hosts: utilityvm
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Pull UBI 8.3 image
+      podman_image:
+        name: registry.access.redhat.com/ubi8/ubi:8.3
+
+    - name: Test podman with UBI 8.3 image
+      command: "podman run --rm registry.access.redhat.com/ubi8/ubi:8.3 cat /etc/os-release"
+      register: podman_ubi
+
+    - debug:
+        var: podman_ubi
+
+    - name: Make directories for registry contents
+      file:
+        path: "/opt/registry/{{ item }}"
+        state: directory
+        owner: "ec2-user"
+        recurse: true
+      become: true
+      loop:
+        - auth
+        - certs
+        - data
+
+    - name: Getting required binaries
+      get_url:
+        url: "{{ item.url }}"
+        dest: "/usr/local/sbin/{{ item.name }}"
+        mode: 0555
+      become: true
+      loop:
+        - { url: 'https://github.com/cloudflare/cfssl/releases/download/v1.5.0/cfssljson_1.5.0_linux_amd64', name: cfssljson }
+        - { url: 'https://github.com/cloudflare/cfssl/releases/download/v1.5.0/cfssl_1.5.0_linux_amd64', name: cfssl }
+
+    - name: certificate templates
+      template:
+        src: "./templates/{{ item }}.j2"
+        dest: "/opt/registry/certs/{{ item }}"
+      loop:
+       - ca-config.json
+       - ca-csr.json
+       - server.json
+      become: yes
+
+    - name: whoami
+      command: whoami
+
+    - name: Create self-signed certificate for registry
+      shell: "{{ item }}"
+      args:
+        chdir: /opt/registry/certs/
+      loop:
+        - "cfssl gencert -initca /opt/registry/certs/ca-csr.json | cfssljson -bare ca -"
+        - "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=/opt/registry/certs/ca-config.json -profile=server /opt/registry/certs/server.json | cfssljson -bare server"
+
+    - name: Create htpasswd file
+      command: htpasswd -bBc /opt/registry/auth/htpasswd openshift redhat
+
+    - name: Stop container if it is running
+      shell: podman stop mirror-registry && podman rm mirror-registry
+      ignore_errors: true
+
+    - name: Stop container if it is running (root)
+      shell: podman stop mirror-registry && podman rm mirror-registry
+      become: true
+      ignore_errors: true
+
+    - name: Start container registry container
+      vars:
+        container_image: docker.io/library/registry:2
+        container_name: mirror-registry
+        container_run_args: >-
+          -p 5000:5000
+          --restart=always
+          -v /opt/registry/data:/var/lib/registry:z
+          -v /opt/registry/auth:/auth:z
+          -e "REGISTRY_AUTH=htpasswd"
+          -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm"
+          -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd"
+          -v /opt/registry/certs:/certs:z
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/server.pem
+          -e REGISTRY_HTTP_TLS_KEY=/certs/server-key.pem
+        container_state: running
+      import_role:
+        name: ../../../roles/podman_container_systemd
+      become: true
+
+    - name: Stop mirror-registry service if running
+      service:
+        name: mirror-registry-container-pod
+        state: restarted
+      become: true
+      ignore_errors: true
+
+    - name: Move certificate to ca-trust
+      copy:
+        src: /opt/registry/certs/ca.pem
+        dest: /etc/pki/ca-trust/source/anchors/ca.pem
+        remote_src: true
+      become: true
+
+    - name: Update CA trust
+      command: update-ca-trust
+      become: true
+
+    - name: Test to ensure registry is accessible
+      uri:
+        url: https://utilityvm.{{ guid }}.internal:5000/v2/_catalog
+        status_code: 200
+        method: GET
+        url_username: openshift
+        url_password: redhat
+
+    - name: Test registry functionality
+      command: podman login -u openshift -p redhat utilityvm.{{ guid }}.internal:5000
+
+    - name: Test registry functionality
+      command: podman tag registry.access.redhat.com/ubi8/ubi:8.3 utilityvm.{{ guid }}.internal:5000/ubi8/ubi:8.3
+
+    - name: Test registry functionality
+      command: podman push utilityvm.{{ guid }}.internal:5000/ubi8/ubi:8.3
+
+- name: Solve the OCP4 on AWS installation lab - image mirror
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    HOME: "{{ lookup('env', 'HOME') }}"
+    ocp_version: 4.6.18
+    rhcos_image_version: "rhcos-ocp46"
+    guid: "{{ lookup('env', 'GUID') }}"
+  environment:
+    OCP_RELEASE: "{{ ocp_version }}"
+    LOCAL_REGISTRY: "utilityvm.{{ guid }}.internal:5000"
+    LOCAL_REPOSITORY: "ocp4/openshift4"
+    LOCAL_SECRET_JSON: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+    PRODUCT_REPO: "openshift-release-dev"
+    RELEASE_NAME: "ocp-release"
+
+  tasks:
+    #- set_fact:
+    #ansible_python_interpreter: /usr/bin/python3
+    #tags: test_prep
+
+    - name: get all hosted zones
+      route53_info:
+        query: hosted_zone
+      register: r_hosted_zones
+      tags:
+        - aws-query
+
+    - name: create a hosted zone name variable
+      set_fact:
+        sandbox_hosted_zone_name:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+            json_query('[? starts_with(Name, `sandbox`) ].Name' ) | first |
+            regex_replace('.$', '') }}"
+        sandbox_hosted_zone_id:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+              json_query('[? starts_with(Name, `sandbox`) ].Id' ) | first |
+              regex_replace('/hostedzone/', '') }}"
+        internal_hosted_zone_id:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+              json_query('[? contains(Name, `internal`) ].Id' ) | first |
+              regex_replace('/.$/', '') }}"
+      tags: aws-query
+
+    - name: Copy certificate from utility VM
+      command: scp utilityvm.{{ guid }}.internal:/opt/registry/certs/ca.pem /etc/pki/ca-trust/source/anchors/
+      become: true
+
+    - name: Update CA trust
+      command: update-ca-trust
+      become: true
+
+    - name: Verify registry is accessible
+      uri:
+        url: https://utilityvm.{{ guid }}.internal:5000/v2/_catalog
+        status_code: 200
+        method: GET
+        url_username: openshift
+        url_password: redhat
+
+    - name: Get podman credentials into file
+      command: podman login -u openshift -p redhat --authfile $HOME/pullsecret_config.json utilityvm.{{ guid }}.internal:5000
+
+    - name: Verify pull secret is valid syntax
+      assert:
+        that:
+          lookup('file', HOME ~ '/ocp_pullsecret.json') | from_json is succeeded
+        success_msg: The OCP pull secret has correct syntax
+      vars:
+        HOME: "{{ lookup('env', 'HOME') }}"
+
+    - name: Merge pull secrets
+      shell: >-
+        jq -c --argjson var "$(jq .auths $HOME/pullsecret_config.json)" '.auths += $var'
+        $HOME/ocp_pullsecret.json > $HOME/merged_pullsecret.json
+
+    - name: Add env vars to .bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export {{ item.entry }}"
+        line: "export {{ item.entry }}={{ item.val }}"
+      loop:
+        - entry: "LOCAL_REGISTRY"
+          val: "utilityvm.{{ guid }}.internal:5000"
+        - entry: "LOCAL_REPOSITORY"
+          val: "ocp4/openshift4"
+        - entry: "LOCAL_SECRET_JSON"
+          val: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+        - entry: "PRODUCT_REPO"
+          val: "openshift-release-dev"
+        - entry: "RELEASE_NAME"
+          val: "ocp-release"
+        - entry: "OPENSHIFT_DNS_ZONE"
+          val: "{{ sandbox_hosted_zone_name }}"
+
+    - name: Mirror OpenShift content to local registry
+      shell: >-
+        /usr/local/sbin/oc adm -a ${LOCAL_SECRET_JSON} release mirror
+        --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-x86_64
+        --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}
+        --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64
+
+    - name: Verify that images are present and pullable
+      podman_image:
+        name: "utilityvm.{{ guid }}.internal:5000/ocp4/openshift4:${OCP_RELEASE}-operator-lifecycle-manager"
+        auth_file: "$HOME/merged_pullsecret.json"
+
+    - name: Check release info to make sure it works
+      shell: >-
+        /usr/local/sbin/oc adm release info -a ${LOCAL_SECRET_JSON}
+        "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
+      register: release_info
+
+    - name: Check release info to make sure it works
+      assert:
+        that:
+          - not release_info.failed
+          - "'{{ ocp_version }}' in release_info.stdout"
+
+    - name: Extract openshift-install binary
+      shell: >-
+        /usr/local/sbin/oc adm release extract -a ${LOCAL_SECRET_JSON}
+        --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-x86_64"
+        --to /usr/local/sbin/
+      become: true
+      environment:
+        OCP_RELEASE: "{{ ocp_version }}"
+        LOCAL_REGISTRY: "utilityvm.{{ guid }}.internal:5000"
+        LOCAL_REPOSITORY: "ocp4/openshift4"
+        LOCAL_SECRET_JSON: "/home/{{ lookup('env', 'USER') }}/merged_pullsecret.json"
+
+    - name: Create directory for installation artifacts
+      file:
+        state: directory
+        path: $HOME/aws-upi
+
+    - name: Create the install-config.yaml file
+      template:
+        src: ./templates/install-config.yaml.j2
+        dest: $HOME/aws-upi/install-config.yaml
+      vars:
+        GUID: "{{ lookup('env', 'GUID') }}"
+        HOME: "{{ lookup('env', 'HOME') }}"
+
+    - name: Backup the install-config just in case
+      file:
+        state: directory
+        path: $HOME/backup
+
+    - name: Backup the install-config just in case
+      copy:
+        src: $HOME/aws-upi/install-config.yaml
+        dest: $HOME/backup/install-config.yaml
+        remote_src: true
+
+    - name: Create openshift-install manifests
+      shell: /usr/local/sbin/openshift-install create manifests --dir $HOME/aws-upi
+
+    - name: Fix the cluster-scheduler manifest
+      lineinfile:
+        path: $HOME/aws-upi/manifests/cluster-scheduler-02-config.yml
+        regexp: "^  mastersSchedulable"
+        line: "  mastersSchedulable: false"
+
+    - name: Remove manifests for master machines
+      shell: rm -f $HOME/aws-upi/openshift/99_openshift-cluster-api_master-machines-*.yaml
+
+    - name: Create openshift-install ignition files
+      shell: /usr/local/sbin/openshift-install create ignition-configs --dir $HOME/aws-upi
+
+    - name: Set infra_id in .bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export INFRA_ID"
+        line: "export INFRA_ID=$(jq -r .infraID $HOME/aws-upi/metadata.json)"
+
+    - name: Get infra_id
+      shell: jq -r .infraID $HOME/aws-upi/metadata.json
+      register: r_infra_id
+      tags:
+        - aws-query
+
+    - debug:
+        var: r_infra_id
+
+    - name: Add AWS env vars to .bashrc
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export {{ item.entry }}"
+        line: "export {{ item.entry }}={{ item.val }}"
+      loop:
+        - entry: "CLUSTER_NAME"
+          val: "cluster-{{ guid }}"
+        - entry: "BASE_DOMAIN"
+          val: "{{ sandbox_hosted_zone_name }}"
+
+    - name: Add AWS env vars to $HOME/resources/cluster_vars.yaml
+      lineinfile:
+        path: $HOME/resources/cluster_vars.yaml
+        regexp: "^{{ item.entry }}"
+        line: "{{ item.entry }}: {{ item.val }}"
+        create: true
+      loop:
+        - entry: "INFRA_ID"
+          val: "{{ r_infra_id.stdout }}"
+        - entry: "CLUSTER_NAME"
+          val: "cluster-{{ guid }}"
+        - entry: "BASE_DOMAIN"
+          val: "{{ sandbox_hosted_zone_name }}"
+
+          ##########
+          ## Create VPC
+          ##########
+
+    - name: get original vpc_id
+      ec2_vpc_net_info:
+        filters:
+          "tag:guid": "{{ guid }}"
+      register: r_vpc_original
+      tags:
+        - aws-query
+
+    - name: original vpcid
+      set_fact:
+        original_vpc_id: "{{ r_vpc_original.vpcs[0].vpc_id }}"
+      tags:
+        - aws-query
+
+
+    - name: Create AWS VPC for OpenShift cluster
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-vpc"
+        template: '~/resources/aws_upi_vpc_template.yaml'
+        template_parameters: "{{ lookup('file', HOME ~ '/resources/aws_upi_vpc_parameters.json') | from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      register: r_vpc_openshift
+      tags:
+        - aws-query
+
+    - name: openshift vpcid
+      set_fact:
+        openshift_vpc_id: "{{ r_vpc_openshift.stack_outputs.VpcId }}"
+      tags:
+        - aws-query
+
+    - name: Put VpcID, PublicSubnetId, PrivateSubnetIds into resources files
+      shell: >-
+        /usr/bin/aws cloudformation describe-stacks --stack-name $INFRA_ID-vpc
+        --query Stacks[0].Outputs[].[OutputKey,OutputValue] --output text |
+        sed 's_\s_: _g' |  tee ~/resources/vpc.txt >> ~/resources/cluster_vars.yaml
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+      tags:
+        - aws-query
+
+          ##########
+          ## Create DNS
+          ##########
+
+    - name: Add the HostedZoneId to the ~/resources/cluster_vars.yaml
+      lineinfile:
+        path: "$HOME/resources/cluster_vars.yaml"
+        regexp: '^HostedZoneId'
+        line: "HostedZoneId: {{ sandbox_hosted_zone_id }}"
+      tags:
+        - aws-query
+
+    - name: Process the templates to generate ~/resources/aws_upi_route53_parameters.json
+      ignore_errors: true
+      shell: >-
+        ansible-playbook ./process.yaml
+      args:
+        chdir: ~/resources/
+      tags:
+        - aws-query
+
+    - name: Run the cloudformations template to update DNS and create ELBs
+      tags:
+        - aws-query
+      block:
+        - name: submit DNS/ELB cloudformations template
+          cloudformation:
+            stack_name: "{{ r_infra_id.stdout }}-dns"
+            template: '~/resources/aws_upi_route53_template.yaml'
+            template_parameters:
+              "{{ lookup('file', HOME ~ '/resources/aws_upi_route53_parameters.json') |
+              from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      rescue:
+        - name: delete DNS/ELB couldformation stack to retry
+          cloudformation:
+            stack_name: "{{ r_infra_id.stdout }}-dns"
+            state: absent
+
+        - name: submit DNS/ELB cloudformations template - again
+          cloudformation:
+            stack_name: "{{ r_infra_id.stdout }}-dns"
+            template: '~/resources/aws_upi_route53_template.yaml'
+            template_parameters:
+              "{{ lookup('file', HOME ~ '/resources/aws_upi_route53_parameters.json') |
+              from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+
+    - name: Save many variables from DNS/ELB setup
+      shell: >-
+        aws cloudformation describe-stacks --stack-name ${INFRA_ID}-dns --query Stacks[0].Outputs[].[OutputKey,OutputValue] --output text | sed 's_\s_: _g' | tee ~/resources/dns.txt >> ~/resources/cluster_vars.yaml
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+      tags:
+        - aws-query
+        #
+          ##########
+          ## Create VPC Perring and Routes
+          ##########
+
+    - name: set Hosted Zone IDand openshift vpc
+      ignore_errors: true
+      shell: |
+        aws route53 associate-vpc-with-hosted-zone \
+        --hosted-zone-id="{{ internal_hosted_zone_id }}" \
+        --vpc VPCRegion=us-east-2,VPCId={{ openshift_vpc_id }}
+      tags:
+        - aws-query
+
+      #      route53:
+      #        zone: "{{ guid }}.internal."
+      #        vpc_id: "{{ openshift_vpc_id }}"
+      #        vpc_region: us-east-2
+      #      tags:
+      #        - aws-query
+
+    - name: create peering connection
+      ec2_vpc_peer:
+        region: us-east-2
+        vpc_id: "{{ openshift_vpc_id }}"
+        peer_vpc_id: "{{ original_vpc_id }}"
+        state: present
+      register: vpc_peer
+      tags:
+        - aws-query
+
+    - name: accept local VPC peering request
+      ec2_vpc_peer:
+        region: us-east-2
+        peering_id: "{{ vpc_peer.peering_id }}"
+        state: accept
+      register: action_peer
+      tags:
+        - aws-query
+
+         ######
+         ######
+         ### Routes
+         #####
+         #####
+
+    - name: get routes for openshift vpc
+      ec2_vpc_route_table_info:
+        region: us-east-2
+        filters:
+          vpc-id: "{{ openshift_vpc_id }}"
+      register: openshift_route_tables
+      tags:
+        - aws-query
+
+    - name: debug route tables
+      debug:
+        var: openshift_route_tables
+
+    - name: get routes for original vpc
+      ec2_vpc_route_table_info:
+        region: us-east-2
+        filters:
+          vpc-id: "{{ original_vpc_id }}"
+      register: original_route_tables
+      tags:
+        - aws-query
+
+    - name: debug VPC route tables
+      debug:
+        msg: "{{ item }}"
+      tags:
+        - aws-query
+      loop: "{{ original_route_tables.route_tables | map(attribute='id')  | list }}"
+
+    - name: create routes in every routing table for original VPC
+      ignore_errors: true  # module not idempotent
+      ec2_vpc_route_table:
+        vpc_id: "{{ original_vpc_id }}"
+        region: us-east-2
+        route_table_id: "{{ item }}"
+        lookup: id
+        purge_routes: no
+        routes:
+          - dest: '10.0.0.0/16'
+            vpc_peering_connection_id: "{{ vpc_peer.peering_id }}"
+      loop: "{{ original_route_tables.route_tables | map(attribute='id')  | list }}"
+      tags:
+        - aws-query
+
+    - name: create routes in every routing table for OpenShift VPC
+      ignore_errors: true  # module not idempotent
+      ec2_vpc_route_table:
+        vpc_id: "{{ openshift_vpc_id }}"
+        region: us-east-2
+        route_table_id: "{{ item }}"
+        lookup: id
+        purge_routes: no
+        routes:
+          - dest: "192.168.0.0/16"
+            vpc_peering_connection_id: "{{ vpc_peer.peering_id }}"
+      loop: "{{ openshift_route_tables.route_tables | map(attribute='id') | list }}"
+      tags:
+        - aws-query
+
+        #######
+        #######
+        # Create AWS Security Groups
+        #######
+        #######
+        #
+    - name: Create AWS Security Groups
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-sec"
+        template: '~/resources/aws_upi_sec_template.yaml'
+        template_parameters: "{{ lookup('file', HOME ~ '/resources/aws_upi_sec_parameters.json') | from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      register: r_sec_openshift
+      tags:
+        - aws-query
+
+    - name: Save many variables from SECURITY GROUPS setup
+      shell: >-
+        aws cloudformation describe-stacks --stack-name ${INFRA_ID}-sec --query Stacks[0].Outputs[].[OutputKey,OutputValue] --output text | sed 's_\s_: _g' | tee ~/resources/sec.txt >> ~/resources/cluster_vars.yaml
+      environment:
+        INFRA_ID: "{{ r_infra_id.stdout }}"
+      tags:
+        - aws-query
+
+    - name: Process the templates to generate ~/resources/aws_upi_route53_parameters.json
+      ignore_errors: true
+      shell: >-
+        ansible-playbook ./process.yaml
+      args:
+        chdir: ~/resources/
+      tags:
+        - aws-query
+
+    - name: set bucket_name
+      set_fact:
+        bucket_name: "cluster-{{ guid }}-infra"
+      tags:
+        - aws-query
+
+    - name: make an S3 bucket for Bootstrap ignition files
+      s3_bucket:
+        name: "cluster-{{ guid }}-infra"
+        state: present
+      tags:
+        - aws-query
+
+    - name: copy bootstrap file to bucket
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        src: "{{ HOME }}/aws-upi/bootstrap.ign"
+        object: "/bootstrap.ign"
+        mode: put
+      vars:
+        GUID: "{{ lookup('env', 'GUID') }}"
+        HOME: "{{ lookup('env', 'HOME') }}"
+      tags:
+        - aws-query
+
+        ####
+        ####
+        # create bootstrap instance
+
+    - name: Create AWS Bootstrap Node
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-bootstrap"
+        template: '~/resources/aws_upi_bootstrap_template.yaml'
+        template_parameters: "{{ lookup('file', HOME ~ '/resources/aws_upi_bootstrap_parameters.json') | from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      register: r_bootstrap_openshift
+      tags:
+        - aws-query
+
+    - name: Get bootstrap private IP address
+      set_fact:
+        bootstrap_private_ip: "{{ r_bootstrap_openshift.stack_outputs.BootstrapPrivateIp }}"
+      tags:
+        - aws-query
+
+    - name: get certs from master and worker ignition file
+      set_fact:
+        master_cert:
+          "{{ lookup('file', HOME ~ '/aws-upi/master.ign') | from_json |
+          json_query('ignition.security.tls.certificateAuthorities[0].source') }}"
+        worker_cert:
+          "{{ lookup('file', HOME ~ '/aws-upi/worker.ign') | from_json |
+          json_query('ignition.security.tls.certificateAuthorities[0].source') }}"
+
+    - name: update master ignition files with certs
+      lineinfile:
+        path: '$HOME/resources/aws_upi_control_plane_parameters.json'
+        regex: '"ParameterValue": "XXXX"'
+        line: '   "ParameterValue": "{{ master_cert }}"'
+
+    - name: update worker ignition files with certs
+      lineinfile:
+        path: '$HOME/resources/aws_upi_worker_parameters.json'
+        regex: '"ParameterValue": "XXXX"'
+        line: '   "ParameterValue": "{{ worker_cert }}"'
+
+    - name: Create AWS control-plane Nodes
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-control-plane"
+        template: '~/resources/aws_upi_control_plane_template.yaml'
+        template_parameters: "{{ lookup('file', HOME ~ '/resources/aws_upi_control_plane_parameters.json') | from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      register: r_control_plane_openshift
+      tags:
+        - aws-query
+
+    - name: Wait 10 minutes for bootstrapping to have a chance at life
+      wait_for:
+        timeout: 600
+
+    - name: Wait for bootstrap complete
+      shell: /usr/local/sbin/openshift-install wait-for bootstrap-complete --dir $HOME/aws-upi
+
+    - name: Delete bootstrap node
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-bootstrap"
+        state: "absent"
+
+    - name: Set KUBECONFIG env var
+      lineinfile:
+        path: $HOME/.bashrc
+        regexp: "^export KUBECONFIG"
+        line: "export KUBECONFIG=$HOME/aws-upi/auth/kubeconfig"
+
+    - name: Create worker AWS instances
+      cloudformation:
+        stack_name: "{{ r_infra_id.stdout }}-worker-{{ item }}"
+        template: '~/resources/aws_upi_worker_template.yaml'
+        template_parameters: "{{ lookup('file', HOME ~ '/resources/aws_upi_worker_parameters.json') | from_json | items2dict(key_name='ParameterKey',value_name='ParameterValue') }}"
+      loop:
+        - 1
+        - 2
+      register: r_workers_openshift
+      tags:
+        - aws-query
+
+    - name: Get current bootstrap CSRs (10m max)
+      k8s_info:
+        api_version: certificates.k8s.io/v1beta1
+        kind: CertificateSigningRequest
+        validate_certs: false
+      register: r_bootstrap_csr
+      retries: 20
+      delay: 30
+      until:
+      - r_bootstrap_csr.resources is defined
+      - r_bootstrap_csr.resources | length > 0
+      - r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_csr_query) | length >= 2
+      vars:
+        bootstrap_csr_query: >-
+          [?!(status) && contains(spec.username, `bootstrap`)] | []
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+      tags: bootstrap_csr_check
+
+    - name: dump r_bootstrap_csr
+      debug:
+        var: r_bootstrap_csr
+      tags: bootstrap_csr_check
+
+    - name: Approve pending bootstrap CSRs
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+      loop: "{{ r_bootstrap_csr.resources | to_json | from_json | json_query(bootstrap_pending_query) }}"
+      vars:
+        bootstrap_pending_query: >-
+          [?!(status) && contains(spec.username, `bootstrap`)].metadata.name
+      tags: bootstrap_csr_check
+
+    - name: Get current node CSRs (10m max)
+      k8s_facts:
+        api_version: certificates.k8s.io/v1beta1
+        kind: CertificateSigningRequest
+        validate_certs: false
+      register: r_node_csr
+      retries: 20
+      delay: 30
+      until: r_node_csr.resources | to_json | from_json | json_query(node_csr_query) | length >= 2
+      vars:
+        node_csr_query: >-
+          [?!(status) && contains(spec.username, `node`)] | []
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+      tags: node_csr_check
+
+    - name: dump r_node_csr
+      debug:
+        var: r_node_csr
+      tags: node_csr_check
+
+    - name: Approve pending node CSRs
+      shell: /usr/local/sbin/oc adm certificate approve {{ item }}
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+      loop: "{{ r_node_csr.resources | to_json | from_json | json_query(node_pending_query) }}"
+      vars:
+        node_pending_query: >-
+          [?!(status) && contains(spec.username, 'node')].metadata.name
+      tags: node_csr_check
+
+    - pause:
+        seconds: 15
+
+    - name: Check for two worker nodes
+      shell: /usr/local/sbin/oc get node -l node-role.kubernetes.io/worker --no-headers
+      register: r_nodes
+      environment:
+        KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+
+    - name: Check for two worker nodes
+      assert:
+        that: r_nodes.stdout_lines | length == 2
+
+#
+## Switch Image Registry from PVC RWO Cinder to PVC RWX NFS
+## WK: No longer necessary when running on Orange
+#
+
+    # - name: Wait until wrong PVC exists as installed by the installer
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   k8s_facts:
+    #     kind: PersistentVolumeClaim
+    #     namespace: openshift-image-registry
+    #   register: r_pvcs
+    #   retries: 20
+    #   delay: 30
+    #   until:
+    #   - r_pvcs.resources is defined
+    #   - r_pvcs.resources | length == 1
+    #   tags: test_csv
+
+    # - name: Patch registry to scale to 0
+    #   shell: >-
+    #     oc patch configs.imageregistry.operator.openshift.io cluster --type json --patch
+    #     '[{ "op": "replace", "path": "/spec/replicas", "value": 0}]'
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   tags: test_csv
+
+    # - name: Delete registry PVC on cinder
+    #   shell: >-
+    #     oc delete pvc --all -n openshift-image-registry
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+
+    # - name: Wait until PVC is gone
+    #   k8s_facts:
+    #     kind: PersistentVolumeClaim
+    #     namespace: openshift-image-registry
+    #   register: r_pvcs
+    #   retries: 20
+    #   delay: 30
+    #   until: r_pvcs.resources | length == 0
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   tags: test_csv
+
+    # - name: Create registry PV
+    #   k8s:
+    #     state: present
+    #     src: "{{ lookup('env', 'HOME') }}/resources/pv-registry.yaml"
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   tags: test_csv
+
+    # - name: Create registry PVC
+    #   k8s:
+    #     state: present
+    #     src: "$HOME/resources/pvc-registry.yaml"
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   tags: test_csv
+
+    # - name: Patch registry to scale to two pods
+    #   shell: >-
+    #     /usr/local/sbin/oc patch configs.imageregistry.operator.openshift.io cluster --type=json -p
+    #     '[{"op": "replace", "path": "/spec/replicas", "value": 2}]'
+    #   environment:
+    #     KUBECONFIG: "{{ lookup('env', 'HOME') }}/aws-upi/auth/kubeconfig"
+    #   tags: test_csv
+
+    - name: Finish installation
+      shell: /usr/local/sbin/openshift-install wait-for install-complete --dir $HOME/aws-upi

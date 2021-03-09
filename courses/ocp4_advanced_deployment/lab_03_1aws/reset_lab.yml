@@ -1,0 +1,141 @@
+---
+- name: Reset the OCP4 on OpenStack installation lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    guid: "{{ lookup('env', 'GUID') }}"
+
+  tasks:
+
+    - name: delete security groups dependent on installer SGs
+      debug:
+        msg: mark
+
+    - name: Get infra_id - if fails assume infra_id var from cli
+      shell: jq -r .infraID $HOME/aws-upi/metadata.json
+      register: r_infra_id
+
+    - name: set infra_id
+      when: r_infra_id.stdout is defined
+      set_fact:
+        infra_id: "{{ r_infra_id.stdout }}"
+
+    - name: get vpc_id
+      ec2_vpc_net_info:
+      register: r_vpcs
+
+    - name: openshift vpc
+      set_fact:
+        openshift_vpc_id: "{{ r_vpcs | to_json | from_json | json_query(openshift_vpc_query) | first }}"
+      vars:
+        openshift_vpc_query: |
+          vpcs[?cidr_block==`10.0.0.0/16`].vpc_id
+
+    - name: get routes for original vpc
+      ec2_vpc_route_table_info:
+        region: us-east-2
+      register: r_route_tables
+
+    - name: delete routes from original VPC
+      ignore_errors: true
+      shell: |
+        /usr/bin/aws ec2 delete-route --destination-cidr-block 10.0.0.0/16 --route-table-id {{ item }}
+      loop: "{{ r_route_tables.route_tables | map(attribute='id')  | list }}"
+
+    - name: get peering ID
+      ec2_vpc_peering_info:
+        region: us-east-2
+      register: r_peering_info
+
+    - name: delete peering connection
+      when: r_peering_info.result[0].vpc_peering_connection_id is defined
+      ec2_vpc_peer:
+        region: us-east-2
+        peering_id: "{{  r_peering_info.result[0].vpc_peering_connection_id }}"
+        state: absent
+
+    - name: get all hosted zones
+      route53_info:
+        query: hosted_zone
+      register: r_hosted_zones
+      tags:
+        - aws-query
+
+    - name: create a hosted zone name variable
+      set_fact:
+        sandbox_hosted_zone_name:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+            json_query('[? starts_with(Name, `sandbox`) ].Name' ) | first |
+            regex_replace('.$', '') }}"
+        sandbox_hosted_zone_id:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+              json_query('[? starts_with(Name, `sandbox`) ].Id' ) | first |
+              regex_replace('/hostedzone/', '') }}"
+        internal_hosted_zone_id:
+          "{{ r_hosted_zones.HostedZones | to_json | from_json |
+              json_query('[? contains(Name, `internal`) ].Id' ) | first |
+              regex_replace('/hostedzone/', '') }}"
+
+    - name: disassociate hosted zone for openshift VPC
+      ignore_errors: yes
+      shell: |
+        /usr/bin/aws route53 disassociate-vpc-from-hosted-zone --vpc VPCRegion=us-east-2,VPCId={{ openshift_vpc_id }} --hosted-zone-id {{ internal_hosted_zone_id }}
+
+    - name: cleanup resources files that were created in previous runs
+      file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "~/resources/*.txt"
+        - "~/resources/*.json"
+        - "~/resources/cluster_vars.yaml"
+
+    - name: delete s3 buckets
+      aws_s3_bucket_info:
+      register: r_buckets
+
+    - name: delete s3 buckets
+      aws_s3:
+        bucket: "{{ item.name }}"
+        mode: delete
+      loop: "{{ r_buckets['buckets'] }}"
+
+    - name: destroy cluster (to clean up AWS resources not in stacks)
+      async: 3600
+      poll: 0
+      ignore_errors: yes
+      shell:
+        /usr/local/sbin/openshift-install destroy cluster --dir $HOME/aws-upi/
+
+# if you cannot delete the $INFRA_ID-dns stack because of a dependency not owned by the AWS
+#  user, try this in ~/aws-up/metadata.json and run
+#  openshift-install destroy-cluster --dir $HOME/aws-upi/
+#{
+#    "clusterName": "cluster-be84",
+#    "clusterID": "639e5132-0c53-4ac3-873f-c92d6abc09be",
+#    "infraID": "INFRA_ID",
+#    "aws": {
+#        "region": "REGION",
+#        "identifier": [{
+#            "kubernetes.io/cluster/INFRA_ID": "owned"
+#        }]
+#    }
+#}
+    - name: Delete Stacks
+      ignore_errors: true
+      #async: 3600
+      #poll: 0
+      cloudformation:
+        state: absent
+        stack_name: "{{ infra_id }}-{{ item }}"
+      loop:
+        - bootstrap
+        - worker-2
+        - worker-1
+        - control-plane
+        - sec
+        - dns
+        - vpc
+
+
