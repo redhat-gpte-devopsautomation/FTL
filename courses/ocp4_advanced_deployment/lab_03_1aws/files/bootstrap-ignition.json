@@ -1,0 +1,11 @@
+{
+  "ignition": {
+    "config": {
+      "merge": [{
+        "source": "http://utilityvm.example.com/bootstrap.ign"
+      }]
+    },
+    "security": {},
+    "version": "3.1.0"
+  }
+}

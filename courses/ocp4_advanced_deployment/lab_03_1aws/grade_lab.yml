@@ -1,0 +1,55 @@
+---
+- name: Grade lab 03_1 of ocp4_advanced_deployment
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    ocp_version: 4.5.5
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+    OCP_RELEASE: "{{ ocp_version }}"
+  tasks:
+    - name: Check the clusterversion
+      include_role:
+        name: grader_check_ocp_resource
+      vars:
+        task_description_message: Check that the cluster version is correct.
+        resource_api_version: config.openshift.io/v1
+        resource_kind: ClusterVersion
+        resource_name: version
+        kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+        student_error_message: "Cluster Version is not correct"
+        validate_certs: False
+        resource_definition_checks:
+        - error_message: Cluster not in an available state
+          json_query: "status.conditions[?type=='Available'].status|[0]"
+          value: "True"
+        - error_message: Cluster not at the correct version
+          json_query: "status.conditions[?type=='Available'].message|[0]"
+          value: "Done applying {{ ocp_version }}"
+
+    - name: Verify registry is accessible
+      include_role:
+        name: grader_check_uri_response
+      vars:
+        task_description_message: Check that the mirror registry is accessible.
+        url: "https://utilityvm.example.com:5000/v2/_catalog"
+        url_username: "openshift"
+        url_password: "redhat"
+
+    - name: Verify the OpenShift registry is available
+      include_role:
+        name: grader_check_ocp_resource
+      vars:
+        task_description_message: Check that the OpenShift registry is available.
+        resource_api_version: apps/v1
+        resource_kind: Deployment
+        resource_name: image-registry
+        resource_namespace: openshift-image-registry
+        kubeconfig: "{{ lookup('env', 'HOME') }}/openstack-upi/auth/kubeconfig"
+        student_error_message: "OpenShift registry is not available"
+        validate_certs: False
+        resource_definition_checks:
+        - error_message: OpenShift Image Registry is not available or does not have 2 replicas
+          json_query: "status.availableReplicas"
+          value: 2
