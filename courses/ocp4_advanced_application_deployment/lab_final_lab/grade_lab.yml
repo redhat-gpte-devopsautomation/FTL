@@ -10,7 +10,7 @@
     assert:
       that:
       - prefix | default("") | length > 0
-    fail_msg: "prefix must be passed to the grading script"
+      fail_msg: "prefix must be passed to the grading script"
 
   - name: Run pipeline for coffee-shop
     debug:
