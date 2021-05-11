@@ -13,7 +13,7 @@
     assert:
       that:
       - prefix | default("") | length > 0
-      fail_msg: "prefix must be set in the environment
+      fail_msg: "prefix must be set in the environment"
 
   - name: Run pipeline for coffee-shop
     debug:
