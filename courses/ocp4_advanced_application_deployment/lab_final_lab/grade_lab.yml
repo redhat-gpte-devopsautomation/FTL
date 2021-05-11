@@ -6,11 +6,14 @@
 
   # All lab tests go here
   tasks: 
-  - name: Check that PREFIX has been passed
+  - name: Retrieve PREFIX from the Environment
+    set_fact:
+      prefix: "{{ lookup('env', 'PREFIX') }}"
+  - name: Check that PREFIX has been set in the environment
     assert:
       that:
       - prefix | default("") | length > 0
-      fail_msg: "prefix must be passed to the grading script"
+      fail_msg: "prefix must be set in the environment
 
   - name: Run pipeline for coffee-shop
     debug:
