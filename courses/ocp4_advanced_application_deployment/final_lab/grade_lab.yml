@@ -1,0 +1,47 @@
+---
+- name: Grade Advanced Application Deployment with Red Hat OpenShift ILT Final Lab
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks: 
+  - name: Check that PREFIX has been passed
+    assert:
+      that:
+      - prefix | default("") | length > 0
+    fail_msg: "prefix must be passed to the grading script"
+
+  - name: Run pipeline for coffee-shop
+    debug:
+      msg: tbd
+  - name: Retrieve image tag for coffee-shop from pipeline
+    debug:
+      msg: tbd
+  - name: Check that coffee-shop application is using latest image tag
+    debug:
+      msg: tbd
+
+  - name: Run pipeline for barista
+    debug:
+      msg: tbd
+  - name: Retrieve image tag for barista from pipeline
+    debug:
+      msg: tbd
+  - name: Check that barista application is using latest image tag
+    debug:
+      msg: tbd
+
+  # - name: "Check that tasks route in {{ guid }}-tasks-prod points to the Green Service"
+  #   include_role:
+  #     name: grader_check_ocp_resource
+  #   vars:
+  #     task_description_message: "Check that tasks route in {{ guid }}-tasks-prod points to the green service"
+  #     resource_api_version: route.openshift.io/v1
+  #     resource_kind: Route
+  #     resource_name: tasks
+  #     resource_namespace: "{{ guid }}-tasks-prod"
+  #     resource_definition_checks:
+  #     - error_message: Tasks route does not point to tasks-green service.
+  #       json_query: "spec.to.name"
+  #       value: "tasks-green"
