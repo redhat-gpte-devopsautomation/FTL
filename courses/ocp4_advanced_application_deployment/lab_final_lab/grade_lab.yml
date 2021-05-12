@@ -17,6 +17,7 @@
         name: ftl_run_log_grade_to_log
       vars:
         grader_output_message: "FAIL: PREFIX environment variable is not set."
+        success: false
     - name: Abort
       fail:
         msg: PREFIX environment variable is not set.
@@ -26,6 +27,7 @@
       name: ftl_run_log_grade_to_log
     vars:
       grader_output_message: "PASS: PREFIX environment variable is set to {{ prefix }}."
+      success: true
 
   - name: Delete all previous pipeline runs
     shell: "tkn pr delete --all --force -n {{ prefix }}-pipeline"
