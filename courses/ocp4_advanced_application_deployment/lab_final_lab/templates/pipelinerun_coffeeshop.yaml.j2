@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  labels:
+    tekton.dev/pipeline: build-and-deploy-quarkus-application
+  name: build-and-deploy-coffee-shop
+  namespace: "{{ prefix }}-pipeline"
+spec:
+  params:
+  - name: APP_NAME
+    value: coffee-shop
+  - name: DEPLOY_SERVERLESS
+    value: "false"
+  - name: KUSTOMIZE_GIT_CONTEXT_DIR
+    value: coffee-shop-kustomize/coffee-shop
+  - name: KUSTOMIZE_GIT_FILE_NAME
+    value: overlays/production/deployment-patches.yaml
+  pipelineRef:
+    name: build-and-deploy-quarkus-application
+  podTemplate:
+    securityContext:
+      fsGroup: 0
+      runAsUser: 185
+  serviceAccountName: pipeline
+  workspaces:
+  - name: images-url
+  - name: app-source
+    persistentVolumeClaim:
+      claimName: workspace-pvc
+  - name: maven-settings

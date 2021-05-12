@@ -34,66 +34,55 @@
       success: true
 
   - name: Delete all previous pipeline runs
-    shell: "tkn pr delete --all --force -n {{ prefix }}-pipeline"
-    ignore_errors: true
+    k8s:
+      state: absent
+      api_version: tekton.dev/v1beta1
+      kind: PipelineRun
+      namespace: "{{ prefix }}-pipeline"
 
   - name: Run pipeline for coffee-shop
-    shell: >-
-      tkn pipeline start build-and-deploy-quarkus-application
-      --use-param-defaults
-      --param DEPLOY_SERVERLESS=false
-      --param APP_NAME=coffee-shop
-      --param KUSTOMIZE_GIT_CONTEXT_DIR=coffee-shop-kustomize/coffee-shop
-      --param KUSTOMIZE_GIT_FILE_NAME=overlays/production/deployment-patches.yaml
-      --workspace name=app-source,claimName=workspace-pvc
-      --workspace name=maven-settings,emptyDir=
-      --workspace name=images-url,emptyDir=
-      --pod-template=$HOME/coffee-shop-final-lab/coffee-shop-pipeline/pod-template.yaml
-      --showlog
-      -n {{ prefix }}-pipeline
-    register: r_run_coffeeshop_pipeline
-    ignore_errors: true
+    k8s:
+      state: present
+      definition: "{{ lookup('template',  'pipelinerun_coffeeshop.yaml.j2' ) | from_yaml }}"
 
-  - name: Log Coffee Shop PipelineRun Success
-    when: r_run_coffeeshop_pipeline.rc == 0
-    import_role:
-      name: ftl_run_log_grade_to_log
-    vars:
-      task_description_message: "Check returncode of coffee shop pipeline run."
-      grader_output_message: "PASS: Coffee Shop Pipeline Run completed successfully."
-      success: true
-
-  - name: Log Coffee Shop PipelineRun Failure
-    when: r_run_coffeeshop_pipeline.rc != 0
-    import_role:
-      name: ftl_run_log_grade_to_log
-    vars:
-      task_description_message: "Check returncode of coffee shop pipeline run."
-      grader_output_message: "FAIL: Coffee Shop Pipeline Run did not complete successfully."
-      success: false
-
-  - name: Get last PipelineRun
+  - name: Wait for Coffee Shop PipelineRun to complete successfully
     k8s_info:
       api_version: tekton.dev/v1beta1
       kind: PipelineRun
       namespace: "{{ prefix }}-pipeline"
-      label_selectors:
-        tekton.dev/pipeline=build-and-deploy-quarkus-application
+      name: build-and-deploy-coffee-shop
     register: r_pipelinerun_coffeeshop
+    retries: 60
+    delay: 10
+    until:
+    - r_pipelinerun_coffeeshop.resources[0].status is defined
+    - r_pipelinerun_coffeeshop.resources[0].status.conditions[0].status is defined
+    - r_pipelinerun_coffeeshop.resources[0].status.conditions[0].reason is defined
+    - r_pipelinerun_coffeeshop.resources[0].status.conditions[0].status is match("True")
+    - r_pipelinerun_coffeeshop.resources[0].status.conditions[0].reason is match("Succeeded")
+    - r_pipelinerun_coffeeshop.resources[0].status.pipelineResults[0].value is defined
 
-  - name: Check that there is exactly one PipelineRun for build-and-deploy-quarkus-application
-    assert:
-      that:
-      - r_pipelinerun_coffeeshop.resources | length == 1
-      fail_msg: Didn't find exactly one PipelineRun for build-and-deploy-quarkus-application
+  - name: Log Coffee Shop PipelineRun Success
+    when: r_pipelinerun_coffeeshop.resources[0].status.conditions[0].status is match("True")
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check coffee shop pipeline run."
+      grader_output_message: "PASS: Coffee Shop Pipeline Run completed successfully."
+      success: true
+
+  - name: Log Coffee Shop PipelineRun Failure
+    when: not r_pipelinerun_coffeeshop.resources[0].status.conditions[0].status is match("True")
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check coffee shop pipeline run."
+      grader_output_message: "FAIL: Coffee Shop Pipeline Run did not complete successfully."
+      success: false
 
   - name: Retrieve image tag for coffee-shop from PipelineRun
     set_fact:
       coffee_shop_image_tag: "{{ r_pipelinerun_coffeeshop.resources[0].status.pipelineResults[0].value }}"
-
-  - name: Print tag
-    debug:
-      msg: "Coffee Shop Image tag: {{ coffee_shop_image_tag }}"
 
   - name: Check that coffee-shop application is using latest image tag
     include_role:
@@ -109,59 +98,45 @@
       task_description_message: "Check if the coffee-shop deployment is using image tag {{ coffee_shop_image_tag }}"
       student_error_message: "Coffee Shop Deployment is not using latest prod image tag"
 
-  - name: Delete all previous pipeline runs
-    shell: "tkn pr delete --all --force -n {{ prefix }}-pipeline"
-    ignore_errors: true
-
   - name: Run pipeline for barista
-    shell: >-
-      tkn pipeline start build-and-deploy-quarkus-application
-      --use-param-defaults
-      --param DEPLOY_SERVERLESS=true
-      --param APP_NAME=barista
-      --param KUSTOMIZE_GIT_CONTEXT_DIR=coffee-shop-kustomize/barista
-      --param KUSTOMIZE_GIT_FILE_NAME=overlays/production/knative-service-patch.yaml
-      --workspace name=app-source,claimName=workspace-pvc
-      --workspace name=maven-settings,emptyDir=
-      --workspace name=images-url,emptyDir=
-      --pod-template=$HOME/coffee-shop-final-lab/coffee-shop-pipeline/pod-template.yaml
-      --showlog
-      -n {{ prefix }}-pipeline
-    register: r_run_barista_pipeline
+    k8s:
+      state: present
+      definition: "{{ lookup('template',  'pipelinerun_barista.yaml.j2' ) | from_yaml }}"
 
-  - name: Log Barista PipelineRun Success
-    when: r_run_barista_pipeline.rc == 0
-    import_role:
-      name: ftl_run_log_grade_to_log
-    vars:
-      task_description_message: "Check returncode of Barista pipeline run."
-      grader_output_message: "PASS: Barista Pipeline Run completed successfully."
-      success: true
-
-  - name: Log Barista PipelineRun Failure
-    when: r_run_barista_pipeline.rc <> 0
-    import_role:
-      name: ftl_run_log_grade_to_log
-    vars:
-      task_description_message: "Check returncode of Barista pipeline run."
-      grader_output_message: "FAIL: Barista Pipeline Run did not complete successfully."
-      success: false
-
-
-  - name: Get last PipelineRun
+  - name: Wait for Barista PipelineRun to complete successfully
     k8s_info:
       api_version: tekton.dev/v1beta1
       kind: PipelineRun
       namespace: "{{ prefix }}-pipeline"
-      label_selectors:
-        tekton.dev/pipeline=build-and-deploy-quarkus-application
+      name: build-and-deploy-barista
     register: r_pipelinerun_barista
+    retries: 60
+    delay: 10
+    until:
+    - r_pipelinerun_barista.resources[0].status is defined
+    - r_pipelinerun_barista.resources[0].status.conditions[0].status is defined
+    - r_pipelinerun_barista.resources[0].status.conditions[0].reason is defined
+    - r_pipelinerun_barista.resources[0].status.conditions[0].status is match("True")
+    - r_pipelinerun_barista.resources[0].status.conditions[0].reason is match("Succeeded")
+    - r_pipelinerun_barista.resources[0].status.pipelineResults[0].value is defined
 
-  - name: Check that there is exactly one PipelineRun for build-and-deploy-quarkus-application
-    assert:
-      that:
-      - r_pipelinerun_barista.resources | length == 1
-      fail_msg: Didn't find exactly one PipelineRun for build-and-deploy-quarkus-application
+  - name: Log Barista PipelineRun Success
+    when: r_pipelinerun_barista.resources[0].status.conditions[0].status is match("True")
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check barista pipeline run."
+      grader_output_message: "PASS: Barista Pipeline Run completed successfully."
+      success: true
+
+  - name: Log Barista PipelineRun Failure
+    when: not r_pipelinerun_barista.resources[0].status.conditions[0].status is match("True")
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check barista pipeline run."
+      grader_output_message: "FAIL: Barista Pipeline Run did not complete successfully."
+      success: false
 
   - name: Retrieve image tag for barista from PipelineRun
     set_fact:
