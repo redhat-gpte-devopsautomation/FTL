@@ -96,8 +96,8 @@
       - error_message: "Coffee Shop Deployment is not using image {{ coffee_shop_image_tag }}"
         json_query: "spec.template.spec.containers[0].image"
         value: "{{ nexus_registry_hostname }}/{{ prefix }}-coffee-shop:{{ coffee_shop_image_tag }}"
-      task_description_message: "Check if the coffee-shop deployment is using image tag {{ coffee_shop_image_tag }}"
-      student_error_message: "Coffee Shop Deployment is not using latest prod image tag"
+      task_description_message: "Check if the coffee-shop deployment is using latest prod image tag."
+      student_error_message: "Coffee Shop Deployment is not using latest prod image tag."
 
   - name: Delete all previous barista pipeline runs
     k8s:
@@ -167,5 +167,5 @@
       - error_message: "Barista Service is not using image {{ barista_image_tag }}"
         json_query: "spec.template.spec.containers[0].image"
         value: "{{ nexus_registry_hostname }}/{{ prefix }}-barista:{{ barista_image_tag }}"
-      task_description_message: "Check if the barista service is using image tag {{ barista_image_tag }}"
-      student_error_message: "Barista Service is not using latest prod image tag"
+      task_description_message: "Check if the barista service is using latest prod image tag."
+      student_error_message: "Barista Service is not using latest prod image tag."

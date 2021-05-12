@@ -11,17 +11,17 @@
     verbosity: "2"
 
 - name: Look up resource
-  k8s_facts:
+  k8s_info:
     kind: "{{ resource_kind }}"
     kubeconfig: "{{ kubeconfig }}"
     api_version: "{{ resource_api_version }}"
     namespace: "{{ resource_namespace }}"
     name: "{{ resource_name }}"
     validate_certs: "{{ validate_certs }}"
-  register: r_k8s_facts
+  register: r_k8s_info
 
 - debug:
-    var: r_k8s_facts
+    var: r_k8s_info
 
 - name: Check whether the resource exists
   set_fact:
@@ -31,8 +31,8 @@
       {% if _resource_should_exist %}does not exist{% else %}still exists{% endif %}
       {% if resource_namespace %}in namespace {{ resource_namespace }}{% endif %}
   when: >-
-    (_resource_should_exist and r_k8s_facts.resources|length == 0) or
-    (not _resource_should_exist and r_k8s_facts.resources|length == 1)
+    (_resource_should_exist and r_k8s_info.resources|length == 0) or
+    (not _resource_should_exist and r_k8s_info.resources|length == 1)
 
 - name: Do resource definition checks
   set_fact:
@@ -43,7 +43,7 @@
     label: "{{ check.error_message }}"
     loop_var: check
   vars:
-    resource: "{{ r_k8s_facts.resources[0] | default(None) }}"
+    resource: "{{ r_k8s_info.resources[0] | default(None) }}"
   when:
   - resource
   - check.value != resource | json_query(check.json_query)
