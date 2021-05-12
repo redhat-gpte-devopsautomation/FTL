@@ -24,7 +24,9 @@ spec:
   serviceAccountName: pipeline
   workspaces:
   - name: images-url
+    emptyDir: {}
   - name: app-source
     persistentVolumeClaim:
       claimName: workspace-pvc
   - name: maven-settings
+    emptyDir: {}
