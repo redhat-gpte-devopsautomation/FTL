@@ -33,12 +33,13 @@
       grader_output_message: "PASS: PREFIX environment variable is set to {{ prefix }}."
       success: true
 
-  - name: Delete all previous pipeline runs
+  - name: Delete all previous coffee-shop pipeline runs
     k8s:
       state: absent
       api_version: tekton.dev/v1beta1
       kind: PipelineRun
       namespace: "{{ prefix }}-pipeline"
+      name: build-and-deploy-coffee-shop
 
   - name: Run pipeline for coffee-shop
     k8s:
@@ -97,6 +98,14 @@
         value: "{{ nexus_registry_hostname }}/{{ prefix }}-coffee-shop:{{ coffee_shop_image_tag }}"
       task_description_message: "Check if the coffee-shop deployment is using image tag {{ coffee_shop_image_tag }}"
       student_error_message: "Coffee Shop Deployment is not using latest prod image tag"
+
+  - name: Delete all previous barista pipeline runs
+    k8s:
+      state: absent
+      api_version: tekton.dev/v1beta1
+      kind: PipelineRun
+      namespace: "{{ prefix }}-pipeline"
+      name: build-and-deploy-barista
 
   - name: Run pipeline for barista
     k8s:
