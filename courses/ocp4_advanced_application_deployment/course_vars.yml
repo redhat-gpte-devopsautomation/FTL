@@ -1,3 +1,4 @@
 ---
 update_lrs: false
+nexus_registry_hostname: homework-nexus-registry.apps.shared-dev4.dev4.openshift.opentlc.com
 ...

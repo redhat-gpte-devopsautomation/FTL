@@ -19,9 +19,11 @@
         task_description_message: "Checking for PREFIX environment variable."
         grader_output_message: "FAIL: PREFIX environment variable is not set."
         success: false
+
     - name: Abort
       fail:
         msg: PREFIX environment variable is not set.
+
   - name: Log PREFIX
     when: prefix | default("") | length > 0
     import_role:
@@ -50,34 +52,136 @@
       --showlog
       -n {{ prefix }}-pipeline
     register: r_run_coffeeshop_pipeline
+    ignore_errors: true
 
-  - name: Retrieve image tag for coffee-shop from pipeline
+  - name: Log Coffee Shop PipelineRun Success
+    when: r_run_coffeeshop_pipeline.rc == 0
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check returncode of coffee shop pipeline run."
+      grader_output_message: "PASS: Coffee Shop Pipeline Run completed successfully."
+      success: true
+
+  - name: Log Coffee Shop PipelineRun Failure
+    when: r_run_coffeeshop_pipeline.rc <> 0
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check returncode of coffee shop pipeline run."
+      grader_output_message: "FAIL: Coffee Shop Pipeline Run did not complete successfully."
+      success: false
+
+  - name: Get last PipelineRun
+    k8s_info:
+      api_version: tekton.dev/v1beta1
+      kind: PipelineRun
+      namespace: "{{ prefix }}-pipeline"
+      label_selectors:
+        tekton.dev/pipeline=build-and-deploy-quarkus-application
+    register: r_pipelinerun_coffeeshop
+
+  - name: Check that there is exactly one PipelineRun for build-and-deploy-quarkus-application
+    assert:
+      that:
+      - r_pipelinerun_coffeeshop.resources | length == 1
+      fail_msg: Didn't find exactly one PipelineRun for build-and-deploy-quarkus-application
+
+  - name: Retrieve image tag for coffee-shop from PipelineRun
+    set_fact:
+      coffee_shop_image_tag: "{{ r_pipelinerun_coffeeshop.resources[0].status.pipelineResults[0].value }}"
+
+  - name: Print tag
     debug:
-      msg: tbd
+      msg: "Coffee Shop Image tag: {{ coffee_shop_image_tag }}"
+
   - name: Check that coffee-shop application is using latest image tag
-    debug:
-      msg: tbd
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Deployment
+      resource_namespace: "{{ prefix }}-prod-coffeeshop"
+      resource_name: coffee-shop
+      resource_definition_checks:
+      - error_message: "Coffee Shop Deployment is not using image {{ coffee_shop_image_tag }}"
+        json_query: "spec.template.spec.containers[0].image"
+        value: "{{ nexus_registry_hostname }}/{{ prefix }}-coffee-shop:{{ coffee_shop_image_tag }}"
+      task_description_message: "Check if the coffee-shop deployment is using image tag {{ coffee_shop_image_tag }}"
+      student_error_message: "Coffee Shop Deployment is not using latest prod image tag"
+
+  - name: Delete all previous pipeline runs
+    shell: "tkn pr delete --all --force -n {{ prefix }}-pipeline"
+    ignore_errors: true
 
   - name: Run pipeline for barista
-    debug:
-      msg: tbd
-  - name: Retrieve image tag for barista from pipeline
-    debug:
-      msg: tbd
-  - name: Check that barista application is using latest image tag
-    debug:
-      msg: tbd
+    shell: >-
+      tkn pipeline start build-and-deploy-quarkus-application
+      --use-param-defaults
+      --param DEPLOY_SERVERLESS=true
+      --param APP_NAME=barista
+      --param KUSTOMIZE_GIT_CONTEXT_DIR=coffee-shop-kustomize/barista
+      --param KUSTOMIZE_GIT_FILE_NAME=overlays/production/knative-service-patch.yaml
+      --workspace name=app-source,claimName=workspace-pvc
+      --workspace name=maven-settings,emptyDir=
+      --workspace name=images-url,emptyDir=
+      --pod-template=$HOME/coffee-shop-final-lab/coffee-shop-pipeline/pod-template.yaml
+      --showlog
+      -n {{ prefix }}-pipeline
+    register: r_run_barista_pipeline
 
-  # - name: "Check that tasks route in {{ guid }}-tasks-prod points to the Green Service"
-  #   include_role:
-  #     name: grader_check_ocp_resource
-  #   vars:
-  #     task_description_message: "Check that tasks route in {{ guid }}-tasks-prod points to the green service"
-  #     resource_api_version: route.openshift.io/v1
-  #     resource_kind: Route
-  #     resource_name: tasks
-  #     resource_namespace: "{{ guid }}-tasks-prod"
-  #     resource_definition_checks:
-  #     - error_message: Tasks route does not point to tasks-green service.
-  #       json_query: "spec.to.name"
-  #       value: "tasks-green"
+  - name: Log Barista PipelineRun Success
+    when: r_run_barista_pipeline.rc == 0
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check returncode of Barista pipeline run."
+      grader_output_message: "PASS: Barista Pipeline Run completed successfully."
+      success: true
+
+  - name: Log Barista PipelineRun Failure
+    when: r_run_barista_pipeline.rc <> 0
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      task_description_message: "Check returncode of Barista pipeline run."
+      grader_output_message: "FAIL: Barista Pipeline Run did not complete successfully."
+      success: false
+
+
+  - name: Get last PipelineRun
+    k8s_info:
+      api_version: tekton.dev/v1beta1
+      kind: PipelineRun
+      namespace: "{{ prefix }}-pipeline"
+      label_selectors:
+        tekton.dev/pipeline=build-and-deploy-quarkus-application
+    register: r_pipelinerun_barista
+
+  - name: Check that there is exactly one PipelineRun for build-and-deploy-quarkus-application
+    assert:
+      that:
+      - r_pipelinerun_barista.resources | length == 1
+      fail_msg: Didn't find exactly one PipelineRun for build-and-deploy-quarkus-application
+
+  - name: Retrieve image tag for barista from PipelineRun
+    set_fact:
+      barista_image_tag: "{{ r_pipelinerun_barista.resources[0].status.pipelineResults[0].value }}"
+
+  - name: Print tag
+    debug:
+      msg: "Barista Image tag: {{ barista_image_tag }}"
+
+  - name: Check that barista service is using latest image tag
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_api_version: serving.knative.dev/v1
+      resource_kind: Service
+      resource_namespace: "{{ prefix }}-prod-coffeeshop"
+      resource_name: barista
+      resource_definition_checks:
+      - error_message: "Barista Service is not using image {{ barista_image_tag }}"
+        json_query: "spec.template.spec.containers[0].image"
+        value: "{{ nexus_registry_hostname }}/{{ prefix }}-barista:{{ barista_image_tag }}"
+      task_description_message: "Check if the barista service is using image tag {{ barista_image_tag }}"
+      student_error_message: "Barista Service is not using latest prod image tag"
