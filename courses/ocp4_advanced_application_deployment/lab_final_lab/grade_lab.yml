@@ -9,15 +9,44 @@
   - name: Retrieve PREFIX from the Environment
     set_fact:
       prefix: "{{ lookup('env', 'PREFIX') }}"
-  - name: Check that PREFIX has been set in the environment
-    assert:
-      that:
-      - prefix | default("") | length > 0
-      fail_msg: "prefix must be set in the environment"
+  - name: Check PREFIX
+    when: prefix | default("") | length == 0
+    block:
+    - name: Log error 
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        grader_output_message: "FAIL: PREFIX environment variable is not set."
+    - name: Abort
+      fail:
+        msg: PREFIX environment variable is not set.
+  - name: Log PREFIX
+    when: prefix | default("") | length > 0
+    import_role:
+      name: ftl_run_log_grade_to_log
+    vars:
+      grader_output_message: "PASS: PREFIX environment variable is set to {{ prefix }}."
+
+  - name: Delete all previous pipeline runs
+    shell: "tkn pr delete --all --force -n {{ prefix }}-pipeline"
+    ignore_errors: true
 
   - name: Run pipeline for coffee-shop
-    debug:
-      msg: tbd
+    shell: >-
+      tkn pipeline start build-and-deploy-quarkus-application
+      --use-param-defaults
+      --param DEPLOY_SERVERLESS=false
+      --param APP_NAME=coffee-shop
+      --param KUSTOMIZE_GIT_CONTEXT_DIR=coffee-shop-kustomize/coffee-shop
+      --param KUSTOMIZE_GIT_FILE_NAME=overlays/production/deployment-patches.yaml
+      --workspace name=app-source,claimName=workspace-pvc
+      --workspace name=maven-settings,emptyDir=
+      --workspace name=images-url,emptyDir=
+      --pod-template=$HOME/coffee-shop-final-lab/coffee-shop-pipeline/pod-template.yaml
+      --showlog
+      -n {{ prefix }}-pipeline
+    register: r_run_coffeeshop_pipeline
+
   - name: Retrieve image tag for coffee-shop from pipeline
     debug:
       msg: tbd

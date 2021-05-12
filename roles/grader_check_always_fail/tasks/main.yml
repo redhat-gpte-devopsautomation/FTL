@@ -1,5 +1,5 @@
 ---
-- name: "This test always recordes as FAI"
+- name: "This test always recordes as FAIL"
   debug:
     msg: "Fails, debug role, always fails"
     verbosity: 2
