@@ -16,6 +16,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
+        task_description_message: "Checking for PREFIX environment variable."
         grader_output_message: "FAIL: PREFIX environment variable is not set."
         success: false
     - name: Abort
@@ -26,6 +27,7 @@
     import_role:
       name: ftl_run_log_grade_to_log
     vars:
+      task_description_message: "Checking for PREFIX environment variable."
       grader_output_message: "PASS: PREFIX environment variable is set to {{ prefix }}."
       success: true
 
