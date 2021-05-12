@@ -64,7 +64,7 @@
       success: true
 
   - name: Log Coffee Shop PipelineRun Failure
-    when: r_run_coffeeshop_pipeline.rc <> 0
+    when: r_run_coffeeshop_pipeline.rc != 0
     import_role:
       name: ftl_run_log_grade_to_log
     vars:
