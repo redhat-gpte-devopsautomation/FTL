@@ -1,0 +1,192 @@
+---
+- name: Grade OpenShift Advanced Day 2 Operations ILT Final Lab - Production Cluster
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  # All lab tests go here
+  tasks: 
+  # Namespace backend
+  - name: Check LimitRange 'limits' in namespace backend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: LimitRange
+      resource_name: limits
+      resource_namespace: backend
+      resource_definition_checks:
+      - error_message: "LimitRange limits does not have a limit of 4 CPUs in namespace backend"
+        json_query: "spec.limits[0].max.cpu"
+        value: "4"
+      - error_message: "LimitRange limits does not have a limit of 8Gi memory in namespace backend"
+        json_query: "spec.limits[0].max.memory"
+        value: "8Gi"
+      - error_message: "LimitRange limits is not setup for Pods in namespace backend"
+        json_query: "spec.limits[0].type"
+        value: "Pod"
+      task_description_message: "Check LimitRange limits in project backend."
+      student_error_message: "LimitRange limits is not set up correctly in project backend."
+
+  - name: Check ResourceQuota 'quota' in namespace backend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: ResourceQuota
+      resource_name: quota
+      resource_namespace: backend
+      resource_definition_checks:
+      - error_message: "ResourceQuota quota does nothave 40 ConfigMaps in namespace backend"
+        json_query: "spec.hard.configmaps"
+        value: "40"
+      - error_message: "ResourceQuota quota does not have 10 PersistentVolumeClaims in namespace backend"
+        json_query: "spec.hard.persistentvolumeclaims"
+        value: "10"
+      - error_message: "ResourceQuota quota does not have 15 Pods in namespace backend"
+        json_query: "spec.hard.pods"
+        value: "15"
+      - error_message: "ResourceQuota quota does not have 40 Secrets in namespace backend"
+        json_query: "spec.hard.secrets"
+        value: "40"
+      - error_message: "ResourceQuota quota does not have 10 cpu requests in namespace backend"
+        json_query: "spec.hard.requests.cpu"
+        value: "10"
+      - error_message: "ResourceQuota quota does not have 20Gi Memory requests in namespace backend"
+        json_query: "spec.hard.requests.memory"
+        value: "20Gi"
+      - error_message: "ResourceQuota quota does not have 15Gi storage requests in namespace backend"
+        json_query: "spec.hard.requests.storage"
+        value: "15Gi"
+      task_description_message: "Check ResourceQuota quota in project backend."
+      student_error_message: "ResourceQuota quota is not set up correctly in project backend."
+
+  - name: Check RoleBinding 'permissions' in namespace backend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: RoleBinding
+      resource_name: permissions
+      resource_namespace: backend
+      resource_definition_checks:
+      - error_message: "RoleBinding permissions does not grant 'edit' permissions in namespace backend"
+        json_query: "roleRef.name"
+        value: "edit"
+      - error_message: "RoleBinding permissions does not grant 'edit' permissions to group openshift-cluster-backend-admin in namespace backend"
+        json_query: "subjects[0].name"
+        value: "openshift-cluster-backend-admin"
+      task_description_message: "Check Rolebinding 'permissions' in project backend."
+      student_error_message: "RoleBinding 'permissions' is not set up correctly in project backend."
+
+  # Namespace frontend
+  - name: Check LimitRange limits in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: LimitRange
+      resource_name: limits
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "LimitRange limits does not have a limit of 4 CPUs in namespace frontend"
+        json_query: "spec.limits[0].max.cpu"
+        value: "4"
+      - error_message: "LimitRange limits does not have a limit of 8Gi memory in namespace frontend"
+        json_query: "spec.limits[0].max.memory"
+        value: "8Gi"
+      - error_message: "LimitRange limits is not setup for Pods in namespace frontend"
+        json_query: "spec.limits[0].type"
+        value: "Pod"
+      task_description_message: "Check LimitRange limits in project frontend."
+      student_error_message: "LimitRange limits is not set up correctly in project frontend."
+
+  - name: Check ResourceQuota quota in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: ResourceQuota
+      resource_name: quota
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "ResourceQuota quota does nothave 40 ConfigMaps in namespace frontend"
+        json_query: "spec.hard.configmaps"
+        value: "40"
+      - error_message: "ResourceQuota quota does not have 5 PersistentVolumeClaims in namespace frontend"
+        json_query: "spec.hard.persistentvolumeclaims"
+        value: "0"
+      - error_message: "ResourceQuota quota does not have 15 Pods in namespace frontend"
+        json_query: "spec.hard.pods"
+        value: "15"
+      - error_message: "ResourceQuota quota does not have 40 Secrets in namespace frontend"
+        json_query: "spec.hard.secrets"
+        value: "40"
+      - error_message: "ResourceQuota quota does not have 10 cpu requests in namespace frontend"
+        json_query: "spec.hard.requests.cpu"
+        value: "10"
+      - error_message: "ResourceQuota quota does not have 20Gi Memory requests in namespace frontend"
+        json_query: "spec.hard.requests.memory"
+        value: "20Gi"
+      task_description_message: "Check ResourceQuota quota in project frontend."
+      student_error_message: "ResourceQuota quota is not set up correctly in project frontend."
+
+  - name: Check RoleBinding 'permissions' in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: RoleBinding
+      resource_name: permissions
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "RoleBinding permissions does not grant 'edit' permissions in namespace frontend"
+        json_query: "roleRef.name"
+        value: "edit"
+      - error_message: "RoleBinding permissions does not grant 'edit' permissions to group openshift-cluster-frontend-admin in namespace frontend"
+        json_query: "subjects[0].name"
+        value: "openshift-cluster-frontend-admin"
+      task_description_message: "Check Rolebinding 'permissions' in project frontend."
+      student_error_message: "RoleBinding 'permissions' is not set up correctly in project frontend."
+
+  - name: Check that ArgoCD DEX Server is running in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Deployment
+      resource_name: argocd-dex-server
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "ArgoCD DEX Server Deployment is not running in namespace frontend"
+        json_query: "status.readyReplicas"
+        value: "1"
+
+  - name: Check that ArgoCD Redis is running in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Deployment
+      resource_name: argocd-redis
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "ArgoCD RedisDeployment is not running in namespace frontend"
+        json_query: "status.readyReplicas"
+        value: "1"
+
+  - name: Check that ArgoCD Repo Server is running in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Deployment
+      resource_name: argocd-repo-server
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "ArgoCD Repo Server Deployment is not running in namespace frontend"
+        json_query: "status.readyReplicas"
+        value: "1"
+
+  - name: Check that ArgoCD Server is running in namespace frontend
+    include_role:
+      name: grader_check_ocp_resource
+    vars:
+      resource_kind: Deployment
+      resource_name: argocd-server
+      resource_namespace: frontend
+      resource_definition_checks:
+      - error_message: "ArgoCD DEX Server Deployment is not running in namespace frontend"
+        json_query: "status.readyReplicas"
+        value: "1"
