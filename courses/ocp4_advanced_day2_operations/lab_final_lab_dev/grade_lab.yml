@@ -47,15 +47,15 @@
       - error_message: "ResourceQuota quota does not have 40 Secrets in namespace backend-dev"
         json_query: "spec.hard.secrets"
         value: "40"
-      - error_message: "ResourceQuota quota does not have 5 cpu requests in namespace backend-dev"
-        json_query: "spec.hard.requests.cpu"
-        value: "5"
-      - error_message: "ResourceQuota quota does not have 10Gi Memory requests in namespace backend-dev"
-        json_query: "spec.hard.requests.memory"
-        value: "10Gi"
-      - error_message: "ResourceQuota quota does not have 10Gi storage requests in namespace backend-dev"
-        json_query: "spec.hard.requests.storage"
-        value: "10Gi"
+      # - error_message: "ResourceQuota quota does not have 5 cpu requests in namespace backend-dev"
+      #   json_query: "spec.hard.requests.cpu"
+      #   value: "5"
+      # - error_message: "ResourceQuota quota does not have 10Gi Memory requests in namespace backend-dev"
+      #   json_query: "spec.hard.requests.memory"
+      #   value: "10Gi"
+      # - error_message: "ResourceQuota quota does not have 10Gi storage requests in namespace backend-dev"
+      #   json_query: "spec.hard.requests.storage"
+      #   value: "10Gi"
       task_description_message: "Check ResourceQuota quota in project backend-dev."
       student_error_message: "ResourceQuota quota is not set up correctly in project backend-dev."
 
@@ -63,6 +63,7 @@
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: rbac.authorization.k8s.io/v1
       resource_kind: RoleBinding
       resource_name: permissions
       resource_namespace: backend-dev
@@ -113,16 +114,16 @@
         value: "0"
       - error_message: "ResourceQuota quota does not have 5 Pods in namespace frontend-dev"
         json_query: "spec.hard.pods"
-        value: "10"
+        value: "5"
       - error_message: "ResourceQuota quota does not have 40 Secrets in namespace frontend-dev"
         json_query: "spec.hard.secrets"
         value: "40"
-      - error_message: "ResourceQuota quota does not have 5 cpu requests in namespace frontend-dev"
-        json_query: "spec.hard.requests.cpu"
-        value: "5"
-      - error_message: "ResourceQuota quota does not have 10Gi Memory requests in namespace frontend-dev"
-        json_query: "spec.hard.requests.memory"
-        value: "10Gi"
+      # - error_message: "ResourceQuota quota does not have 5 cpu requests in namespace frontend-dev"
+      #   json_query: "spec.hard.requests.cpu"
+      #   value: "5"
+      # - error_message: "ResourceQuota quota does not have 10Gi Memory requests in namespace frontend-dev"
+      #   json_query: "spec.hard.requests.memory"
+      #   value: "10Gi"
       task_description_message: "Check ResourceQuota quota in project frontend-dev."
       student_error_message: "ResourceQuota quota is not set up correctly in project frontend-dev."
 
@@ -130,6 +131,7 @@
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: rbac.authorization.k8s.io/v1
       resource_kind: RoleBinding
       resource_name: permissions
       resource_namespace: frontend-dev
@@ -147,46 +149,58 @@
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: apps/v1
       resource_kind: Deployment
       resource_name: argocd-dex-server
       resource_namespace: frontend-dev
       resource_definition_checks:
       - error_message: "ArgoCD DEX Server Deployment is not running in namespace frontend-dev"
         json_query: "status.readyReplicas"
-        value: "1"
+        value: 1
+      task_description_message: "Check if ArgoCD DEX Server is running in project frontend-dev."
+      student_error_message: "ArgoCD DEX Server not found running in project frontend-dev."
 
   - name: Check that ArgoCD Redis is running in namespace frontend-dev
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: apps/v1
       resource_kind: Deployment
       resource_name: argocd-redis
       resource_namespace: frontend-dev
       resource_definition_checks:
       - error_message: "ArgoCD RedisDeployment is not running in namespace frontend-dev"
         json_query: "status.readyReplicas"
-        value: "1"
+        value: 1
+      task_description_message: "Check if ArgoCD Redis Server is running in project frontend-dev."
+      student_error_message: "ArgoCD Redis Server not found running in project frontend-dev."
 
   - name: Check that ArgoCD Repo Server is running in namespace frontend-dev
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: apps/v1
       resource_kind: Deployment
       resource_name: argocd-repo-server
       resource_namespace: frontend-dev
       resource_definition_checks:
       - error_message: "ArgoCD Repo Server Deployment is not running in namespace frontend-dev"
         json_query: "status.readyReplicas"
-        value: "1"
+        value: 1
+      task_description_message: "Check if ArgoCD Repo Server is running in project frontend-dev."
+      student_error_message: "ArgoCD Repo Server not found running in project frontend-dev."
 
   - name: Check that ArgoCD Server is running in namespace frontend-dev
     include_role:
       name: grader_check_ocp_resource
     vars:
+      resource_api_version: apps/v1
       resource_kind: Deployment
       resource_name: argocd-server
       resource_namespace: frontend-dev
       resource_definition_checks:
-      - error_message: "ArgoCD DEX Server Deployment is not running in namespace frontend-dev"
+      - error_message: "ArgoCD Server Deployment is not running in namespace frontend-dev"
         json_query: "status.readyReplicas"
-        value: "1"
+        value: 1
+      task_description_message: "Check if ArgoCD Server is running in project frontend-dev."
+      student_error_message: "ArgoCD Server not found running in project frontend-dev."
