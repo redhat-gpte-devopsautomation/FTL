@@ -73,7 +73,7 @@
         value: "admin"
       - error_message: "RoleBinding permissions does not grant 'admin' permissions to group openshift-cluster-backend-admin in namespace backend"
         json_query: "subjects[0].name"
-        value: "openshift-cluster-backend-admin"
+        value: "openshift-cluster-backend-admins"
       task_description_message: "Check Rolebinding 'permissions' in project backend."
       student_error_message: "RoleBinding 'permissions' is not set up correctly in project backend."
 
@@ -141,7 +141,7 @@
         value: "admin"
       - error_message: "RoleBinding permissions does not grant 'admin' permissions to group openshift-cluster-frontend-admin in namespace frontend"
         json_query: "subjects[0].name"
-        value: "openshift-cluster-frontend-admin"
+        value: "openshift-cluster-frontend-admins"
       task_description_message: "Check Rolebinding 'permissions' in project frontend."
       student_error_message: "RoleBinding 'permissions' is not set up correctly in project frontend."
 
