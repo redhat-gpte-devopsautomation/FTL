@@ -68,10 +68,10 @@
       resource_name: permissions
       resource_namespace: backend
       resource_definition_checks:
-      - error_message: "RoleBinding permissions does not grant 'edit' permissions in namespace backend"
+      - error_message: "RoleBinding permissions does not grant 'admin' permissions in namespace backend"
         json_query: "roleRef.name"
-        value: "edit"
-      - error_message: "RoleBinding permissions does not grant 'edit' permissions to group openshift-cluster-backend-admin in namespace backend"
+        value: "admin"
+      - error_message: "RoleBinding permissions does not grant 'admin' permissions to group openshift-cluster-backend-admin in namespace backend"
         json_query: "subjects[0].name"
         value: "openshift-cluster-backend-admin"
       task_description_message: "Check Rolebinding 'permissions' in project backend."
@@ -136,10 +136,10 @@
       resource_name: permissions
       resource_namespace: frontend
       resource_definition_checks:
-      - error_message: "RoleBinding permissions does not grant 'edit' permissions in namespace frontend"
+      - error_message: "RoleBinding permissions does not grant 'admin' permissions in namespace frontend"
         json_query: "roleRef.name"
-        value: "edit"
-      - error_message: "RoleBinding permissions does not grant 'edit' permissions to group openshift-cluster-frontend-admin in namespace frontend"
+        value: "admin"
+      - error_message: "RoleBinding permissions does not grant 'admin' permissions to group openshift-cluster-frontend-admin in namespace frontend"
         json_query: "subjects[0].name"
         value: "openshift-cluster-frontend-admin"
       task_description_message: "Check Rolebinding 'permissions' in project frontend."
