@@ -1,0 +1,2 @@
+---
+- import_playbook: redhat_gpe.ocp4_app_deploy_ilt.main

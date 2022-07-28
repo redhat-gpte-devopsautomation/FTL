@@ -1,4 +1,6 @@
 ---
 update_lrs: false
 nexus_registry_hostname: homework-nexus-registry.apps.shared-na46.openshift.opentlc.com
+workdir: "{{ ansible_env.HOME }}/appdev-{{ guid }}-{{ ocp_user }}"
+prompt: false
 ...
