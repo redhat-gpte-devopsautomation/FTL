@@ -99,7 +99,7 @@
 
     - name: Download aws binary
       unarchive:
-        src: https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
+        src: https://s3.amazonaws.com/aws-cli/awscli-bundle-1.18.200.zip
         dest: $HOME/
         remote_src: yes
       become: true
