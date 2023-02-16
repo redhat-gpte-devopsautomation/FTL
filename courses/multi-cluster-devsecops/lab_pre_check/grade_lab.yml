@@ -17,16 +17,17 @@
     - name: "Success - set fact"
       set_fact:
         success: true
+      when: common_password is defined
 
     - name: "No Success - set fact"
       set_fact:
         success: false
-      when: gitlab_webhook_urls | d('') | length  <= 1
+      when: common_password is not defined
 
     - name: Import logging role
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if gitlab project repo has 2 webhooks"
+        task_description_message: "Check if common password is defined"
 
 ...
