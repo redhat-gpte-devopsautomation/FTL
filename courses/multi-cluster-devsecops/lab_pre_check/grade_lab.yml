@@ -5,8 +5,9 @@
   gather_facts: false
   become: false
   tasks:
-    ## setup common password
-    - include_tasks: auth_tasks.yml
+    
+    - name: Included authentication tasks
+      include_tasks: auth_tasks.yml
     
     ## Result for Gitlab webhook #####
     - name: "Success - set fact"
