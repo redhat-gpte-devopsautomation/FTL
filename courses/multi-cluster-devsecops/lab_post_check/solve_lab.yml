@@ -33,7 +33,7 @@
 
     - name: List gitlab webhook
       uri: 
-        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls/{{ item.id }}/merge
+        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls/1/merge
         user: dev-admin
         password: openshift
         method: POST
@@ -41,6 +41,12 @@
         force_basic_auth: true
         validate_certs: false
         status_code: 200
-      when: '"Production update" in item.title'
-      loop: "{{ r_hub_gitea_pr_list.json }}"
+        body: >-
+          {
+            "Do": "merge",
+            "MergeMessageField": "Looks Good",
+            "delete_branch_after_merge": true,
+            "force_merge": true
+          }
+
       
