@@ -5,7 +5,6 @@
   gather_facts: false
   become: false
   tasks:
-    
     - name: Included authentication tasks
       include_tasks: auth_tasks.yml
    
@@ -49,7 +48,7 @@
       vars:
         task_description_message: "Check if Dev Cluster Globex App has timestamp"
 
-    ## Result Prod Globex App content testing
+    ## Prod Globex App content testing
     - name: Get prod globex app route
       k8s_info:
         host: "{{ __r_aws_prod_cluster.k8s_auth.host }}"
@@ -88,4 +87,44 @@
         name: ftl_run_log_grade_to_log
       vars:
         task_description_message: "Check if Prod Cluster Globex App should not have timestamp"
+ 
+    ## Gitea PR testing
+    - name: Get Hub gitea route
+      k8s_info:
+        kind: Route
+        name: gitea
+        namespace: gitea
+      register: r_hub_gitea
+      retries: 60
+      delay: 5
+      until: r_hub_gitea.resources | length > 0
+    
+    - name: List gitlab webhook
+      uri: 
+        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls
+        user: dev-admin
+        password: openshift
+        method: GET
+        body_format: json
+        force_basic_auth: true
+        validate_certs: false
+        status_code: 200
+      register: r_hub_gitea_pr_list
+    
+    ## Result Gitea PR testing
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: '"Production update" in  r_hub_gitea_pr_list.json.0.title'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"Production update" not in  r_hub_gitea_pr_list.json.0.title'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Check if Gitea Pull request exist"
 ...
