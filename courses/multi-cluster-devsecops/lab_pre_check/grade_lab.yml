@@ -81,17 +81,17 @@
 
     - name: Get Hub Argocd Route
       k8s_info:
-        host: "{{ __r_aws_hub_cluster.k8s_auth.host }}"
-        username: "{{ __r_aws_hub_cluster.k8s_auth.username }}"
-        api_key: "{{ __r_aws_hub_cluster.k8s_auth.api_key }}"
+        host: "{{ __r_aws_dev_cluster.k8s_auth.host }}"
+        username: "{{ __r_aws_dev_cluster.k8s_auth.username }}"
+        api_key: "{{ __r_aws_dev_cluster.k8s_auth.api_key }}"
         validate_certs: false
         kind: Route
         name: openshift-gitops-server
         namespace: openshift-gitops
-      register: r_hub_argocd
+      register: r_dev_argocd
       retries: 60
       delay: 5
-      until: r_hub_argocd.resources | length > 0
+      until: r_dev_argocd.resources | length > 0
     
     - debug: var=r_dev_argocd.resources
 ...
