@@ -76,16 +76,16 @@
     - name: "Success - set fact"
       set_fact:
         success: true
-      when: '"Globex Online Update @" in  r_prod_globex_ui_content.content'
+      when: '"Globex Online Update @" not in  r_prod_globex_ui_content.content'
 
     - name: "No Success - set fact"
       set_fact:
         success: false
-      when: '"Globex Online Update @" not in  r_prod_globex_ui_content.content'
+      when: '"Globex Online Update @" in  r_prod_globex_ui_content.content'
 
     - name: Import logging role
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if Prod Cluster Globex App has timestamp"
+        task_description_message: "Check if Prod Cluster Globex App should not have timestamp"
 ...
