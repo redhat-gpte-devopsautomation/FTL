@@ -46,7 +46,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if Dev Cluster Globex App has timestamp"
+        task_description_message: "Checking timestamp is present in Globex App in Dev Cluster"
 
     ## Prod Globex App content testing
     - name: Get prod globex app route
@@ -86,7 +86,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if Prod Cluster Globex App should not have timestamp"
+        task_description_message: "Checking timestamp is absent in Globex App in Prod Cluster"
  
     ## Gitea PR testing
     - name: Get Hub gitea route
@@ -126,7 +126,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if Gitea Pull request exist"
+        task_description_message: "Checking Pull request is present in Gitea"
 
     ## Dev/Prod Kafkatopic Globex.order
     - name: Get Dev/Prod Kafkatopic

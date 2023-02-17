@@ -46,6 +46,6 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Check if Prod Cluster Globex App has timestamp"
+        task_description_message: "Checking timestamp is present in Globex App in Prod Cluster"
 
 ...
