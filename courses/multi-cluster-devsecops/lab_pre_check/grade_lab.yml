@@ -127,4 +127,57 @@
         name: ftl_run_log_grade_to_log
       vars:
         task_description_message: "Check if Gitea Pull request exist"
+
+    ## Dev/Prod Kafkatopic Globex.order
+    - name: Get Dev/Prod Kafkatopic
+      k8s_info:
+        host: "{{ item.k8s_auth.host }}"
+        username: "{{ item.k8s_auth.username }}"
+        api_key: "{{ item.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: KafkaTopic
+        name: globex.orders
+        namespace: kafka
+        api_version: kafka.strimzi.io/v1beta2
+      register: r_kafka_go
+      retries: 60
+      delay: 5
+      until: r_kafka_go.resources | length > 0
+      loop:
+        - "{{ __r_aws_dev_cluster }}"
+        - "{{ __r_aws_prod_cluster }}"
+    
+    ## Result Dev Kafkatopic globex.order
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_go.results.0.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_go.results.0.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.order is ready in Dev Cluster"
+    
+    ## Result Prod Kafkatopic globex.order
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_go.results.1.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_go.results.1.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.order is ready in Prod Cluster"
 ...
