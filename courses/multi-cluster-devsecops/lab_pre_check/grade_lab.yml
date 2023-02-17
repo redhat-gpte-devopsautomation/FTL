@@ -6,7 +6,7 @@
   become: false
   tasks:
     - name: Included authentication tasks
-      include_tasks: auth_tasks.yml
+      include_tasks: ../auth_tasks.yml
    
     ## Dev Globex App content testing
     - name: Get dev globex app route
