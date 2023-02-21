@@ -1,0 +1,238 @@
+---
+- name: Run grader
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - grade_lab_pre_check
+  tasks:
+    - name: Included authentication tasks
+      include_tasks: ../auth_tasks.yml
+   
+    ## Dev Globex App content testing
+    - name: Get dev globex app route
+      k8s_info:
+        host: "{{ __r_aws_dev_cluster.k8s_auth.host }}"
+        username: "{{ __r_aws_dev_cluster.k8s_auth.username }}"
+        api_key: "{{ __r_aws_dev_cluster.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: Route
+        name: globex-ui
+        namespace: globex
+      register: r_dev_globex_ui
+      retries: 60
+      delay: 5
+      until: r_dev_globex_ui.resources | length > 0
+    
+    - name: List gitlab webhook
+      uri: 
+        url: https://{{ r_dev_globex_ui.resources.0.spec.host }}
+        validate_certs: false
+        method: GET
+        return_content: yes
+      register: r_dev_globex_ui_content
+
+    ## Result Dev Globex App content testing
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: '"Globex Online Update @" in  r_dev_globex_ui_content.content'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"Globex Online Update @" not in  r_dev_globex_ui_content.content'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking timestamp is present in Globex App in Dev Cluster"
+
+    ## Prod Globex App content testing
+    - name: Get prod globex app route
+      k8s_info:
+        host: "{{ __r_aws_prod_cluster.k8s_auth.host }}"
+        username: "{{ __r_aws_prod_cluster.k8s_auth.username }}"
+        api_key: "{{ __r_aws_prod_cluster.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: Route
+        name: globex-ui
+        namespace: globex
+      register: r_prod_globex_ui
+      retries: 60
+      delay: 5
+      until: r_prod_globex_ui.resources | length > 0
+    
+    - name: List gitlab webhook
+      uri: 
+        url: https://{{ r_prod_globex_ui.resources.0.spec.host }}
+        validate_certs: false
+        method: GET
+        return_content: yes
+      register: r_prod_globex_ui_content
+    
+    ## Result Prod Globex App content testing
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: '"Globex Online Update @" not in  r_prod_globex_ui_content.content'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"Globex Online Update @" in  r_prod_globex_ui_content.content'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking timestamp is absent in Globex App in Prod Cluster"
+ 
+    ## Gitea PR testing
+    - name: Get Hub gitea route
+      k8s_info:
+        kind: Route
+        name: gitea
+        namespace: gitea
+      register: r_hub_gitea
+      retries: 60
+      delay: 5
+      until: r_hub_gitea.resources | length > 0
+    
+    - name: List gitlab webhook
+      uri: 
+        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls
+        user: dev-admin
+        password: openshift
+        method: GET
+        body_format: json
+        force_basic_auth: true
+        validate_certs: false
+        status_code: 200
+      register: r_hub_gitea_pr_list
+    
+    ## Result Gitea PR testing
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: '"Production update" in  r_hub_gitea_pr_list.json.0.title'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"Production update" not in  r_hub_gitea_pr_list.json.0.title'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking Pull request is present in Gitea"
+
+    ## Dev/Prod Kafkatopic Globex.order
+    - name: Get Dev/Prod Kafkatopic
+      k8s_info:
+        host: "{{ item.k8s_auth.host }}"
+        username: "{{ item.k8s_auth.username }}"
+        api_key: "{{ item.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: KafkaTopic
+        name: globex.orders
+        namespace: kafka
+        api_version: kafka.strimzi.io/v1beta2
+      register: r_kafka_go
+      retries: 60
+      delay: 5
+      until: r_kafka_go.resources | length > 0
+      loop:
+        - "{{ __r_aws_dev_cluster }}"
+        - "{{ __r_aws_prod_cluster }}"
+    
+    ## Result Dev Kafkatopic globex.order
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_go.results.0.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_go.results.0.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.order is ready in Dev Cluster"
+    
+    ## Result Prod Kafkatopic globex.order
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_go.results.1.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_go.results.1.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.order is ready in Prod Cluster"
+
+    ## Dev/Prod Kafkatopic globex.tracking
+    - name: Get Dev/Prod Kafkatopic
+      k8s_info:
+        host: "{{ item.k8s_auth.host }}"
+        username: "{{ item.k8s_auth.username }}"
+        api_key: "{{ item.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: KafkaTopic
+        name: globex.tracking
+        namespace: kafka
+        api_version: kafka.strimzi.io/v1beta2
+      register: r_kafka_gt
+      retries: 60
+      delay: 5
+      until: r_kafka_gt.resources | length > 0
+      loop:
+        - "{{ __r_aws_dev_cluster }}"
+        - "{{ __r_aws_prod_cluster }}"
+
+    ## Result Dev Kafkatopic globex.tracking
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_gt.results.0.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_gt.results.0.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.tracking is ready in Dev Cluster"
+    
+    ## Result Prod Kafkatopic globex.tracking
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: 'r_kafka_gt.results.1.resources.0.status.conditions.0.type == "Ready"'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: 'r_kafka_gt.results.1.resources.0.status.conditions.0.type != "Ready"'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking KafkaTopic globex.tracking is ready in Prod Cluster"
+...

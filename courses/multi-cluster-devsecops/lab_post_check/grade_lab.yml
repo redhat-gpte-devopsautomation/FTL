@@ -1,0 +1,53 @@
+---
+- name: Run grader
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - grade_lab_post_check
+  tasks:
+    - name: Included authentication tasks
+      include_tasks: ../auth_tasks.yml
+
+    ## Prod Globex App content testing
+    - name: Get prod globex app route
+      k8s_info:
+        host: "{{ __r_aws_prod_cluster.k8s_auth.host }}"
+        username: "{{ __r_aws_prod_cluster.k8s_auth.username }}"
+        api_key: "{{ __r_aws_prod_cluster.k8s_auth.api_key }}"
+        validate_certs: false
+        kind: Route
+        name: globex-ui
+        namespace: globex
+      register: r_prod_globex_ui
+      retries: 60
+      delay: 5
+      until: r_prod_globex_ui.resources | length > 0
+    
+    - name: List gitlab webhook
+      uri: 
+        url: https://{{ r_prod_globex_ui.resources.0.spec.host }}
+        validate_certs: false
+        method: GET
+        return_content: yes
+      register: r_prod_globex_ui_content
+    
+    ## Result Prod Globex App content testing
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: '"Globex Online Update @" in  r_prod_globex_ui_content.content'
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: '"Globex Online Update @" not in  r_prod_globex_ui_content.content'
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking timestamp is present in Globex App in Prod Cluster"
+
+...

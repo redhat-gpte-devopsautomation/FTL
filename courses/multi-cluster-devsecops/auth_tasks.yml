@@ -1,0 +1,56 @@
+- name: get guid from env
+  set_fact:
+    guid: "{{ lookup('env','GUID') }}"
+
+- name: set common password
+  set_fact:
+    common_password: "{{ (guid[:5] | hash('md5') | int(base=16) | b64encode)[:8] }}"
+    
+- debug: var=common_password
+
+- name: get api for devclsuter
+  k8s_info:
+    kind: ManagedCluster
+    api_version: clusterview.open-cluster-management.io/v1
+    name: aws-dev-cluster
+    namespace: open-cluster-management
+  register: r_aws_dev_cluster
+
+- name: get api for devclsuter
+  k8s_info:
+    kind: ManagedCluster
+    api_version: clusterview.open-cluster-management.io/v1
+    name: aws-prod-cluster
+    namespace: open-cluster-management
+  register: r_aws_prod_cluster
+
+- set_fact:
+    _aws_dev_cluster_api: "{{ r_aws_dev_cluster.resources.0.spec.managedClusterClientConfigs.0.url }}"
+    _aws_prod_cluster_api: "{{ r_aws_prod_cluster.resources.0.spec.managedClusterClientConfigs.0.url }}"
+
+- debug: var=_aws_dev_cluster_api
+- debug: var=_aws_prod_cluster_api
+
+- name: Log into AWS OCP4 Dev Cluster
+  k8s_auth:
+    host: "{{ _aws_dev_cluster_api }}"
+    username: "admin"
+    password: "{{ common_password }}"
+    validate_certs: false
+  register: __r_aws_dev_cluster
+  retries: 240
+  delay: 15
+  until:
+  - __r_aws_dev_cluster.k8s_auth.api_key is defined
+
+- name: Log into AWS OCP4 Prod Cluster
+  k8s_auth:
+    host: "{{ _aws_prod_cluster_api }}"
+    username: "admin"
+    password: "{{ common_password }}"
+    validate_certs: false
+  register: __r_aws_prod_cluster
+  retries: 240
+  delay: 15
+  until:
+  - __r_aws_prod_cluster.k8s_auth.api_key is defined
