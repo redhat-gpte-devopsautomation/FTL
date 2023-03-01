@@ -5,7 +5,7 @@
   gather_facts: false
   become: false
   tags:
-    - solve_lab__post_check
+    - solve_lab_post_check
   tasks:
     - name: Included authentication tasks
       include_tasks: ../auth_tasks.yml
