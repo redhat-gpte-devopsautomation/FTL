@@ -10,6 +10,13 @@
     - name: Included authentication tasks
       include_tasks: ../auth_tasks.yml
 
+    - name: Retrieve Ingress config
+      k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
     - name: "Set AAP url"
       set_fact:
         ocp4_virt_on_rosa_aap_url: "https://{{ ocp4_virt_on_rosa_aap_route_name }}-{{
