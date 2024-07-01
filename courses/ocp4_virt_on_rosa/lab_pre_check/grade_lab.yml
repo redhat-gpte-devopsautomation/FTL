@@ -70,5 +70,5 @@
       register: r_job_templates
 
     - debug:
-      var: r_job_templates
+        var: r_job_templates
 ...
