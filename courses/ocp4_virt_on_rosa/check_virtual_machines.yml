@@ -1,6 +1,7 @@
 ---
 - name: Get VM {{ item }}
   k8s_info:
+    apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     name: "{{ item }}"
     namespace: vmimported
