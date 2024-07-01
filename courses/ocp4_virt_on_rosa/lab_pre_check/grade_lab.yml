@@ -67,7 +67,7 @@
         password: "{{ common_password }}"
         force_basic_auth: yes
         validate_certs: false
-      result: r_job_templates
+      register: r_job_templates
 
     - debug:
       var: r_job_templates
