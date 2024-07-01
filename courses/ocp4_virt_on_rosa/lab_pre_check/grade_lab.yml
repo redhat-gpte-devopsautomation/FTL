@@ -24,13 +24,31 @@
         name: cluster
       register: r_ingress_config
 
-      ocp4_virt_on_rosa_route_webapp_url: "{{ ocp4_virt_on_rosa_route_webapp_name }}-{{
-        ocp4_virt_on_rosa_vm_namespace }}.{{
-        r_ingress_config.resources[0].spec.domain }}"
+    - name: "Set webapp url"
+      set_fact:
+        ocp4_virt_on_rosa_route_webapp_url: "https://{{ ocp4_virt_on_rosa_route_webapp_name }}-{{
+          ocp4_virt_on_rosa_vm_namespace }}.{{
+          r_ingress_config.resources[0].spec.domain }}"
 
     - name: Check if webapp is deployed
       ansible.builtin.uri:
         url: "{{ ocp4_virt_on_rosa_route_webapp_url }}"
         method: GET
-      register: r_home_page
+      register: r_webapp
+
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: r_webapp.status == 200
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: r_webapp.status != 200
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking if webapp is deployed at {{ ocp4_virt_on_rosa_route_webapp_url }}"
 ...
