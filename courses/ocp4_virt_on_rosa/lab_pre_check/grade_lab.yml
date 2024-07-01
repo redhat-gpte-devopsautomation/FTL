@@ -71,7 +71,7 @@
 
     - name: Get job template
       set_fact:
-        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`02 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
 
     - name: "Success - set fact"
       set_fact:
