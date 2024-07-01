@@ -69,6 +69,10 @@
         validate_certs: false
       register: r_job_templates
 
+    - name: Get job template
+      set_fact:
+        job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+
     - debug:
-        var: r_job_templates
+        var: job_template
 ...
