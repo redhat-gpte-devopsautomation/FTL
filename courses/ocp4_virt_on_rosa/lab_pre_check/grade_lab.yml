@@ -50,7 +50,7 @@
       import_role:
         name: ftl_run_log_grade_to_log
       vars:
-        task_description_message: "Checking if webapp is deployed at {{ ocp4_virt_on_rosa_route_webapp_url }}"
+        task_description_message: "Checking if webapp is deployed at {{ ocp4_virt_on_rosa_webapp_url }}"
 
     - name: "Set AAP url"
       set_fact:
