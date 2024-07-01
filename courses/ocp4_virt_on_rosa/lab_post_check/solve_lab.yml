@@ -57,5 +57,22 @@
         status_code: 201
       register: r_launch_job
 
+    - name: Wait for job to complete
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/jobs/{{ r_launch_job.json.id }}"
+        method: GET
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
+        validate_certs: false
+        status_code: 201
+      register: r_job
+      retries: 60
+      delay: 10
+      until:
+      - r_job.json is defined
+      - r_job.json. | length > 0
+      - r_job.json.status != 'pending' or r_job.json.status != 'running'
+
     - debug:
-        var: r_launch_job
+        msg: Job {{ r_launch_job.json.id }} completed with status {{ r_job.json.status }}
