@@ -11,7 +11,7 @@
       include_tasks: ../auth_tasks.yml
 
     - name: Included authentication tasks
-      include_tasks: ../auth_tasks.yml
+      include_tasks: ../check_virtual_machines.yml
       loop:
       - database
       - winweb01
