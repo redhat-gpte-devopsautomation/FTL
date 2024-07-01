@@ -54,6 +54,7 @@
         password: "{{ common_password }}"
         force_basic_auth: yes
         validate_certs: false
+        status_code: 201
       register: r_launch_job
 
     - debug:
