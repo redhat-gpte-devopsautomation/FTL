@@ -16,6 +16,8 @@
       - database
       - winweb01
       - winweb02
+      vars:
+        namespace: vmimported
 
     - name: Retrieve Ingress config
       k8s_info:
