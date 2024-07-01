@@ -71,8 +71,21 @@
 
     - name: Get job template
       set_fact:
-        job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`02 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`{{ ocp4_virt_on_rosa_aap_job_template }}`].id') }}"
 
-    - debug:
-        var: job_template
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: ocp4_virt_on_rosa_job_template | length > 0
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: ocp4_virt_on_rosa_job_template | length == 0
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking if job template is created"
 ...

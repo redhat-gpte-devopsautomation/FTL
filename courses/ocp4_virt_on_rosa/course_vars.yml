@@ -6,4 +6,5 @@ ocp4_virt_on_rosa_webapp_route_name: route-webapp
 ocp4_virt_on_rosa_aap_namespace: aap
 ocp4_virt_on_rosa_aap_route_name: aap
 ocp4_virt_on_rosa_aap_admin_username: admin
+ocp4_virt_on_rosa_aap_job_template: "01 Migrate VMware VMs to OpenShift Virtualization"
 ...
