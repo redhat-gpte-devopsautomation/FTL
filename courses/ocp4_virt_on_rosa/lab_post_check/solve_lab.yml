@@ -10,45 +10,44 @@
     - name: Included authentication tasks
       include_tasks: ../auth_tasks.yml
 
-    ## Gitea PR merge
-    - name: Get Hub gitea route
-      k8s_info:
-        kind: Route
-        name: gitea
-        namespace: gitea
-      register: r_hub_gitea
-      retries: 60
-      delay: 5
-      until: r_hub_gitea.resources | length > 0
+    - name: "Set AAP url"
+      set_fact:
+        ocp4_virt_on_rosa_aap_url: "https://{{ ocp4_virt_on_rosa_aap_route_name }}-{{
+          ocp4_virt_on_rosa_aap_namespace }}.{{
+          r_ingress_config.resources[0].spec.domain }}"
 
-    - name: List gitlab webhook
-      uri: 
-        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls
-        user: dev-admin
-        password: openshift
+    - name: Get job templates
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/job_templates"
         method: GET
         body_format: json
-        force_basic_auth: true
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
         validate_certs: false
-        status_code: 200
-      register: r_hub_gitea_pr_list
+      register: r_job_templates
 
-    - name: List gitlab webhook
-      uri: 
-        url: https://{{ r_hub_gitea.resources.0.spec.host }}/api/v1/repos/dev-user/devsecops-validated-pattern/pulls/1/merge
-        user: dev-admin
-        password: openshift
+    - name: Get job template
+      set_fact:
+        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+
+    - name: Launch job
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/job_templates/{{ ocp4_virt_on_rosa_job_template[0] }}/launch/"
         method: POST
         body_format: json
-        force_basic_auth: true
+        body:
+          extra_vars:
+            provider_name: vmware
+            plan_name: migration-plan
+            storagemap_name: storagemap
+            networkmap_name: networkmap
+            user_selected_vm_names: "winweb01\nwinweb02\ndatabase"
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
         validate_certs: false
-        status_code: 200
-        body: >-
-          {
-            "Do": "merge",
-            "MergeMessageField": "Looks Good",
-            "delete_branch_after_merge": true,
-            "force_merge": true
-          }
+      register: r_launch_job
 
-      
+    - debug:
+        var: r_launch_job
