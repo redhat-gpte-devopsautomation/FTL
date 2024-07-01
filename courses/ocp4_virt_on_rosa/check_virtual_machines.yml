@@ -1,7 +1,6 @@
 ---
 - name: Get VM {{ item }}
   k8s_info:
-    validate_certs: false
     kind: VirtualMachine
     name: "{{ item }}"
     namespace: vmimported
