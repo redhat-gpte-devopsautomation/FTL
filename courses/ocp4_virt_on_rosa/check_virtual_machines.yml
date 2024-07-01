@@ -4,7 +4,7 @@
     api_version: kubevirt.io/v1
     kind: VirtualMachine
     name: "{{ item }}"
-    namespace: vmimported
+    namespace: "{{ ocp4_virt_on_rosa_vm_namespace }}"
   register: r_vm_imported
 
 - name: "Success - set fact"
@@ -23,4 +23,4 @@
   import_role:
     name: ftl_run_log_grade_to_log
   vars:
-    task_description_message: "Checking if Virtual Machine {{ item}} is in vmimported namespace"
+    task_description_message: "Checking if Virtual Machine {{ item}} is in {{ ocp4_virt_on_rosa_vm_namespace }} namespace"

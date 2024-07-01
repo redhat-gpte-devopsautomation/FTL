@@ -16,5 +16,21 @@
       - database
       - winweb01
       - winweb02
-      - FAI
+
+    - name: Retrieve Ingress config
+      k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
+      ocp4_virt_on_rosa_route_webapp_url: "{{ ocp4_virt_on_rosa_route_webapp_name }}-{{
+        ocp4_virt_on_rosa_vm_namespace }}.{{
+        r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Check if webapp is deployed
+      ansible.builtin.uri:
+        url: "{{ ocp4_virt_on_rosa_route_webapp_url }}"
+        method: GET
+      register: r_home_page
 ...

@@ -1,3 +1,5 @@
 ---
 update_lrs: false
+ocp4_virt_on_rosa_vm_namespace: vmimported
+ocp4_virt_on_rosa_route_webapp_name: route-webapp
 ...
