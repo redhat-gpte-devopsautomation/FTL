@@ -1,0 +1,92 @@
+---
+- name: Run grader
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - grade_lab_pre_check
+  tasks:
+    - name: Included authentication tasks
+      include_tasks: ../auth_tasks.yml
+
+    - name: Included authentication tasks
+      include_tasks: ../check_virtual_machines.yml
+      loop:
+      - database
+      - winweb01
+      - winweb02
+      vars:
+        namespace: vmimported
+
+    - name: Retrieve Ingress config
+      k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
+    - name: "Set webapp url"
+      set_fact:
+        ocp4_virt_on_rosa_webapp_url: "https://{{ ocp4_virt_on_rosa_webapp_route_name }}-vmimported.{{
+          r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Check if webapp is deployed
+      ansible.builtin.uri:
+        url: "{{ ocp4_virt_on_rosa_webapp_url }}"
+        method: GET
+      register: r_webapp
+
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: r_webapp.status == 200
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: r_webapp.status != 200
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking if webapp is deployed at {{ ocp4_virt_on_rosa_webapp_url }}"
+
+    - name: "Set AAP url"
+      set_fact:
+        ocp4_virt_on_rosa_aap_url: "https://{{ ocp4_virt_on_rosa_aap_route_name }}-{{
+          ocp4_virt_on_rosa_aap_namespace }}.{{
+          r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Get job templates
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/job_templates"
+        method: GET
+        body_format: json
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
+        validate_certs: false
+      register: r_job_templates
+
+    - name: Get job template
+      set_fact:
+        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+
+    - name: "Success - set fact"
+      set_fact:
+        success: true
+      when: ocp4_virt_on_rosa_job_template | length > 0
+
+    - name: "No Success - set fact"
+      set_fact:
+        success: false
+      when: ocp4_virt_on_rosa_job_template | length == 0
+
+    - name: Import logging role
+      import_role:
+        name: ftl_run_log_grade_to_log
+      vars:
+        task_description_message: "Checking if job template [ 01 Migrate VMware VMs to OpenShift Virtualization ] is created "
+...

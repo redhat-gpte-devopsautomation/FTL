@@ -1,0 +1,78 @@
+---
+- name: Run grader
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_post_check
+  tasks:
+    - name: Included authentication tasks
+      include_tasks: ../auth_tasks.yml
+
+    - name: Retrieve Ingress config
+      k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
+    - name: "Set AAP url"
+      set_fact:
+        ocp4_virt_on_rosa_aap_url: "https://{{ ocp4_virt_on_rosa_aap_route_name }}-{{
+          ocp4_virt_on_rosa_aap_namespace }}.{{
+          r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Get job templates
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/job_templates"
+        method: GET
+        body_format: json
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
+        validate_certs: false
+      register: r_job_templates
+
+    - name: Get job template
+      set_fact:
+        ocp4_virt_on_rosa_job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+
+    - name: Launch job
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/job_templates/{{ ocp4_virt_on_rosa_job_template[0] }}/launch/"
+        method: POST
+        body_format: json
+        body:
+          extra_vars:
+            provider_name: vmware
+            plan_name: migration-plan
+            storagemap_name: storagemap
+            networkmap_name: networkmap
+            user_selected_vm_names: "winweb01\nwinweb02\ndatabase"
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
+        validate_certs: false
+        status_code: 201
+      register: r_launch_job
+
+    - name: Wait for job to complete
+      uri:
+        url: "{{ ocp4_virt_on_rosa_aap_url }}/api/v2/jobs/{{ r_launch_job.json.id }}"
+        method: GET
+        user: "{{ ocp4_virt_on_rosa_aap_admin_username }}"
+        password: "{{ common_password }}"
+        force_basic_auth: yes
+        validate_certs: false
+      register: r_job
+      retries: 60
+      delay: 10
+      until:
+      - r_job.json is defined
+      - r_job.json.status is defined
+      - r_job.json.status != 'pending'
+      - r_job.json.status != 'running'
+
+    - debug:
+        msg: Job {{ r_launch_job.json.id }} completed with status {{ r_job.json.status }}

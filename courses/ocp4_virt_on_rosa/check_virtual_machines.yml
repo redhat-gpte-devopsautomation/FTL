@@ -1,0 +1,26 @@
+---
+- name: Get VM {{ item }}
+  k8s_info:
+    api_version: kubevirt.io/v1
+    kind: VirtualMachine
+    name: "{{ item }}"
+    namespace: "{{ namespace }}"
+  register: r_imported
+
+- name: "Success - set fact"
+  set_fact:
+    success: true
+  when:
+  - r_imported.resources is defined
+  - r_imported.resources | length > 0
+
+- name: "No Success - set fact"
+  set_fact:
+    success: false
+  when: r_imported.resources is not defined or r_imported.resources | length == 0
+
+- name: Import logging role
+  import_role:
+    name: ftl_run_log_grade_to_log
+  vars:
+    task_description_message: "Checking if Virtual Machine {{ item }} is in {{ namespace }} namespace"
