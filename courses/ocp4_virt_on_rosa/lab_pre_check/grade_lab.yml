@@ -28,8 +28,7 @@
 
     - name: "Set webapp url"
       set_fact:
-        ocp4_virt_on_rosa_webapp_url: "https://{{ ocp4_virt_on_rosa_webapp_route_name }}-{{
-          ocp4_virt_on_rosa_vm_namespace }}.{{
+        ocp4_virt_on_rosa_webapp_url: "https://{{ ocp4_virt_on_rosa_webapp_route_name }}-vmimported.{{
           r_ingress_config.resources[0].spec.domain }}"
 
     - name: Check if webapp is deployed
