@@ -1,9 +1,0 @@
-- name: get guid from env
-  set_fact:
-    guid: "{{ lookup('env','GUID') }}"
-
-- name: set common password
-  set_fact:
-    common_password: "{{ (guid[:5] | hash('md5') | int(base=16) | b64encode)[:8] }}"
-
-- debug: var=common_password
