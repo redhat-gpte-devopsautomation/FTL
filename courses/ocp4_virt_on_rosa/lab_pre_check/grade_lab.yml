@@ -71,7 +71,7 @@
 
     - name: Get job template
       set_fact:
-        job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`01 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
+        job_template: "{{ r_job_templates | community.general.json_query('json.results[?name==`02 Migrate VMware VMs to OpenShift Virtualization`].id') }}"
 
     - debug:
         var: job_template
