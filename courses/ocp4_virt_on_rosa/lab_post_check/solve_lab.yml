@@ -71,8 +71,9 @@
       delay: 10
       until:
       - r_job.json is defined
-      - r_job.json. | length > 0
-      - r_job.json.status != 'pending' or r_job.json.status != 'running'
+      - r_job.json.status is defined
+      - r_job.json.status != 'pending'
+      - r_job.json.status != 'running'
 
     - debug:
         msg: Job {{ r_launch_job.json.id }} completed with status {{ r_job.json.status }}
