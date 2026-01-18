@@ -1,0 +1,186 @@
+---
+# Lab 01: Performance, Scalability, and Troubleshooting - Solver
+# Automates completion of Module 1 tasks for OpenShift Virtualization Advanced Operations
+
+- name: Solve Lab 01 - Performance and Scalability
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_01_performance
+
+  tasks:
+    # Task 1.2: Scale loadmaker deployment to generate load
+    - name: Patch loadmaker deployment to set REQUESTS_PER_SECOND=75
+      kubernetes.core.k8s:
+        api_version: apps/v1
+        kind: Deployment
+        name: loadmaker
+        namespace: webapp-vms
+        definition:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: loadmaker
+                    env:
+                      - name: REQUESTS_PER_SECOND
+                        value: "75"
+        state: patched
+      register: r_loadmaker_patch
+
+    - name: Wait for loadmaker deployment to roll out
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: loadmaker
+        namespace: webapp-vms
+      register: r_loadmaker_status
+      until:
+        - r_loadmaker_status.resources[0].status.updatedReplicas is defined
+        - r_loadmaker_status.resources[0].status.updatedReplicas == r_loadmaker_status.resources[0].status.replicas
+      retries: 30
+      delay: 2
+
+    # Task 1.5: Start winweb02 VM for horizontal scaling
+    - name: Start VM winweb02
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: winweb02
+        namespace: webapp-vms
+        definition:
+          spec:
+            running: true
+        state: patched
+      register: r_start_winweb02
+
+    - name: Wait for winweb02 to reach Running state
+      kubernetes.core.k8s_info:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: winweb02
+        namespace: webapp-vms
+      register: r_winweb02_status
+      until:
+        - r_winweb02_status.resources[0].status.printableStatus is defined
+        - r_winweb02_status.resources[0].status.printableStatus == "Running"
+      retries: 60
+      delay: 5
+
+    # Task 1.6: Vertically scale VMs by adding CPUs
+    - name: Patch winweb01 to increase CPU to 4 cores
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: winweb01
+        namespace: webapp-vms
+        definition:
+          spec:
+            template:
+              spec:
+                domain:
+                  cpu:
+                    cores: 4
+        state: patched
+
+    - name: Patch winweb02 to increase CPU to 4 cores
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: winweb02
+        namespace: webapp-vms
+        definition:
+          spec:
+            template:
+              spec:
+                domain:
+                  cpu:
+                    cores: 4
+        state: patched
+
+    # Task 1.8: Start all VMs in mass-vms namespace
+    - name: Get all VMs in mass-vms namespace
+      kubernetes.core.k8s_info:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        namespace: mass-vms
+      register: r_mass_vms
+
+    - name: Start all VMs in mass-vms namespace
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: "{{ item.metadata.name }}"
+        namespace: mass-vms
+        definition:
+          spec:
+            running: true
+        state: patched
+      loop: "{{ r_mass_vms.resources }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    # Task 1.8: Remove taint from worker node 6 to allow VM scheduling
+    - name: Get worker node 6 name
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: r_nodes
+
+    - name: Identify worker node 6
+      set_fact:
+        worker_node_6: "{{ r_nodes.resources | selectattr('metadata.name', 'search', 'worker-6') | map(attribute='metadata.name') | first }}"
+
+    - name: Remove taint from worker node 6
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Node
+        name: "{{ worker_node_6 }}"
+        definition:
+          spec:
+            taints: []
+        state: patched
+      when: worker_node_6 is defined
+
+    # Task 1.9: Remove taint from worker node 7 for load balancing
+    - name: Identify worker node 7
+      set_fact:
+        worker_node_7: "{{ r_nodes.resources | selectattr('metadata.name', 'search', 'worker-7') | map(attribute='metadata.name') | first }}"
+
+    - name: Remove taint from worker node 7
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Node
+        name: "{{ worker_node_7 }}"
+        definition:
+          spec:
+            taints: []
+        state: patched
+      when: worker_node_7 is defined
+
+    # Task 1.9: Scale down loadmaker deployments to complete lab
+    - name: Scale loadmaker-1 through loadmaker-12 to 0 replicas
+      kubernetes.core.k8s:
+        api_version: apps/v1
+        kind: Deployment
+        name: "loadmaker-{{ item }}"
+        namespace: mass-vms
+        definition:
+          spec:
+            replicas: 0
+        state: patched
+      loop: "{{ range(1, 13) | list }}"
+      ignore_errors: true  # Some deployments may not exist
+
+    - name: Lab 01 Performance solver completed
+      debug:
+        msg: |
+          Lab 01 Performance and Scalability tasks completed:
+          ✓ Loadmaker deployment scaled to 75 requests/second
+          ✓ VM winweb02 started (horizontal scaling)
+          ✓ VMs winweb01 and winweb02 scaled to 4 vCPUs (vertical scaling)
+          ✓ All VMs in mass-vms namespace started
+          ✓ Worker nodes 6 and 7 taints removed
+          ✓ Loadmaker deployments scaled down to 0 replicas

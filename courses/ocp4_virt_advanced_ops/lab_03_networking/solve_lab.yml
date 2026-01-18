@@ -1,0 +1,417 @@
+---
+# Lab 03: Advanced Networking and Security - Solver
+# Automates completion of Module 3 tasks for OpenShift Virtualization Advanced Operations
+
+- name: Solve Lab 03 - Advanced Networking and Security
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_03_networking
+
+  tasks:
+    # Task 3.2: Create dev namespace with UDN label
+    - name: Create dev namespace with UDN label
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: dev
+        definition:
+          metadata:
+            name: dev
+            labels:
+              k8s.ovn.org/primary-user-defined-network: ""
+        state: present
+
+    # Task 3.2: Create test namespace with UDN label
+    - name: Create test namespace with UDN label
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: test
+        definition:
+          metadata:
+            name: test
+            labels:
+              k8s.ovn.org/primary-user-defined-network: ""
+        state: present
+
+    # Task 3.2: Create prod namespace with UDN label
+    - name: Create prod namespace with UDN label
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: prod
+        definition:
+          metadata:
+            name: prod
+            labels:
+              k8s.ovn.org/primary-user-defined-network: ""
+        state: present
+
+    # Task 3.2: Create UserDefinedNetwork for dev namespace
+    - name: Create UserDefinedNetwork dev in dev namespace
+      kubernetes.core.k8s:
+        api_version: k8s.ovn.org/v1
+        kind: UserDefinedNetwork
+        name: dev
+        namespace: dev
+        definition:
+          metadata:
+            name: dev
+            namespace: dev
+          spec:
+            topology: Layer2
+            layer2:
+              role: Primary
+              subnets:
+                - 192.168.253.0/24
+        state: present
+
+    # Task 3.2: Create UserDefinedNetwork for test namespace
+    - name: Create UserDefinedNetwork test in test namespace
+      kubernetes.core.k8s:
+        api_version: k8s.ovn.org/v1
+        kind: UserDefinedNetwork
+        name: test
+        namespace: test
+        definition:
+          metadata:
+            name: test
+            namespace: test
+          spec:
+            topology: Layer2
+            layer2:
+              role: Primary
+              subnets:
+                - 192.168.254.0/24
+        state: present
+
+    # Task 3.2: Create UserDefinedNetwork for prod namespace
+    - name: Create UserDefinedNetwork prod in prod namespace
+      kubernetes.core.k8s:
+        api_version: k8s.ovn.org/v1
+        kind: UserDefinedNetwork
+        name: prod
+        namespace: prod
+        definition:
+          metadata:
+            name: prod
+            namespace: prod
+          spec:
+            topology: Layer2
+            layer2:
+              role: Primary
+              subnets:
+                - 192.168.255.0/24
+        state: present
+
+    # Task 3.2: Create VMs in dev namespace
+    - name: Create fedora-dev01 VM
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: fedora-dev01
+        namespace: dev
+        definition:
+          metadata:
+            name: fedora-dev01
+            namespace: dev
+            labels:
+              app: fedora-dev01
+              vm.kubevirt.io/template: fedora-server-small
+              vm.kubevirt.io/template.namespace: openshift
+              vm.kubevirt.io/template.revision: "1"
+              vm.kubevirt.io/template.version: v0.27.0
+          spec:
+            dataVolumeTemplates:
+              - metadata:
+                  name: fedora-dev01
+                spec:
+                  sourceRef:
+                    kind: DataSource
+                    name: fedora
+                    namespace: openshift-virtualization-os-images
+                  storage:
+                    resources:
+                      requests:
+                        storage: 30Gi
+            running: true
+            template:
+              metadata:
+                labels:
+                  kubevirt.io/domain: fedora-dev01
+                  kubevirt.io/size: small
+              spec:
+                domain:
+                  cpu:
+                    cores: 1
+                    sockets: 1
+                    threads: 1
+                  devices:
+                    disks:
+                      - disk:
+                          bus: virtio
+                        name: rootdisk
+                      - disk:
+                          bus: virtio
+                        name: cloudinitdisk
+                    interfaces:
+                      - masquerade: {}
+                        name: default
+                    networkInterfaceMultiqueue: true
+                    rng: {}
+                  resources:
+                    requests:
+                      memory: 2Gi
+                networks:
+                  - name: default
+                    pod: {}
+                terminationGracePeriodSeconds: 180
+                volumes:
+                  - dataVolume:
+                      name: fedora-dev01
+                    name: rootdisk
+                  - cloudInitNoCloud:
+                      userData: |
+                        #cloud-config
+                        user: fedora
+                        password: fedora
+                        chpasswd: { expire: False }
+                    name: cloudinitdisk
+        state: present
+
+    - name: Create fedora-dev02 VM
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: fedora-dev02
+        namespace: dev
+        definition:
+          metadata:
+            name: fedora-dev02
+            namespace: dev
+            labels:
+              app: fedora-dev02
+              vm.kubevirt.io/template: fedora-server-small
+          spec:
+            dataVolumeTemplates:
+              - metadata:
+                  name: fedora-dev02
+                spec:
+                  sourceRef:
+                    kind: DataSource
+                    name: fedora
+                    namespace: openshift-virtualization-os-images
+                  storage:
+                    resources:
+                      requests:
+                        storage: 30Gi
+            running: true
+            template:
+              metadata:
+                labels:
+                  kubevirt.io/domain: fedora-dev02
+                  kubevirt.io/size: small
+              spec:
+                domain:
+                  cpu:
+                    cores: 1
+                    sockets: 1
+                    threads: 1
+                  devices:
+                    disks:
+                      - disk:
+                          bus: virtio
+                        name: rootdisk
+                      - disk:
+                          bus: virtio
+                        name: cloudinitdisk
+                    interfaces:
+                      - masquerade: {}
+                        name: default
+                    networkInterfaceMultiqueue: true
+                    rng: {}
+                  resources:
+                    requests:
+                      memory: 2Gi
+                networks:
+                  - name: default
+                    pod: {}
+                terminationGracePeriodSeconds: 180
+                volumes:
+                  - dataVolume:
+                      name: fedora-dev02
+                    name: rootdisk
+                  - cloudInitNoCloud:
+                      userData: |
+                        #cloud-config
+                        user: fedora
+                        password: fedora
+                        chpasswd: { expire: False }
+                    name: cloudinitdisk
+        state: present
+
+    # Task 3.2: Create VM in test namespace
+    - name: Create fedora-test01 VM
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: fedora-test01
+        namespace: test
+        definition:
+          metadata:
+            name: fedora-test01
+            namespace: test
+            labels:
+              app: fedora-test01
+              vm.kubevirt.io/template: fedora-server-small
+          spec:
+            dataVolumeTemplates:
+              - metadata:
+                  name: fedora-test01
+                spec:
+                  sourceRef:
+                    kind: DataSource
+                    name: fedora
+                    namespace: openshift-virtualization-os-images
+                  storage:
+                    resources:
+                      requests:
+                        storage: 30Gi
+            running: true
+            template:
+              metadata:
+                labels:
+                  kubevirt.io/domain: fedora-test01
+                  kubevirt.io/size: small
+              spec:
+                domain:
+                  cpu:
+                    cores: 1
+                    sockets: 1
+                    threads: 1
+                  devices:
+                    disks:
+                      - disk:
+                          bus: virtio
+                        name: rootdisk
+                      - disk:
+                          bus: virtio
+                        name: cloudinitdisk
+                    interfaces:
+                      - masquerade: {}
+                        name: default
+                    networkInterfaceMultiqueue: true
+                    rng: {}
+                  resources:
+                    requests:
+                      memory: 2Gi
+                networks:
+                  - name: default
+                    pod: {}
+                terminationGracePeriodSeconds: 180
+                volumes:
+                  - dataVolume:
+                      name: fedora-test01
+                    name: rootdisk
+                  - cloudInitNoCloud:
+                      userData: |
+                        #cloud-config
+                        user: fedora
+                        password: fedora
+                        chpasswd: { expire: False }
+                    name: cloudinitdisk
+        state: present
+
+    # Task 3.2: Create VM in prod namespace
+    - name: Create fedora-prod01 VM
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: fedora-prod01
+        namespace: prod
+        definition:
+          metadata:
+            name: fedora-prod01
+            namespace: prod
+            labels:
+              app: fedora-prod01
+              vm.kubevirt.io/template: fedora-server-small
+          spec:
+            dataVolumeTemplates:
+              - metadata:
+                  name: fedora-prod01
+                spec:
+                  sourceRef:
+                    kind: DataSource
+                    name: fedora
+                    namespace: openshift-virtualization-os-images
+                  storage:
+                    resources:
+                      requests:
+                        storage: 30Gi
+            running: true
+            template:
+              metadata:
+                labels:
+                  kubevirt.io/domain: fedora-prod01
+                  kubevirt.io/size: small
+              spec:
+                domain:
+                  cpu:
+                    cores: 1
+                    sockets: 1
+                    threads: 1
+                  devices:
+                    disks:
+                      - disk:
+                          bus: virtio
+                        name: rootdisk
+                      - disk:
+                          bus: virtio
+                        name: cloudinitdisk
+                    interfaces:
+                      - masquerade: {}
+                        name: default
+                    networkInterfaceMultiqueue: true
+                    rng: {}
+                  resources:
+                    requests:
+                      memory: 2Gi
+                networks:
+                  - name: default
+                    pod: {}
+                terminationGracePeriodSeconds: 180
+                volumes:
+                  - dataVolume:
+                      name: fedora-prod01
+                    name: rootdisk
+                  - cloudInitNoCloud:
+                      userData: |
+                        #cloud-config
+                        user: fedora
+                        password: fedora
+                        chpasswd: { expire: False }
+                    name: cloudinitdisk
+        state: present
+
+    - name: Lab 03 Networking solver completed
+      debug:
+        msg: |
+          Lab 03 Advanced Networking and Security tasks completed:
+          ✓ Namespaces created: dev, test, prod (with UDN labels)
+          ✓ UserDefinedNetworks created in each namespace
+            - dev: 192.168.253.0/24
+            - test: 192.168.254.0/24
+            - prod: 192.168.255.0/24
+          ✓ Fedora VMs created:
+            - fedora-dev01 in dev
+            - fedora-dev02 in dev
+            - fedora-test01 in test
+            - fedora-prod01 in prod
+
+          Note: VMs will take a few minutes to fully provision and start.
+          Network isolation is enforced - VMs in different namespaces cannot
+          communicate with each other via UDN.

@@ -1,0 +1,39 @@
+---
+# Course-level configuration for OpenShift Virtualization Advanced Operations
+# FTL graders and solvers
+
+# LMS Integration
+update_lrs: false  # Set to true when ready for LMS integration
+
+# OpenShift connection
+ocp_validate_certs: false
+
+# AAP connection details (Module 4)
+aap_namespace: aap
+aap_route_name: aap
+aap_admin_user: admin
+
+# Project/Namespace names
+webapp_vms_namespace: webapp-vms
+vms_aap_day2_namespace: vms-aap-day2
+mass_vms_namespace: mass-vms
+dev_namespace: dev
+test_namespace: test
+prod_namespace: prod
+
+# Compliance Operator (Module 2)
+compliance_namespace: openshift-compliance
+
+# RHACM (Module 5)
+rhacm_agent_namespace: open-cluster-management-agent
+rhacm_agent_addon_namespace: open-cluster-management-agent-addon
+
+# VM names and instance types
+rhel9_vm_prefix: rhel9-vm
+default_instance_type: u1.small
+upgraded_instance_type: u1.2xmedium
+
+# Networking (Module 3)
+udn_dev_subnet: 192.168.253.0/24
+udn_test_subnet: 192.168.254.0/24
+udn_prod_subnet: 192.168.255.0/24

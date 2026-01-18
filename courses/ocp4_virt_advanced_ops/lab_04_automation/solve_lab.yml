@@ -1,0 +1,360 @@
+---
+# Lab 04: Automation of Virtual Machines - Solver
+# Automates completion of Module 4 tasks for OpenShift Virtualization Advanced Operations
+
+- name: Solve Lab 04 - Automation with AAP
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_04_automation
+
+  tasks:
+    # Get AAP controller URL and credentials
+    - name: Retrieve cluster ingress domain
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
+    - name: Set AAP controller URL
+      set_fact:
+        aap_controller_url: "https://{{ aap_route_name }}-{{ aap_namespace }}.{{ r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Get GUID from environment
+      set_fact:
+        guid: "{{ lookup('env', 'GUID') | default('dev', true) }}"
+
+    - name: Generate common password from GUID
+      set_fact:
+        common_password: "{{ (guid[:5] | hash('md5') | int(base=16) | b64encode)[:8] }}"
+
+    # Task 4.1: Create AAP Inventory
+    - name: Create AAP Inventory - OpenShift Virtual Machines
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/inventories/"
+        method: POST
+        body_format: json
+        body:
+          name: "OpenShift Virtual Machines"
+          description: "Dynamic inventory for OpenShift Virtualization VMs"
+          organization: 1
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+      register: r_create_inventory
+
+    - name: Get inventory ID
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/inventories/"
+        method: GET
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+      register: r_inventories
+
+    - name: Set inventory ID
+      set_fact:
+        inventory_id: "{{ r_inventories.json.results | selectattr('name', 'equalto', 'OpenShift Virtual Machines') | map(attribute='id') | first }}"
+
+    # Task 4.1: Create AAP Inventory Source
+    - name: Get OpenShift Credential ID
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/credentials/"
+        method: GET
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+      register: r_credentials
+
+    - name: Set OpenShift credential ID
+      set_fact:
+        openshift_credential_id: "{{ r_credentials.json.results | selectattr('name', 'equalto', 'OpenShift Credential') | map(attribute='id') | first }}"
+
+    - name: Get Day 2 EE ID
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/execution_environments/"
+        method: GET
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+      register: r_execution_environments
+
+    - name: Set Day 2 EE ID
+      set_fact:
+        day2_ee_id: "{{ r_execution_environments.json.results | selectattr('name', 'equalto', 'Day 2 EE') | map(attribute='id') | first }}"
+
+    - name: Create AAP Inventory Source - OpenShift Virtual Machines Source
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/inventory_sources/"
+        method: POST
+        body_format: json
+        body:
+          name: "OpenShift Virtual Machines Source"
+          description: "OpenShift Virtualization dynamic inventory"
+          inventory: "{{ inventory_id }}"
+          source: "kubevirt"
+          credential: "{{ openshift_credential_id }}"
+          execution_environment: "{{ day2_ee_id }}"
+          update_on_launch: true
+          update_cache_timeout: 0
+          source_vars: |
+            namespaces:
+              - vms-aap-day2
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+      register: r_create_inventory_source
+
+    # Task 4.2-4.5: Create Job Templates
+    - name: Get Workshop Project ID
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/projects/"
+        method: GET
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+      register: r_projects
+
+    - name: Set Workshop Project ID
+      set_fact:
+        workshop_project_id: "{{ r_projects.json.results | selectattr('name', 'equalto', 'Workshop Project') | map(attribute='id') | first }}"
+
+    - name: Get Workshop Credential ID
+      set_fact:
+        workshop_credential_id: "{{ r_credentials.json.results | selectattr('name', 'equalto', 'Workshop Credential') | map(attribute='id') | first }}"
+
+    - name: Get Vault Credential ID
+      set_fact:
+        vault_credential_id: "{{ r_credentials.json.results | selectattr('name', 'equalto', 'Vault Credential') | map(attribute='id') | first }}"
+
+    # Create Stop VMs Job Template
+    - name: Create Job Template - Stop VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Stop VMs"
+          description: "Stop virtual machines in OpenShift"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: stop_vm.yml
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Start VMs Job Template
+    - name: Create Job Template - Start VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Start VMs"
+          description: "Start virtual machines in OpenShift"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: start_vm.yml
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Restart VMs Job Template
+    - name: Create Job Template - Restart VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Restart VMs"
+          description: "Restart virtual machines in OpenShift"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: restart_vm.yml
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Patch VMs Job Template
+    - name: Create Job Template - Patch VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Patch VMs"
+          description: "Apply security patches to virtual machines"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/patch_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ workshop_credential_id }}", "{{ vault_credential_id }}"]
+          extra_vars: |
+            task_file: update_security_packages.yml
+          become_enabled: true
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Hot Plug VMs Job Template
+    - name: Create Job Template - Hot Plug VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Hot Plug VMs"
+          description: "Hot plug CPU/memory to running VMs"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: hot_plug.yml
+            instance_type: u1.2xmedium
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Snapshot VMs Job Template
+    - name: Create Job Template - Snapshot VMs
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Snapshot VMs"
+          description: "Create snapshots of virtual machines"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: snapshot_vms.yml
+            vms_to_snapshot: rhel9-vm1
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Create Restore VM Snapshots Job Template
+    - name: Create Job Template - Restore VM Snapshots
+      ansible.builtin.uri:
+        url: "{{ aap_controller_url }}/api/v2/job_templates/"
+        method: POST
+        body_format: json
+        body:
+          name: "Restore VM Snapshots"
+          description: "Restore virtual machines from snapshots"
+          job_type: "run"
+          inventory: "{{ inventory_id }}"
+          project: "{{ workshop_project_id }}"
+          playbook: "solutions/manage_vm_playbook.yml"
+          execution_environment: "{{ day2_ee_id }}"
+          credentials: ["{{ openshift_credential_id }}"]
+          extra_vars: |
+            vm_namespace: vms-aap-day2
+            task_file: restore_vm_snapshots.yml
+        user: "{{ aap_admin_user }}"
+        password: "{{ common_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200, 201, 400]
+
+    # Task 4.4: Patch VM instance type (hot plug)
+    - name: Patch rhel9-vm1 to change instance type to u1.2xmedium
+      kubernetes.core.k8s:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: rhel9-vm1
+        namespace: vms-aap-day2
+        definition:
+          spec:
+            instancetype:
+              name: u1.2xmedium
+        state: patched
+
+    # Task 4.5: Create VirtualMachineSnapshot
+    - name: Create VirtualMachineSnapshot for rhel9-vm1
+      kubernetes.core.k8s:
+        api_version: snapshot.kubevirt.io/v1beta1
+        kind: VirtualMachineSnapshot
+        name: "rhel9-vm1-{{ ansible_date_time.epoch }}"
+        namespace: vms-aap-day2
+        definition:
+          metadata:
+            name: "rhel9-vm1-{{ ansible_date_time.epoch }}"
+            namespace: vms-aap-day2
+          spec:
+            source:
+              apiGroup: kubevirt.io
+              kind: VirtualMachine
+              name: rhel9-vm1
+        state: present
+
+    - name: Lab 04 Automation solver completed
+      debug:
+        msg: |
+          Lab 04 Automation of Virtual Machines tasks completed:
+          ✓ AAP Inventory created: OpenShift Virtual Machines
+          ✓ AAP Inventory Source created for vms-aap-day2 namespace
+          ✓ AAP Job Templates created:
+            - Stop VMs
+            - Start VMs
+            - Restart VMs
+            - Patch VMs
+            - Hot Plug VMs
+            - Snapshot VMs
+            - Restore VM Snapshots
+          ✓ VM rhel9-vm1 instance type changed to u1.2xmedium
+          ✓ VirtualMachineSnapshot created for rhel9-vm1
+
+          Note: Job templates are configured but not executed. Students can
+          run them from AAP controller UI to perform VM lifecycle operations.

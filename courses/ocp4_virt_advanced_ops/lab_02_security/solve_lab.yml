@@ -1,0 +1,198 @@
+---
+# Lab 02: Security and Compliance - Solver
+# Automates completion of Module 2 tasks for OpenShift Virtualization Advanced Operations
+
+- name: Solve Lab 02 - Security and Compliance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_02_security
+
+  tasks:
+    # Task 2.1: Create ScanSetting for worker-only compliance scans
+    - name: Create ScanSetting scan01
+      kubernetes.core.k8s:
+        api_version: compliance.openshift.io/v1alpha1
+        kind: ScanSetting
+        name: scan01
+        namespace: openshift-compliance
+        definition:
+          metadata:
+            name: scan01
+            namespace: openshift-compliance
+          rawResultStorage:
+            nodeSelector:
+              node-role.kubernetes.io/master: ""
+            pvAccessModes:
+              - ReadWriteOnce
+            rotation: 3
+            size: 1Gi
+            tolerations:
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/master
+                operator: Exists
+              - effect: NoExecute
+                key: node.kubernetes.io/not-ready
+                operator: Exists
+                tolerationSeconds: 300
+              - effect: NoExecute
+                key: node.kubernetes.io/unreachable
+                operator: Exists
+                tolerationSeconds: 300
+              - effect: NoSchedule
+                key: node.kubernetes.io/memory-pressure
+                operator: Exists
+          roles:
+            - worker
+          scanTolerations:
+            - operator: Exists
+          schedule: 0 1 * * *
+          showNotApplicable: false
+          strictNodeScan: true
+        state: present
+
+    # Task 2.1: Create ScanSettingBinding fedramp01
+    - name: Create ScanSettingBinding fedramp01
+      kubernetes.core.k8s:
+        api_version: compliance.openshift.io/v1alpha1
+        kind: ScanSettingBinding
+        name: fedramp01
+        namespace: openshift-compliance
+        definition:
+          metadata:
+            name: fedramp01
+            namespace: openshift-compliance
+          profiles:
+            - apiGroup: compliance.openshift.io/v1alpha1
+              kind: Profile
+              name: rhcos4-moderate
+          settingsRef:
+            apiGroup: compliance.openshift.io/v1alpha1
+            kind: ScanSetting
+            name: scan01
+        state: present
+
+    # Wait for ComplianceRemediation to be created (may take a few moments)
+    - name: Wait for ComplianceRemediation to exist
+      kubernetes.core.k8s_info:
+        api_version: compliance.openshift.io/v1alpha1
+        kind: ComplianceRemediation
+        name: fedramp01-rhcos4-moderate-worker-coreos-pti-kernel-argument
+        namespace: openshift-compliance
+      register: r_remediation
+      until:
+        - r_remediation.resources is defined
+        - r_remediation.resources | length > 0
+      retries: 60
+      delay: 5
+      ignore_errors: true
+
+    # Task 2.2: Patch ComplianceRemediation to apply remediation
+    - name: Patch ComplianceRemediation to set apply true
+      kubernetes.core.k8s:
+        api_version: compliance.openshift.io/v1alpha1
+        kind: ComplianceRemediation
+        name: fedramp01-rhcos4-moderate-worker-coreos-pti-kernel-argument
+        namespace: openshift-compliance
+        definition:
+          spec:
+            apply: true
+        state: patched
+      when:
+        - r_remediation.resources is defined
+        - r_remediation.resources | length > 0
+
+    # Task 2.3: Create Group for RBAC
+    - name: Create Group auditor_readonly
+      kubernetes.core.k8s:
+        api_version: user.openshift.io/v1
+        kind: Group
+        name: auditor_readonly
+        definition:
+          metadata:
+            name: auditor_readonly
+          users:
+            - auditor1
+            - auditor2
+        state: present
+
+    # Task 2.3: Create ClusterRoleBinding for read-only access
+    - name: Create ClusterRoleBinding cluster_readonly
+      kubernetes.core.k8s:
+        api_version: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        name: cluster_readonly
+        definition:
+          metadata:
+            name: cluster_readonly
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: view
+          subjects:
+            - apiGroup: rbac.authorization.k8s.io
+              kind: Group
+              name: auditor_readonly
+        state: present
+
+    # Task 2.3: Add HTPasswd provider for auditor users
+    - name: Get current OAuth configuration
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: OAuth
+        name: cluster
+      register: r_oauth
+
+    - name: Create Secret for auditor HTPasswd data
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Secret
+        name: auditor-htpasswd-secret
+        namespace: openshift-config
+        definition:
+          metadata:
+            name: auditor-htpasswd-secret
+            namespace: openshift-config
+          type: Opaque
+          data:
+            htpasswd: "{{ htpasswd_data | b64encode }}"
+        state: present
+      vars:
+        htpasswd_data: |
+          auditor1:$apr1$VtSYSShP$CikLVoVy5sobCaHCvuxCv.
+          auditor2:$apr1$4Vpe3O5u$OhjtFGDNHnl2RWiNnhlhZ0
+
+    - name: Patch OAuth cluster to add auditor_login provider
+      kubernetes.core.k8s:
+        api_version: config.openshift.io/v1
+        kind: OAuth
+        name: cluster
+        definition:
+          spec:
+            identityProviders: "{{ existing_providers + [auditor_provider] }}"
+        state: patched
+      vars:
+        existing_providers: "{{ r_oauth.resources[0].spec.identityProviders | default([]) }}"
+        auditor_provider:
+          name: auditor_login
+          mappingMethod: claim
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: auditor-htpasswd-secret
+
+    - name: Lab 02 Security solver completed
+      debug:
+        msg: |
+          Lab 02 Security and Compliance tasks completed:
+          ✓ ScanSetting scan01 created (worker-only)
+          ✓ ScanSettingBinding fedramp01 created
+          ✓ ComplianceRemediation pti-kernel set to apply (if scan completed)
+          ✓ Group auditor_readonly created with users auditor1, auditor2
+          ✓ ClusterRoleBinding cluster_readonly created for view access
+          ✓ OAuth updated with auditor_login HTPasswd provider
+
+          Note: Compliance scan will run automatically. Node remediation may
+          take 15+ minutes as nodes are cordoned, drained, and rebooted.

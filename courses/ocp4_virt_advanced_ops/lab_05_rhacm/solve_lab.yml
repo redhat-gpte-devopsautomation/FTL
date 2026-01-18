@@ -1,0 +1,126 @@
+---
+# Lab 05: Advanced Management of Virtual Machines (RHACM) - Manual Guidance
+# This lab cannot be fully automated as it requires access to a shared RHACM hub cluster
+
+- name: Lab 05 - RHACM Import Manual Guidance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tags:
+    - solve_lab_05_rhacm
+
+  tasks:
+    - name: Display RHACM cluster import instructions
+      debug:
+        msg: |
+          ============================================================================
+          Lab 05: Advanced Management with Red Hat Advanced Cluster Management
+          ============================================================================
+
+          This lab requires importing your managed cluster to a shared RHACM hub.
+          The import process must be completed manually using the RHACM UI.
+
+          PREREQUISITES:
+          --------------
+          - Access to RHACM hub cluster URL (provided by instructor/proctor)
+          - RHACM hub login credentials (userX/password)
+          - Your managed cluster must have internet connectivity
+
+          STEP 1: Get Your Cluster Information
+          -------------------------------------
+          1. Login to your managed OpenShift cluster
+          2. Click your username (admin) in top right → "Copy login command"
+          3. Click "Display Token"
+          4. Copy the following:
+             - API Server URL (e.g., https://api.cluster-xyz.sandbox.opentlc.com:6443)
+             - API Token (long string starting with sha256~...)
+
+          STEP 2: Import Cluster to RHACM Hub
+          -----------------------------------
+          1. Login to RHACM hub cluster console (URL provided by instructor)
+          2. Navigate to "Infrastructure" → "Clusters"
+          3. Click "Import cluster" button
+          4. Fill in cluster details:
+             - Name: userX-virt-cluster (replace X with your user number)
+             - Cluster set: legacy-systems-inc
+             - Import mode: "Enter your server URL and API token"
+          5. Paste your cluster information:
+             - Server URL: (from Step 1)
+             - API Token: (from Step 1)
+          6. Click "Next"
+          7. On Automation page: Click "Next" (skip automation)
+          8. On Review page: Click "Import"
+          9. Wait for import to complete (~2-3 minutes)
+          10. Verify cluster status shows "Ready"
+
+          STEP 3: Verify Import Success
+          ------------------------------
+          Return to your managed cluster and check for klusterlet pods:
+
+          ```bash
+          oc get pods -n open-cluster-management-agent
+          oc get pods -n open-cluster-management-agent-addon
+          ```
+
+          You should see multiple pods in Running state, including:
+          - klusterlet-*
+          - klusterlet-registration-agent-*
+          - klusterlet-work-agent-*
+
+          STEP 4: Explore RHACM Features
+          -------------------------------
+          1. In RHACM hub, click on your imported cluster
+          2. Explore tabs:
+             - Overview: Cluster health and status
+             - Nodes: View worker and master nodes
+             - Grafana: Access VM performance dashboards
+          3. Navigate to "Infrastructure" → "Virtual machines"
+          4. View all VMs across managed clusters
+          5. Test VM management actions (Stop/Start/Restart)
+
+          OPTIONAL: Grafana Dashboards
+          -----------------------------
+          1. Click "Grafana" link at top of cluster details page
+          2. Login with your RHACM credentials
+          3. Select "ACM - Clusters Overview" dashboard
+          4. View VM metrics:
+             - Total VMs across clusters
+             - VM status distribution
+             - OS breakdown
+             - CPU and memory utilization
+
+          ============================================================================
+          NOTE: This is a manual process and cannot be fully automated via FTL.
+          The shared RHACM hub requires user-specific credentials and cluster names.
+          ============================================================================
+
+    - name: Check if klusterlet is already installed (optional verification)
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: open-cluster-management-agent
+      register: r_klusterlet_pods
+      ignore_errors: true
+
+    - name: Display klusterlet status
+      debug:
+        msg: |
+          {% if r_klusterlet_pods.resources is defined and r_klusterlet_pods.resources | length > 0 %}
+          ✓ Klusterlet appears to be installed on this cluster.
+          Found {{ r_klusterlet_pods.resources | length }} pods in open-cluster-management-agent namespace.
+
+          This cluster may already be imported to an RHACM hub.
+          {% else %}
+          ℹ Klusterlet is not yet installed on this cluster.
+          This cluster has not been imported to an RHACM hub.
+
+          Please follow the manual import instructions above.
+          {% endif %}
+
+    - name: Lab 05 RHACM manual guidance displayed
+      debug:
+        msg: |
+          Lab 05: Manual guidance provided.
+          Students should follow the instructions above to import their cluster
+          to the shared RHACM hub and explore multi-cluster management features.
