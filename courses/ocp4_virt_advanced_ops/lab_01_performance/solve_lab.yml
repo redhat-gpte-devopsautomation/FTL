@@ -16,7 +16,7 @@
       ansible.builtin.command:
         cmd: oc set env deployment/loadmaker REQUESTS_PER_SECOND=75 -n webapp-vms
       register: r_loadmaker_patch
-      changed_when: "'updated" in r_loadmaker_patch.stdout'
+      changed_when: '"updated" in r_loadmaker_patch.stdout'
 
     - name: Wait for loadmaker deployment to roll out
       kubernetes.core.k8s_info:
@@ -57,13 +57,13 @@
       ansible.builtin.command:
         cmd: oc patch vm winweb01 -n webapp-vms --type=json -p='[{"op":"replace","path":"/spec/template/spec/domain/cpu/cores","value":4}]'
       register: r_winweb01_cpu
-      changed_when: "'patched" in r_winweb01_cpu.stdout'
+      changed_when: '"patched" in r_winweb01_cpu.stdout'
 
     - name: Patch winweb02 to increase CPU to 4 cores
       ansible.builtin.command:
         cmd: oc patch vm winweb02 -n webapp-vms --type=json -p='[{"op":"replace","path":"/spec/template/spec/domain/cpu/cores","value":4}]'
       register: r_winweb02_cpu
-      changed_when: "'patched" in r_winweb02_cpu.stdout'
+      changed_when: '"patched" in r_winweb02_cpu.stdout'
 
     # Task 1.8: Start all VMs in mass-vms namespace
     - name: Get all VMs in mass-vms namespace
@@ -122,7 +122,7 @@
       loop: "{{ range(1, 13) | list }}"
       register: r_scale_loadmaker
       failed_when: false
-      changed_when: "'scaled' in r_scale_loadmaker.stdout"
+      changed_when: '"scaled" in r_scale_loadmaker.stdout'
 
     - name: Lab 01 Performance solver completed
       debug:
