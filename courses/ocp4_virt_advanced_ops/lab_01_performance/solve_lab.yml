@@ -12,23 +12,11 @@
 
   tasks:
     # Task 1.2: Scale loadmaker deployment to generate load
-    - name: Patch loadmaker deployment to set REQUESTS_PER_SECOND=75
-      kubernetes.core.k8s:
-        api_version: apps/v1
-        kind: Deployment
-        name: loadmaker
-        namespace: webapp-vms
-        definition:
-          spec:
-            template:
-              spec:
-                containers:
-                  - name: loadmaker
-                    env:
-                      - name: REQUESTS_PER_SECOND
-                        value: "75"
-        state: patched
+    - name: Set REQUESTS_PER_SECOND=75 on loadmaker deployment
+      ansible.builtin.command:
+        cmd: oc set env deployment/loadmaker REQUESTS_PER_SECOND=75 -n webapp-vms
       register: r_loadmaker_patch
+      changed_when: "'updated" in r_loadmaker_patch.stdout'
 
     - name: Wait for loadmaker deployment to roll out
       kubernetes.core.k8s_info:
@@ -45,16 +33,11 @@
 
     # Task 1.5: Start winweb02 VM for horizontal scaling
     - name: Start VM winweb02
-      kubernetes.core.k8s:
-        api_version: kubevirt.io/v1
-        kind: VirtualMachine
-        name: winweb02
-        namespace: webapp-vms
-        definition:
-          spec:
-            running: true
-        state: patched
+      ansible.builtin.command:
+        cmd: virtctl start winweb02 -n webapp-vms
       register: r_start_winweb02
+      failed_when: false
+      changed_when: "'Successfully' in r_start_winweb02.stdout or r_start_winweb02.rc == 0"
 
     - name: Wait for winweb02 to reach Running state
       kubernetes.core.k8s_info:
@@ -71,34 +54,16 @@
 
     # Task 1.6: Vertically scale VMs by adding CPUs
     - name: Patch winweb01 to increase CPU to 4 cores
-      kubernetes.core.k8s:
-        api_version: kubevirt.io/v1
-        kind: VirtualMachine
-        name: winweb01
-        namespace: webapp-vms
-        definition:
-          spec:
-            template:
-              spec:
-                domain:
-                  cpu:
-                    cores: 4
-        state: patched
+      ansible.builtin.command:
+        cmd: oc patch vm winweb01 -n webapp-vms --type=json -p='[{"op":"replace","path":"/spec/template/spec/domain/cpu/cores","value":4}]'
+      register: r_winweb01_cpu
+      changed_when: "'patched" in r_winweb01_cpu.stdout'
 
     - name: Patch winweb02 to increase CPU to 4 cores
-      kubernetes.core.k8s:
-        api_version: kubevirt.io/v1
-        kind: VirtualMachine
-        name: winweb02
-        namespace: webapp-vms
-        definition:
-          spec:
-            template:
-              spec:
-                domain:
-                  cpu:
-                    cores: 4
-        state: patched
+      ansible.builtin.command:
+        cmd: oc patch vm winweb02 -n webapp-vms --type=json -p='[{"op":"replace","path":"/spec/template/spec/domain/cpu/cores","value":4}]'
+      register: r_winweb02_cpu
+      changed_when: "'patched" in r_winweb02_cpu.stdout'
 
     # Task 1.8: Start all VMs in mass-vms namespace
     - name: Get all VMs in mass-vms namespace
@@ -109,18 +74,14 @@
       register: r_mass_vms
 
     - name: Start all VMs in mass-vms namespace
-      kubernetes.core.k8s:
-        api_version: kubevirt.io/v1
-        kind: VirtualMachine
-        name: "{{ item.metadata.name }}"
-        namespace: mass-vms
-        definition:
-          spec:
-            running: true
-        state: patched
+      ansible.builtin.command:
+        cmd: virtctl start {{ item.metadata.name }} -n mass-vms
       loop: "{{ r_mass_vms.resources }}"
       loop_control:
         label: "{{ item.metadata.name }}"
+      register: r_start_mass_vms
+      failed_when: false
+      changed_when: true
 
     # Task 1.8: Remove taint from worker node 6 to allow VM scheduling
     - name: Get worker node 6 name
@@ -134,15 +95,12 @@
         worker_node_6: "{{ r_nodes.resources | selectattr('metadata.name', 'search', 'worker-6') | map(attribute='metadata.name') | first }}"
 
     - name: Remove taint from worker node 6
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: Node
-        name: "{{ worker_node_6 }}"
-        definition:
-          spec:
-            taints: []
-        state: patched
+      ansible.builtin.command:
+        cmd: oc adm taint node {{ worker_node_6 }} node.kubernetes.io/unschedulable-
+      register: r_untaint_node6
       when: worker_node_6 is defined
+      failed_when: false
+      changed_when: "'untainted' in r_untaint_node6.stdout or 'not found' not in r_untaint_node6.stderr"
 
     # Task 1.9: Remove taint from worker node 7 for load balancing
     - name: Identify worker node 7
@@ -150,29 +108,21 @@
         worker_node_7: "{{ r_nodes.resources | selectattr('metadata.name', 'search', 'worker-7') | map(attribute='metadata.name') | first }}"
 
     - name: Remove taint from worker node 7
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: Node
-        name: "{{ worker_node_7 }}"
-        definition:
-          spec:
-            taints: []
-        state: patched
+      ansible.builtin.command:
+        cmd: oc adm taint node {{ worker_node_7 }} node.kubernetes.io/unschedulable-
+      register: r_untaint_node7
       when: worker_node_7 is defined
+      failed_when: false
+      changed_when: "'untainted' in r_untaint_node7.stdout or 'not found' not in r_untaint_node7.stderr"
 
     # Task 1.9: Scale down loadmaker deployments to complete lab
     - name: Scale loadmaker-1 through loadmaker-12 to 0 replicas
-      kubernetes.core.k8s:
-        api_version: apps/v1
-        kind: Deployment
-        name: "loadmaker-{{ item }}"
-        namespace: mass-vms
-        definition:
-          spec:
-            replicas: 0
-        state: patched
+      ansible.builtin.command:
+        cmd: oc scale deployment/loadmaker-{{ item }} --replicas=0 -n mass-vms
       loop: "{{ range(1, 13) | list }}"
-      ignore_errors: true  # Some deployments may not exist
+      register: r_scale_loadmaker
+      failed_when: false
+      changed_when: "'scaled' in r_scale_loadmaker.stdout"
 
     - name: Lab 01 Performance solver completed
       debug:
